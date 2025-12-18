@@ -1,12 +1,21 @@
-import { Button } from "@workspace/ui/components/button"
+import Footer from '@/components/core/Footer';
+import Header from '@/components/core/Header';
+import Challenges from '@/components/landing-page/Challenges';
+import Hero from '@/components/landing-page/Hero';
+import Pricing from '@/components/landing-page/Pricing';
+import WhyAlgoCanvas from '@/components/landing-page/WhyAlgoCanvas';
 
-export default function Page() {
+const page = () => {
   return (
-    <div className="flex items-center justify-center min-h-svh">
-      <div className="flex flex-col items-center justify-center gap-4">
-        <h1 className="text-2xl font-bold">Hello World</h1>
-        <Button size="sm">Button</Button>
-      </div>
+    <div>
+      <Header />
+      <Hero />
+      <Challenges />
+      <WhyAlgoCanvas />
+      <Pricing />
+      <Footer />
     </div>
-  )
-}
+  );
+};
+
+export default page;
