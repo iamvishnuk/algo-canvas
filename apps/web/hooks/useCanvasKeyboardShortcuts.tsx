@@ -1,0 +1,120 @@
+import {
+  changeTool,
+  handleZoom,
+  resetView
+} from '@/features/canvas/canvasSlice';
+import { useAppDispatch } from '@/store/hooks';
+import { useEffect } from 'react';
+
+interface KeyboardShortcut {
+  key: string;
+  modifiers?: {
+    ctrl?: boolean;
+    shift?: boolean;
+    alt?: boolean;
+  };
+  action: () => void;
+  description: string;
+}
+
+export const useCanvasKeyboardShortcuts = () => {
+  const dispatch = useAppDispatch();
+
+  const shortcuts: KeyboardShortcut[] = [
+    {
+      key: '=',
+      modifiers: { ctrl: true },
+      action: () => dispatch(handleZoom({ delta: -0.1 })),
+      description: 'Zoom in'
+    },
+    {
+      key: '+',
+      modifiers: { ctrl: true },
+      action: () => dispatch(handleZoom({ delta: -0.1 })),
+      description: 'Zoom in'
+    },
+    {
+      key: '-',
+      modifiers: { ctrl: true },
+      action: () => dispatch(handleZoom({ delta: 0.1 })),
+      description: 'Zoom out'
+    },
+    {
+      key: '0',
+      modifiers: { ctrl: true },
+      action: () => dispatch(resetView()),
+      description: 'Reset view'
+    },
+    {
+      key: 'm',
+      action: () => dispatch(changeTool({ tool: 'move' })),
+      description: 'Move'
+    },
+    {
+      key: 'v',
+      action: () => dispatch(changeTool({ tool: 'selection' })),
+      description: 'Selection'
+    },
+    {
+      key: 'r',
+      action: () => dispatch(changeTool({ tool: 'rectangle' })),
+      description: 'Rectangle'
+    },
+    {
+      key: 'o',
+      action: () => dispatch(changeTool({ tool: 'circle' })),
+      description: 'Circle/Ellipse'
+    },
+    {
+      key: 'a',
+      action: () => dispatch(changeTool({ tool: 'triangle' })),
+      description: 'Triangle'
+    },
+    {
+      key: 'd',
+      action: () => dispatch(changeTool({ tool: 'draw' })),
+      description: 'Draw'
+    },
+    {
+      key: 'l',
+      action: () => dispatch(changeTool({ tool: 'line' })),
+      description: 'Line'
+    }
+  ];
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      for (const shortcut of shortcuts) {
+        // Check if all required modifiers match
+        const ctrlMatch = !shortcut.modifiers?.ctrl || e.ctrlKey || e.metaKey;
+        const shiftMatch = !shortcut.modifiers?.shift || e.shiftKey;
+        const altMatch = !shortcut.modifiers?.alt || e.altKey;
+
+        // Check if no extra modifiers are pressed when not required
+        const noExtraCtrl =
+          shortcut.modifiers?.ctrl || !(e.ctrlKey || e.metaKey);
+        const noExtraShift = shortcut.modifiers?.shift || !e.shiftKey;
+        const noExtraAlt = shortcut.modifiers?.alt || !e.altKey;
+
+        if (
+          e.key === shortcut.key &&
+          ctrlMatch &&
+          shiftMatch &&
+          altMatch &&
+          noExtraCtrl &&
+          noExtraShift &&
+          noExtraAlt
+        ) {
+          e.preventDefault();
+          shortcut.action();
+          break;
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [shortcuts]);
+
+  return { shortcuts };
+};

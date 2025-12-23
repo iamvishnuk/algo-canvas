@@ -2,6 +2,7 @@ import { Inter, Poppins, Fira_Code } from 'next/font/google';
 
 import '@workspace/ui/globals.css';
 import { ThemeProvider } from '@/components/ThemeProvider';
+import ReduxProvider from '@/store/ReduxProvider';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -34,7 +35,9 @@ export default function RootLayout({
       <body
         className={`${inter.variable} ${poppins.variable} ${firaCode.variable} font-inter antialiased`}
       >
-        <ThemeProvider>{children}</ThemeProvider>
+        <ThemeProvider>
+          <ReduxProvider>{children}</ReduxProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

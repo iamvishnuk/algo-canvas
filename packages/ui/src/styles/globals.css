@@ -200,3 +200,23 @@
   background: linear-gradient(to right, transparent, #29293c, transparent);
   z-index: 10;
 }
+
+.cursor-pencil {
+  @apply cursor-[url('/cursors/pencil-light.svg')_0_20,_auto] dark:cursor-[url('/cursors/pencil-dark.svg')_0_20,_auto];
+}
+
+.cursor-circle {
+  @apply cursor-[url('/cursors/circle-light.svg')_0_20,_auto] dark:cursor-[url('/cursors/circle-dark.svg')_0_20,_auto];
+}
+
+.cursor-rectangle {
+  @apply cursor-[url('/cursors/square-light.svg')_0_20,_auto] dark:cursor-[url('/cursors/square-dark.svg')_0_20,_auto];
+}
+
+.cursor-triangle {
+  @apply cursor-[url('/cursors/triangle-light.svg')_0_20,_auto] dark:cursor-[url('/cursors/triangle-dark.svg')_0_20,_auto];
+}
+
+.cursor-line {
+  @apply cursor-[url('/cursors/slash-light.svg')_0_20,_auto] dark:cursor-[url('/cursors/slash-dark.svg')_0_20,_auto];
+}
