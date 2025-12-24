@@ -18,7 +18,7 @@ const BottomToolBar = () => {
 
   return (
     <div className='absolute bottom-4 left-4 flex gap-4'>
-      <div className='dark:bg-brand-bg flex gap-1 rounded-md text-neutral-400'>
+      <div className='dark:bg-brand-bg flex gap-1 rounded-md border text-neutral-400'>
         <Tooltip delayDuration={1000}>
           <TooltipTrigger asChild>
             <Button
@@ -61,7 +61,7 @@ const BottomToolBar = () => {
           </TooltipContent>
         </Tooltip>
       </div>
-      <div className='dark:bg-brand-bg flex rounded-md'>
+      <div className='dark:bg-brand-bg flex rounded-md border'>
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
@@ -89,7 +89,7 @@ const BottomToolBar = () => {
           </TooltipContent>
         </Tooltip>
       </div>
-      <div className='dark:bg-brand-bg flex rounded-md'>
+      <div className='dark:bg-brand-bg flex rounded-md border'>
         <Tooltip delayDuration={1000}>
           <TooltipTrigger asChild>
             <Button

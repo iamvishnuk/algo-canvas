@@ -25,7 +25,7 @@ const initialState: ICanvasState = {
     offsetX: 0,
     offsetY: 0
   },
-  tool: 'move',
+  tool: 'selection',
   elements: [],
   drawingState: {
     isDrawing: false

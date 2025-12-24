@@ -10,8 +10,20 @@ import {
 } from '@/features/canvas/canvasSlice';
 import { useCanvasKeyboardShortcuts } from '@/hooks/useCanvasKeyboardShortcuts';
 import MainToolBar from './MainToolBar';
-import { CURSOR_MAP } from '@/utils/canvas';
+
 import { cn } from '@workspace/ui/lib/utils';
+import CanvasBackground from './CanvasBackground';
+import { screenToWorld } from '@/lib/canvas/coordinates';
+import {
+  distanceFromPointToLineSegment,
+  isPointNearPath,
+  isPointNearRectangle
+} from '@/lib/canvas/geometry';
+import { CURSOR_MAP } from '@/lib/canvas/constant';
+import { drawGrid } from '@/lib/canvas/rendering/drawGrid';
+import { drawElements } from '@/lib/canvas/rendering/drawElements';
+import { drawElementsPreview } from '@/lib/canvas/rendering/drawElementsPreview';
+import { drawSelectionBox } from '@/lib/canvas/rendering/drawSelectionBox';
 
 const CanvasArea = () => {
   const dispatch = useAppDispatch();
@@ -25,6 +37,10 @@ const CanvasArea = () => {
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [isDrawing, setIsDrawing] = useState(false);
   const [currentPath, setCurrentPath] = useState<DrawPoint[]>([]);
+  const [cursorOnElement, setCursorOnElement] = useState<boolean>(false);
+  const [selecteElementIndex, setSelectedElementIndex] = useState<
+    number | null
+  >(null);
 
   const [circleStart, setCircleStart] = useState<DrawPoint | null>(null);
   const [currentCircle, setCurrentCircle] = useState<{
@@ -42,50 +58,6 @@ const CanvasArea = () => {
     null
   );
 
-  const drawGrid = () => {
-    const canvas = bgCanvasRef.current;
-    if (!canvas) return;
-
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    const { scale, offsetX, offsetY } = view;
-    const width = canvas.width;
-    const height = canvas.height;
-
-    ctx.fillStyle = '#1a1a1a';
-    ctx.fillRect(0, 0, width, height);
-
-    ctx.save();
-    ctx.translate(offsetX, offsetY);
-    ctx.scale(scale, scale);
-
-    const gridSize = 40;
-    const startX = Math.floor(-offsetX / scale / gridSize) * gridSize;
-    const startY = Math.floor(-offsetY / scale / gridSize) * gridSize;
-    const endX = Math.ceil((width - offsetX) / scale / gridSize) * gridSize;
-    const endY = Math.ceil((height - offsetY) / scale / gridSize) * gridSize;
-
-    ctx.strokeStyle = '#333';
-    ctx.lineWidth = 1 / scale;
-
-    for (let x = startX; x <= endX; x += gridSize) {
-      ctx.beginPath();
-      ctx.moveTo(x, startY);
-      ctx.lineTo(x, endY);
-      ctx.stroke();
-    }
-
-    for (let y = startY; y <= endY; y += gridSize) {
-      ctx.beginPath();
-      ctx.moveTo(startX, y);
-      ctx.lineTo(endX, y);
-      ctx.stroke();
-    }
-
-    ctx.restore();
-  };
-
   const redrawCanvas = () => {
     const canvas = drawCanvasRef.current;
     if (!canvas) return;
@@ -101,109 +73,21 @@ const CanvasArea = () => {
     ctx.scale(scale, scale);
 
     // Draw all saved objects
-    elements.forEach((element) => {
-      if (element.type === 'draw') {
-        if (element.points.length < 2) return;
+    drawElements(ctx, elements, scale);
 
-        ctx.strokeStyle = element.color;
-        ctx.lineWidth = 2 / scale;
-        ctx.lineCap = 'round';
-        ctx.lineJoin = 'round';
+    // Draw preview
+    drawElementsPreview(
+      ctx,
+      scale,
+      currentPath,
+      currentCircle,
+      currentRect,
+      currentLine
+    );
 
-        ctx.beginPath();
-        ctx.moveTo(element.points[0].x, element.points[0].y);
-
-        for (let i = 1; i < element.points.length; i++) {
-          ctx.lineTo(element.points[i].x, element.points[i].y);
-        }
-        ctx.stroke();
-      } else if (element.type === 'circle') {
-        ctx.strokeStyle = element.color;
-        ctx.lineWidth = 2 / scale;
-
-        ctx.beginPath();
-        ctx.arc(
-          element.centerX,
-          element.centerY,
-          element.radius,
-          0,
-          Math.PI * 2
-        );
-        ctx.stroke();
-      } else if (element.type === 'rectangle') {
-        ctx.strokeStyle = '#3b82f6';
-        ctx.lineWidth = 2 / scale;
-
-        ctx.beginPath();
-        ctx.rect(element.x, element.y, element.width, element.height);
-        ctx.stroke();
-      } else if (element.type === 'line') {
-        ctx.strokeStyle = '#3b82f6';
-        ctx.lineWidth = 2 / scale;
-
-        ctx.beginPath();
-        ctx.moveTo(element.startX, element.startY);
-        ctx.lineTo(element.endX, element.endY);
-
-        ctx.stroke();
-      }
-    });
-
-    // Draw current path being drawn
-    if (currentPath.length > 0) {
-      ctx.strokeStyle = '#3b82f6';
-      ctx.lineWidth = 2 / scale;
-      ctx.lineCap = 'round';
-      ctx.lineJoin = 'round';
-
-      ctx.beginPath();
-      ctx.moveTo(currentPath[0].x, currentPath[0].y);
-
-      for (let i = 1; i < currentPath.length; i++) {
-        ctx.lineTo(currentPath[i].x, currentPath[i].y);
-      }
-      ctx.stroke();
-    }
-
-    // Draw current circle being drawn
-    if (currentCircle) {
-      ctx.strokeStyle = '#3b82f6';
-      ctx.lineWidth = 2 / scale;
-
-      ctx.beginPath();
-      ctx.arc(
-        currentCircle.center.x,
-        currentCircle.center.y,
-        currentCircle.radius,
-        0,
-        Math.PI * 2
-      );
-      ctx.stroke();
-    }
-
-    if (currentRect) {
-      ctx.strokeStyle = '#3b82f6';
-      ctx.lineWidth = 2 / scale;
-
-      ctx.beginPath();
-      ctx.rect(
-        currentRect.x,
-        currentRect.y,
-        currentRect.width,
-        currentRect.height
-      );
-      ctx.stroke();
-    }
-
-    if (currentLine) {
-      ctx.strokeStyle = '#3b82f6';
-      ctx.lineWidth = 2 / scale;
-
-      ctx.beginPath();
-      ctx.moveTo(currentLine.startX, currentLine.startY);
-      ctx.lineTo(currentLine.endX, currentLine.endY);
-
-      ctx.stroke();
+    // Draw Selection Box
+    if (tool === 'selection') {
+      drawSelectionBox(ctx, selecteElementIndex, elements, view);
     }
 
     ctx.restore();
@@ -218,7 +102,7 @@ const CanvasArea = () => {
     bgCanvas.height = window.innerHeight;
     drawCanvas.width = window.innerWidth;
     drawCanvas.height = window.innerHeight;
-    drawGrid();
+    drawGrid(bgCanvasRef, view);
     redrawCanvas();
   };
 
@@ -229,30 +113,24 @@ const CanvasArea = () => {
   }, []);
 
   useEffect(() => {
-    drawGrid();
+    drawGrid(bgCanvasRef, view);
   }, [view]);
 
   useEffect(() => {
     redrawCanvas();
-  }, [view, elements, currentPath, currentCircle, currentRect, currentLine]);
+  }, [
+    view,
+    elements,
+    currentPath,
+    currentCircle,
+    currentRect,
+    currentLine,
+    selecteElementIndex
+  ]);
 
-  // Convert mouse (screen) coordinates to canvas world coordinates
-  // so drawing works correctly with pan (offset) and zoom (scale)
-  const screenToWorld = (screenX: number, screenY: number) => {
-    const canvas = drawCanvasRef.current;
-
-    // If canvas is not available, return a safe default
-    if (!canvas) return { x: 0, y: 0 };
-
-    // Canvas position relative to the viewport
-    const rect = canvas.getBoundingClientRect();
-
-    // Apply inverse pan and zoom to get world-space coordinates
-    const x = (screenX - rect.left - view.offsetX) / view.scale;
-    const y = (screenY - rect.top - view.offsetY) / view.scale;
-
-    return { x, y };
-  };
+  useEffect(() => {
+    setSelectedElementIndex(null);
+  }, [tool]);
 
   const handleWheel = (e: React.WheelEvent) => {
     e.preventDefault();
@@ -261,7 +139,7 @@ const CanvasArea = () => {
   };
 
   const handleMouseDown = (e: React.MouseEvent) => {
-    const worldPos = screenToWorld(e.clientX, e.clientY);
+    const worldPos = screenToWorld(e.clientX, e.clientY, drawCanvasRef, view);
     if (tool === 'move') {
       setIsDragging(true);
       setDragStart({
@@ -291,33 +169,78 @@ const CanvasArea = () => {
     }
   };
 
+  const handleSelectionHover = (e: React.MouseEvent) => {
+    const worldPos = screenToWorld(e.clientX, e.clientY, drawCanvasRef, view);
+    const HIT_TOLERANCE = 6 / view.scale;
+
+    let isCursorOnElement = false;
+
+    for (const element of elements) {
+      if (element.type === 'draw') {
+        if (isPointNearPath(worldPos, element.points, HIT_TOLERANCE)) {
+          isCursorOnElement = true;
+          break;
+        }
+      }
+      if (element.type === 'rectangle') {
+        if (isPointNearRectangle(worldPos, element, HIT_TOLERANCE)) {
+          isCursorOnElement = true;
+          break;
+        }
+      }
+      if (element.type === 'circle') {
+        const distanceFromCenter = Math.hypot(
+          worldPos.x - element.centerX,
+          worldPos.y - element.centerY
+        );
+
+        if (Math.abs(distanceFromCenter - element.radius) <= HIT_TOLERANCE) {
+          isCursorOnElement = true;
+          break;
+        }
+      }
+      if (element.type === 'line') {
+        const distance = distanceFromPointToLineSegment(
+          worldPos,
+          { x: element.startX, y: element.startY },
+          { x: element.endX, y: element.endY }
+        );
+
+        if (distance <= HIT_TOLERANCE) {
+          isCursorOnElement = true;
+          break;
+        }
+      }
+    }
+    setCursorOnElement(isCursorOnElement);
+  };
+
   const handleMouseMove = (e: React.MouseEvent) => {
+    const worldPos = screenToWorld(e.clientX, e.clientY, drawCanvasRef, view);
     if (isDragging) {
       dispatch(
         updateOffSet({ x: e.clientX - dragStart.x, y: e.clientY - dragStart.y })
       );
     } else if (isDrawing && tool === 'draw') {
-      const worldPos = screenToWorld(e.clientX, e.clientY);
       setCurrentPath((prev) => [...prev, worldPos]);
     } else if (isDrawing && tool === 'circle' && circleStart) {
-      const worldPos = screenToWorld(e.clientX, e.clientY);
       const dx = worldPos.x - circleStart.x;
       const dy = worldPos.y - circleStart.y;
       const radius = Math.sqrt(dx * dx + dy * dy);
       setCurrentCircle({ center: circleStart, radius });
     } else if (isDrawing && tool === 'rectangle' && rectStart) {
-      const worldPos = screenToWorld(e.clientX, e.clientY);
       const width = worldPos.x - rectStart.x;
       const height = worldPos.y - rectStart.y;
       setCurrentRect({ x: rectStart.x, y: rectStart.y, width, height });
     } else if (isDrawing && tool === 'line' && lineStart) {
-      const worldPos = screenToWorld(e.clientX, e.clientY);
       setCurrentLine({
         startX: lineStart.x,
         startY: lineStart.y,
         endX: worldPos.x,
         endY: worldPos.y
       });
+    } else if (tool === 'selection') {
+      handleSelectionHover(e);
     }
   };
 
@@ -325,7 +248,7 @@ const CanvasArea = () => {
     if (isDrawing && tool === 'draw' && currentPath.length > 0) {
       dispatch(
         addElements({
-          element: { type: 'draw', points: currentPath, color: '#3b82f6' }
+          element: { type: 'draw', points: currentPath, color: '#7A3EFF' }
         })
       );
       setCurrentPath([]);
@@ -342,7 +265,7 @@ const CanvasArea = () => {
             centerX: currentCircle.center.x,
             centerY: currentCircle.center.y,
             radius: currentCircle.radius,
-            color: '#3b82f6'
+            color: '#7A3EFF'
           }
         })
       );
@@ -374,9 +297,53 @@ const CanvasArea = () => {
           }
         })
       );
+      setCurrentLine(null);
+      setLineStart(null);
     }
     setIsDragging(false);
     setIsDrawing(false);
+  };
+
+  const handleOnClick = (e: React.MouseEvent) => {
+    if (tool !== 'selection') return;
+
+    const worldPos = screenToWorld(e.clientX, e.clientY, drawCanvasRef, view);
+    const HIT_TOLERANCE = 6 / view.scale;
+    // Check elements in reverse order (top to bottom)
+    for (let i = elements.length - 1; i >= 0; i--) {
+      const element = elements[i];
+      let isHit = false;
+
+      if (element) {
+        if (element.type === 'draw') {
+          isHit = isPointNearPath(worldPos, element.points, HIT_TOLERANCE);
+        } else if (element.type === 'rectangle') {
+          isHit = isPointNearRectangle(worldPos, element, HIT_TOLERANCE);
+        } else if (element.type === 'circle') {
+          const distanceFromCenter = Math.hypot(
+            worldPos.x - element.centerX,
+            worldPos.y - element.centerY
+          );
+          isHit =
+            Math.abs(distanceFromCenter - element.radius) <= HIT_TOLERANCE;
+        } else if (element.type === 'line') {
+          const distance = distanceFromPointToLineSegment(
+            worldPos,
+            { x: element.startX, y: element.startY },
+            { x: element.endX, y: element.endY }
+          );
+          isHit = distance <= HIT_TOLERANCE;
+        }
+      }
+
+      if (isHit) {
+        setSelectedElementIndex(i);
+        return;
+      }
+    }
+
+    // If no element was clicked, deselect
+    setSelectedElementIndex(null);
   };
 
   const handleContextMenu = (e: React.MouseEvent) => {
@@ -386,11 +353,7 @@ const CanvasArea = () => {
   return (
     <div className='relative h-full w-full overflow-hidden bg-gray-900'>
       {/* Background grid canvas */}
-      <canvas
-        ref={bgCanvasRef}
-        className='absolute top-0 left-0'
-        style={{ pointerEvents: 'none' }}
-      />
+      <CanvasBackground canvasRef={bgCanvasRef} />
 
       {/* Drawing canvas */}
       <canvas
@@ -401,9 +364,11 @@ const CanvasArea = () => {
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
         onContextMenu={handleContextMenu}
+        onClick={handleOnClick}
         className={cn(
           '!dark:text-white absolute top-0 left-0',
-          CURSOR_MAP[tool]
+          CURSOR_MAP[tool],
+          cursorOnElement && 'cursor-move'
         )}
       />
 

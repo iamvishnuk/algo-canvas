@@ -1,6 +1,6 @@
 import { changeTool } from '@/features/canvas/canvasSlice';
+import { MAIN_TOOLS } from '@/lib/canvas/constant';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import { MAIN_TOOLS } from '@/utils/canvas';
 import { Button } from '@workspace/ui/components/button';
 import {
   Tooltip,
@@ -15,7 +15,7 @@ const MainToolBar = () => {
   const { tool } = useAppSelector((state) => state.canvas);
 
   return (
-    <div className='dark:bg-brand-bg absolute top-4 left-4 flex flex-col space-y-px rounded-md'>
+    <div className='dark:bg-brand-bg absolute top-4 left-4 flex flex-col space-y-px rounded-md border shadow-md'>
       {MAIN_TOOLS.map((toolItem) => (
         <Tooltip
           key={toolItem.name}
