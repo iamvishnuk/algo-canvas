@@ -16,6 +16,7 @@ import CanvasBackground from './CanvasBackground';
 import { screenToWorld } from '@/lib/canvas/coordinates';
 import {
   distanceFromPointToLineSegment,
+  isElementInSelectionArea,
   isPointNearPath,
   isPointNearRectangle
 } from '@/lib/canvas/geometry';
@@ -41,6 +42,17 @@ const CanvasArea = () => {
   const [selecteElementIndex, setSelectedElementIndex] = useState<
     number | null
   >(null);
+  const [selectedElementsIndices, setSelectedElementsIndices] = useState<
+    number[]
+  >([]);
+
+  // Area Selecting states
+  const [isAreaSelecting, setIsAreasSelecting] = useState<boolean>(false);
+  const [areaSelectionStart, setAreaSelectionStart] =
+    useState<DrawPoint | null>(null);
+  const [areaSelectionEnd, setAreaSelectionEnd] = useState<DrawPoint | null>(
+    null
+  );
 
   const [circleStart, setCircleStart] = useState<DrawPoint | null>(null);
   const [currentCircle, setCurrentCircle] = useState<{
@@ -87,7 +99,16 @@ const CanvasArea = () => {
 
     // Draw Selection Box
     if (tool === 'selection') {
-      drawSelectionBox(ctx, selecteElementIndex, elements, view);
+      drawSelectionBox(
+        ctx,
+        selecteElementIndex,
+        elements,
+        view,
+        selectedElementsIndices,
+        isAreaSelecting,
+        areaSelectionStart,
+        areaSelectionEnd
+      );
     }
 
     ctx.restore();
@@ -125,11 +146,19 @@ const CanvasArea = () => {
     currentCircle,
     currentRect,
     currentLine,
-    selecteElementIndex
+    selecteElementIndex,
+    selectedElementsIndices,
+    isAreaSelecting,
+    areaSelectionStart,
+    areaSelectionEnd
   ]);
 
   useEffect(() => {
     setSelectedElementIndex(null);
+    setSelectedElementsIndices([]);
+    setIsAreasSelecting(false);
+    setAreaSelectionStart(null);
+    setAreaSelectionEnd(null);
   }, [tool]);
 
   const handleWheel = (e: React.WheelEvent) => {
@@ -166,6 +195,50 @@ const CanvasArea = () => {
         endX: worldPos.x,
         endY: worldPos.y
       });
+    } else if (tool === 'selection') {
+      const HIT_TOLERANCE = 6 / view.scale;
+      let clickedOnElement = false;
+
+      for (let i = elements.length - 1; i >= 0; i--) {
+        const element = elements[i];
+        let isHit = false;
+
+        if (element) {
+          if (element.type === 'draw') {
+            isHit = isPointNearPath(worldPos, element.points, HIT_TOLERANCE);
+          } else if (element.type === 'rectangle') {
+            isHit = isPointNearRectangle(worldPos, element, HIT_TOLERANCE);
+          } else if (element.type === 'circle') {
+            const distanceFromCenter = Math.hypot(
+              worldPos.x - element.centerX,
+              worldPos.y - element.centerY
+            );
+            isHit =
+              Math.abs(distanceFromCenter - element.radius) <= HIT_TOLERANCE;
+          } else if (element.type === 'line') {
+            const distance = distanceFromPointToLineSegment(
+              worldPos,
+              { x: element.startX, y: element.startY },
+              { x: element.endX, y: element.endY }
+            );
+            isHit = distance <= HIT_TOLERANCE;
+          }
+
+          if (isHit) {
+            clickedOnElement = true;
+            break;
+          }
+        }
+      }
+
+      // If not clicking on an element, start area selection
+      if (!clickedOnElement) {
+        setIsAreasSelecting(true);
+        setAreaSelectionStart(worldPos);
+        setAreaSelectionEnd(worldPos);
+        setSelectedElementIndex(null);
+        setSelectedElementsIndices([]);
+      }
     }
   };
 
@@ -239,6 +312,8 @@ const CanvasArea = () => {
         endX: worldPos.x,
         endY: worldPos.y
       });
+    } else if (tool === 'selection' && isAreaSelecting && areaSelectionStart) {
+      setAreaSelectionEnd(worldPos);
     } else if (tool === 'selection') {
       handleSelectionHover(e);
     }
@@ -299,6 +374,26 @@ const CanvasArea = () => {
       );
       setCurrentLine(null);
       setLineStart(null);
+    } else if (isAreaSelecting && areaSelectionEnd && areaSelectionStart) {
+      const minX = Math.min(areaSelectionStart.x, areaSelectionEnd.x);
+      const minY = Math.min(areaSelectionStart.y, areaSelectionEnd.y);
+      const maxX = Math.max(areaSelectionStart.x, areaSelectionEnd.x);
+      const maxY = Math.max(areaSelectionStart.y, areaSelectionEnd.y);
+
+      const selectionArea = { minX, minY, maxX, maxY };
+
+      const selectedIndecies: number[] = [];
+
+      elements.forEach((element, index) => {
+        if (isElementInSelectionArea(element, selectionArea)) {
+          selectedIndecies.push(index);
+        }
+      });
+
+      setSelectedElementsIndices(selectedIndecies);
+      setIsAreasSelecting(false);
+      setAreaSelectionStart(null);
+      setAreaSelectionEnd(null);
     }
     setIsDragging(false);
     setIsDrawing(false);
@@ -338,6 +433,7 @@ const CanvasArea = () => {
 
       if (isHit) {
         setSelectedElementIndex(i);
+        setSelectedElementsIndices([]);
         return;
       }
     }

@@ -1,4 +1,5 @@
-import { DrawPoint, DrawRect } from '@workspace/types/canvas';
+import { DrawElements, DrawPoint, DrawRect } from '@workspace/types/canvas';
+import { getElementBounds } from './utils';
 
 export const distanceFromPointToLineSegment = (
   point: DrawPoint,
@@ -80,4 +81,20 @@ export const isPointNearRectangle = (
       return distanceFromPointToLineSegment(point, start, end) <= tolerance;
     }
   });
+};
+
+export const isElementInSelectionArea = (
+  element: DrawElements,
+  selectionArea: { minX: number; minY: number; maxX: number; maxY: number }
+) => {
+  const bounds = getElementBounds(element);
+  if (!bounds) return false;
+
+  // Check if element bounds are completely inside selection area
+  return (
+    bounds.minX >= selectionArea.minX &&
+    bounds.maxX <= selectionArea.maxX &&
+    bounds.minY >= selectionArea.minY &&
+    bounds.maxY <= selectionArea.maxY
+  );
 };
