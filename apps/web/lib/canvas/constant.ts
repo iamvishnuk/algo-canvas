@@ -3,10 +3,10 @@ import {
   Circle,
   Hand,
   MousePointer2,
+  MoveUpRight,
   Pencil,
   Slash,
   Square,
-  Triangle,
   type LucideIcon
 } from 'lucide-react';
 
@@ -58,11 +58,11 @@ export const MAIN_TOOLS: ITool[] = [
     toolTipSide: 'left'
   },
   {
-    name: 'Triangle',
-    icon: Triangle,
+    name: 'Arrow',
+    icon: MoveUpRight,
     keyboardShortCut: 'a',
-    toolType: 'triangle',
-    toolTipContent: 'Triangle A',
+    toolType: 'arrow',
+    toolTipContent: 'Arrow A',
     toolTipDelayDuration: 1000,
     toolTipSide: 'left'
   },
@@ -93,5 +93,5 @@ export const CURSOR_MAP: Record<Tool, string> = {
   line: 'cursor-line',
   rectangle: 'cursor-rectangle',
   selection: '',
-  triangle: 'cursor-triangle'
+  arrow: ''
 };

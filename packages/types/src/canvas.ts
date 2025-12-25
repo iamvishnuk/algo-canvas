@@ -39,14 +39,27 @@ export type DrawLine = {
   endY: number;
 };
 
-export type DrawElements = DrawPath | DrawCircle | DrawRect | DrawLine;
+export type DrawArrow = {
+  type: 'arrow';
+  startX: number;
+  startY: number;
+  endX: number;
+  endY: number;
+};
+
+export type DrawElements =
+  | DrawPath
+  | DrawCircle
+  | DrawRect
+  | DrawLine
+  | DrawArrow;
 
 export type Tool =
   | 'move'
   | 'selection'
   | 'rectangle'
   | 'circle'
-  | 'triangle'
+  | 'arrow'
   | 'draw'
   | 'line';
 

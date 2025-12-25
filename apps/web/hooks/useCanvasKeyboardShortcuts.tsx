@@ -67,8 +67,8 @@ export const useCanvasKeyboardShortcuts = () => {
     },
     {
       key: 'a',
-      action: () => dispatch(changeTool({ tool: 'triangle' })),
-      description: 'Triangle'
+      action: () => dispatch(changeTool({ tool: 'arrow' })),
+      description: 'Arrow'
     },
     {
       key: 'd',

@@ -1,6 +1,6 @@
 'use client';
 import React, { useRef, useEffect, useState } from 'react';
-import { DrawLine, DrawPoint, DrawRect } from '@workspace/types';
+import { DrawArrow, DrawLine, DrawPoint, DrawRect } from '@workspace/types';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import BottomToolBar from './BottomToolBar';
 import {
@@ -70,6 +70,13 @@ const CanvasArea = () => {
     null
   );
 
+  // Drawing Arrows
+  const [arrowStart, setArrowStart] = useState<DrawPoint | null>(null);
+  const [currentArrow, setCurrentArrow] = useState<Omit<
+    DrawArrow,
+    'type'
+  > | null>(null);
+
   const redrawCanvas = () => {
     const canvas = drawCanvasRef.current;
     if (!canvas) return;
@@ -94,7 +101,8 @@ const CanvasArea = () => {
       currentPath,
       currentCircle,
       currentRect,
-      currentLine
+      currentLine,
+      currentArrow
     );
 
     // Draw Selection Box
@@ -131,7 +139,21 @@ const CanvasArea = () => {
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
     return () => window.removeEventListener('resize', resizeCanvas);
-  }, []);
+  }, [
+    elements,
+    view,
+    tool,
+    currentPath,
+    currentCircle,
+    currentRect,
+    currentLine,
+    currentArrow,
+    selecteElementIndex,
+    selectedElementsIndices,
+    isAreaSelecting,
+    areaSelectionStart,
+    areaSelectionEnd
+  ]);
 
   useEffect(() => {
     drawGrid(bgCanvasRef, view);
@@ -150,7 +172,8 @@ const CanvasArea = () => {
     selectedElementsIndices,
     isAreaSelecting,
     areaSelectionStart,
-    areaSelectionEnd
+    areaSelectionEnd,
+    currentArrow
   ]);
 
   useEffect(() => {
@@ -195,6 +218,9 @@ const CanvasArea = () => {
         endX: worldPos.x,
         endY: worldPos.y
       });
+    } else if (tool === 'arrow') {
+      setIsDrawing(true);
+      setArrowStart(worldPos);
     } else if (tool === 'selection') {
       const HIT_TOLERANCE = 6 / view.scale;
       let clickedOnElement = false;
@@ -284,6 +310,18 @@ const CanvasArea = () => {
           break;
         }
       }
+      if (element.type === 'arrow') {
+        const distance = distanceFromPointToLineSegment(
+          worldPos,
+          { x: element.startX, y: element.startY },
+          { x: element.endX, y: element.endY }
+        );
+
+        if (distance <= HIT_TOLERANCE) {
+          isCursorOnElement = true;
+          break;
+        }
+      }
     }
     setCursorOnElement(isCursorOnElement);
   };
@@ -309,6 +347,13 @@ const CanvasArea = () => {
       setCurrentLine({
         startX: lineStart.x,
         startY: lineStart.y,
+        endX: worldPos.x,
+        endY: worldPos.y
+      });
+    } else if (tool === 'arrow' && arrowStart) {
+      setCurrentArrow({
+        startX: arrowStart.x,
+        startY: arrowStart.y,
         endX: worldPos.x,
         endY: worldPos.y
       });
@@ -374,6 +419,21 @@ const CanvasArea = () => {
       );
       setCurrentLine(null);
       setLineStart(null);
+    } else if (isDrawing && tool === 'arrow' && currentArrow) {
+      dispatch(
+        addElements({
+          element: {
+            type: 'arrow',
+            startX: currentArrow.startX,
+            startY: currentArrow.startY,
+            endX: currentArrow.endX,
+            endY: currentArrow.endY
+          }
+        })
+      );
+
+      setArrowStart(null);
+      setCurrentArrow(null);
     } else if (isAreaSelecting && areaSelectionEnd && areaSelectionStart) {
       const minX = Math.min(areaSelectionStart.x, areaSelectionEnd.x);
       const minY = Math.min(areaSelectionStart.y, areaSelectionEnd.y);
@@ -422,6 +482,13 @@ const CanvasArea = () => {
           isHit =
             Math.abs(distanceFromCenter - element.radius) <= HIT_TOLERANCE;
         } else if (element.type === 'line') {
+          const distance = distanceFromPointToLineSegment(
+            worldPos,
+            { x: element.startX, y: element.startY },
+            { x: element.endX, y: element.endY }
+          );
+          isHit = distance <= HIT_TOLERANCE;
+        } else if (element.type === 'arrow') {
           const distance = distanceFromPointToLineSegment(
             worldPos,
             { x: element.startX, y: element.startY },

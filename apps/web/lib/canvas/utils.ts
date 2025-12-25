@@ -31,6 +31,13 @@ export const getElementBounds = (element: DrawElements) => {
       maxX: Math.max(element.startX, element.endX),
       maxY: Math.max(element.startY, element.endY)
     };
+  } else if (element.type === 'arrow') {
+    return {
+      minX: Math.min(element.startX, element.endX),
+      minY: Math.min(element.startY, element.endY),
+      maxX: Math.max(element.startX, element.endX),
+      maxY: Math.max(element.startY, element.endY)
+    };
   }
   return null;
 };

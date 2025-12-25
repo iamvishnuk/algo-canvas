@@ -1,4 +1,10 @@
-import { DrawLine, DrawPoint, DrawRect } from '@workspace/types/canvas';
+import {
+  DrawArrow,
+  DrawLine,
+  DrawPoint,
+  DrawRect
+} from '@workspace/types/canvas';
+import { drawArrow } from './draw';
 
 export const drawElementsPreview = (
   ctx: CanvasRenderingContext2D,
@@ -9,7 +15,8 @@ export const drawElementsPreview = (
     radius: number;
   } | null,
   currentRect: Omit<DrawRect, 'type'> | null,
-  currentLine: Omit<DrawLine, 'type'> | null
+  currentLine: Omit<DrawLine, 'type'> | null,
+  currentArrow: Omit<DrawArrow, 'type'> | null
 ) => {
   // Draw current path being drawn
   if (currentPath.length > 0) {
@@ -66,5 +73,16 @@ export const drawElementsPreview = (
     ctx.lineTo(currentLine.endX, currentLine.endY);
 
     ctx.stroke();
+  }
+
+  if (currentArrow) {
+    drawArrow(
+      ctx,
+      currentArrow.startX,
+      currentArrow.startY,
+      currentArrow.endX,
+      currentArrow.endY,
+      scale
+    );
   }
 };
