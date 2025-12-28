@@ -1,0 +1,51 @@
+import path from 'path';
+import dotenv from 'dotenv';
+import { logger } from '../utils/Logger';
+
+// Determine which environment file to use
+const environment = process.env.NODE_ENV || 'development';
+const envFile = `.env.${environment}`;
+
+// Load environment-specific variables
+dotenv.config({ path: path.resolve(__dirname, `../../../${envFile}`) });
+
+// Log which environment file is being used
+logger.info(`Using environment configuration: ${envFile}`);
+
+export const EnvConfig = {
+  PORT: process.env.PORT || 8000,
+  NODE_ENV: process.env.NODE_ENV || 'development',
+  BASE_PATH: process.env.BASE_PATH || '/api/v1',
+
+  APP_ORIGIN: process.env.APP_ORIGIN || 'http://localhost:3000',
+
+  MONGO_URI: process.env.MONGO_URI,
+
+  JWT_SECRET: process.env.JWT_SECRET || 'your_default_jwt_secret',
+  JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || '15m',
+  JWT_REFRESH_SECRET:
+    process.env.JWT_REFRESH_SECRET || 'your_default_jwt_refresh_secret',
+  JWT_REFRESH_EXPIRES_IN: process.env.JWT_REFRESH_EXPIRES_IN || '7d',
+
+  // node Mailer keys
+  SMTP_HOST: process.env.SMTP_HOST,
+  SMTP_PORT: process.env.SMTP_PORT,
+  SMTP_SECURE: process.env.SMTP_SECURE,
+  SMTP_USER: process.env.SMTP_USER,
+  SMTP_PASS: process.env.SMTP_PASS,
+  SMTP_FROM: process.env.SMTP_FROM,
+
+  // aws s3 credentials
+  AWS_ACCESS_KEY_ID: process.env.AWS_ACCESS_KEY_ID,
+  AWS_SECRET_ACCESS_KEY: process.env.AWS_SECRET_ACCESS_KEY,
+  AWS_REGION: process.env.AWS_REGION,
+  AWS_BUCKET_NAME: process.env.AWS_BUCKET_NAME,
+  AWS_BUCKET_URL: process.env.AWS_BUCKET_URL,
+
+  // Redis configuration
+  REDIS_HOST: process.env.REDIS_HOST || 'redis',
+  REDIS_PORT: process.env.REDIS_PORT || 6379,
+  REDIS_PASSWORD: process.env.REDIS_PASSWORD || '',
+  REDIS_DB: process.env.REDIS_DB || 0,
+  REDIS_TTL: process.env.REDIS_TTL || 3600
+};
