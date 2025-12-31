@@ -1,5 +1,11 @@
 import { add } from 'date-fns';
 
+export const anHourFromNow = (): Date => {
+  const now = new Date();
+  now.setHours(now.getHours() + 1);
+  return now;
+};
+
 export const calculateExpirationDate = (expiresIn: string = '15m'): Date => {
   // Match number + unit (m = minutes, h = hours, d = days)
   const match = expiresIn.match(/^(\d+)([mhd])$/);

@@ -9,6 +9,10 @@ import { logger } from './shared/utils/Logger';
 import { AppError } from './shared/error/AppError';
 import { errorHandler } from './shared/middleware/ErrorHandler';
 
+// Import Routes
+import userRouter from './modules/users/presentation/routes/UserRoutes';
+import authRouter from './modules/auth/presentation/routes/AuthRoutes';
+
 const app: Application = express();
 
 app.use(express.json());
@@ -34,7 +38,7 @@ app.use(
   })
 );
 
-app.get('/health', (_: Request, res: Response) => {
+app.get(`${EnvConfig.API_PREFIX}/health`, (_: Request, res: Response) => {
   res.status(200).json({
     status: 'success',
     message: 'Server is running',
@@ -42,6 +46,9 @@ app.get('/health', (_: Request, res: Response) => {
     environment: EnvConfig.NODE_ENV
   });
 });
+
+app.use(`${EnvConfig.API_PREFIX}/auth`, authRouter);
+app.use(`${EnvConfig.API_PREFIX}/users`, userRouter);
 
 app.all('/*splat', (req, _, next) => {
   const err = new AppError(`Cannot ${req.method} ${req.originalUrl}`, 404);

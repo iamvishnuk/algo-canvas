@@ -7,7 +7,7 @@ const startServer = async () => {
   try {
     const server = app.listen(EnvConfig.PORT, () => {
       logger.info(
-        `Server is running on port http://localhost:${EnvConfig.PORT}${EnvConfig.BASE_PATH} on ${EnvConfig.NODE_ENV} mode`
+        `Server is running on port http://localhost:${EnvConfig.PORT}${EnvConfig.API_PREFIX} on ${EnvConfig.NODE_ENV} mode`
       );
     });
 

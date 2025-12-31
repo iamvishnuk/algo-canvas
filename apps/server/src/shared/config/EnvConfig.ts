@@ -15,7 +15,7 @@ logger.info(`Using environment configuration: ${envFile}`);
 export const EnvConfig = {
   PORT: process.env.PORT || 8000,
   NODE_ENV: process.env.NODE_ENV || 'development',
-  BASE_PATH: process.env.BASE_PATH || '/api/v1',
+  API_PREFIX: process.env.API_PREFIX || '/api/v1',
 
   APP_ORIGIN: process.env.APP_ORIGIN || 'http://localhost:3000',
 

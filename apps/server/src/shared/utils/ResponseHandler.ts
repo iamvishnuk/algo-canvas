@@ -52,7 +52,7 @@ export class ResponseHandler {
         secure: EnvConfig.NODE_ENV === 'production' ? true : false,
         sameSite: EnvConfig.NODE_ENV === 'production' ? 'strict' : 'lax',
         expires: calculateExpirationDate(EnvConfig.JWT_REFRESH_EXPIRES_IN),
-        path: `${EnvConfig.BASE_PATH}/auth/refresh`
+        path: `${EnvConfig.API_PREFIX}/auth/refresh`
       });
     }
 
@@ -75,7 +75,7 @@ export class ResponseHandler {
   ): Response {
     res.clearCookie('accessToken');
     res.clearCookie('refreshToken', {
-      path: `${EnvConfig.BASE_PATH}/auth/refresh`
+      path: `${EnvConfig.API_PREFIX}/auth/refresh`
     });
     return res.status(statusCode).json({
       status: 'success',

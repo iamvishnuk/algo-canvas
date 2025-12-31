@@ -1,4 +1,4 @@
-import mongoose, { Schema, Types } from 'mongoose';
+import mongoose, { Document, Schema, Types } from 'mongoose';
 import { compareHashValue, hashValue } from '../../../../shared/utils/Bcrypt';
 
 export interface IUserPreferencesDocument {
@@ -7,8 +7,7 @@ export interface IUserPreferencesDocument {
   twoFactorSecret: string;
 }
 
-export interface IUserDocument {
-  _id: Types.ObjectId;
+export interface IUserDocument extends Document {
   name: string;
   email: string;
   password: string;

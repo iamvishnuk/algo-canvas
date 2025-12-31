@@ -1,8 +1,10 @@
 import { Inter, Poppins, Fira_Code } from 'next/font/google';
 
 import '@workspace/ui/globals.css';
-import { ThemeProvider } from '@/components/ThemeProvider';
 import ReduxProvider from '@/store/ReduxProvider';
+import QueryProvider from '@/providers/QueryProvider';
+import ThemeProvider from '@/providers/ThemeProvider';
+import { Toaster } from '@/components/sonner';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -36,7 +38,13 @@ export default function RootLayout({
         className={`${inter.variable} ${poppins.variable} ${firaCode.variable} font-inter antialiased`}
       >
         <ThemeProvider>
-          <ReduxProvider>{children}</ReduxProvider>
+          <ReduxProvider>
+            <QueryProvider>{children}</QueryProvider>
+            <Toaster
+              richColors
+              position='bottom-right'
+            />
+          </ReduxProvider>
         </ThemeProvider>
       </body>
     </html>

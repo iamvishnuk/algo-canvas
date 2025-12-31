@@ -4,7 +4,7 @@ export interface IUser {
   id: string;
   name: string;
   email: string;
-  password: string;
+  password?: string;
   isEmailVerified: boolean;
   userPreferences: UserPreferences;
   updatedAt?: Date;
@@ -20,7 +20,7 @@ export class User implements IUser {
     public userPreferences: UserPreferences,
     public createdAt: Date,
     public updatedAt: Date,
-    public password: string
+    public password?: string
   ) {}
 
   // ✅ Factory method
@@ -28,15 +28,12 @@ export class User implements IUser {
     id?: string;
     name: string;
     email: string;
-    password: string;
+    password?: string;
     isEmailVerified?: boolean;
     userPreferences?: UserPreferences;
     createdAt?: Date;
     updatedAt?: Date;
   }): User {
-    if (!data.email) throw new Error('User email is required');
-    if (!data.name) throw new Error('User name is required');
-
     return new User(
       data.id ?? '',
       data.name,
@@ -45,13 +42,8 @@ export class User implements IUser {
       data.userPreferences ?? UserPreferences.create(),
       data.createdAt ?? new Date(),
       data.updatedAt ?? new Date(),
-      data.password
+      data?.password
     );
-  }
-
-  // ✅ Domain behaviors
-  verifyEmail(): void {
-    this.isEmailVerified = true;
   }
 
   hasPassword(): boolean {

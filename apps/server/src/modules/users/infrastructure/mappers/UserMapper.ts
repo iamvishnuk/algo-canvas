@@ -8,7 +8,6 @@ export class UserMapper {
       id: userDoc._id.toString(),
       email: userDoc.email,
       name: userDoc.name,
-      password: userDoc.password,
       isEmailVerified: userDoc.isEmailVerified,
       userPreferences: UserPreferences.create({
         enable2FA: userDoc.userPreferences.enable2FA,
