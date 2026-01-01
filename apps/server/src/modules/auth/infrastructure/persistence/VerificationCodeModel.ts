@@ -1,7 +1,6 @@
 import mongoose, { Types, Document, Schema } from 'mongoose';
 
 export interface IVerificationCodeDocument extends Document {
-  _id: Types.ObjectId;
   code: string;
   type: string;
   userId: Types.ObjectId;

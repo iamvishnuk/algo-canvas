@@ -8,6 +8,7 @@ export class UserMapper {
       id: userDoc._id.toString(),
       email: userDoc.email,
       name: userDoc.name,
+      password: userDoc.password,
       isEmailVerified: userDoc.isEmailVerified,
       userPreferences: UserPreferences.create({
         enable2FA: userDoc.userPreferences.enable2FA,
@@ -23,8 +24,22 @@ export class UserMapper {
     return {
       name: user.name,
       email: user.email,
-      password: user.password,
-      isEmailVerified: user.isEmailVerified
+      password: user.password
+    };
+  }
+
+  static toPublic(user: User): Partial<User> {
+    return {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      isEmailVerified: user.isEmailVerified,
+      userPreferences: UserPreferences.create({
+        enable2FA: user.userPreferences.enable2FA,
+        emailNotification: user.userPreferences.emailNotification
+      }),
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt
     };
   }
 }

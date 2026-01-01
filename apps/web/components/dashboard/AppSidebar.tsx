@@ -50,6 +50,7 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
             <SidebarMenu>
               {DASHBOARD_MENU_ITEMS.map((item) => (
                 <SidebarMenuButton
+                  key={item.title}
                   tooltip={item.title}
                   isActive={pathname === item.href}
                   asChild

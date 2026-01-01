@@ -31,7 +31,7 @@ import { Button } from '@workspace/ui/components/button';
 import { GoogleLogoIcon } from '@phosphor-icons/react';
 import Link from 'next/link';
 import { useMutation } from '@tanstack/react-query';
-import { registerUseMutaionFn } from '@/lib/apis/auth';
+import { registerUserMutaionFn } from '@/lib/apis/auth';
 import { toast } from 'sonner';
 
 const RegisterForm = () => {
@@ -50,7 +50,7 @@ const RegisterForm = () => {
   });
 
   const { mutate, isPending } = useMutation({
-    mutationFn: registerUseMutaionFn
+    mutationFn: registerUserMutaionFn
   });
 
   const onSubmit = (data: z.infer<typeof registerSchema>) => {

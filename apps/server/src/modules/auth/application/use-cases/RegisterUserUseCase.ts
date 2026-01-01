@@ -8,6 +8,7 @@ import { anHourFromNow } from '../../../../shared/utils/DateTime';
 import { generateUniqueCode } from '../../../../shared/utils/uuid';
 import { User } from '../../../users/domain/entities/UserEntity';
 import { IUserRepository } from '../../../users/domain/repositories/IUserRepository';
+import { UserMapper } from '../../../users/infrastructure/mappers/UserMapper';
 import { VerificationType } from '../../domain/entities/VerificationCodeEntity';
 import { IVerificaionCodeRepository } from '../../domain/repositories/IVerificationCodeRepository';
 
@@ -19,7 +20,7 @@ export class RegisterUserUseCase {
 
   async execute(
     userData: Pick<User, 'name' | 'email' | 'password'>
-  ): Promise<User> {
+  ): Promise<Partial<User>> {
     const existingUser = await this.userRepository.findByEmail(userData.email);
 
     if (existingUser) {
@@ -51,6 +52,6 @@ export class RegisterUserUseCase {
       verificationUrl
     );
 
-    return newUser;
+    return UserMapper.toPublic(newUser);
   }
 }

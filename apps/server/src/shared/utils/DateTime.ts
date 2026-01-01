@@ -6,6 +6,9 @@ export const anHourFromNow = (): Date => {
   return now;
 };
 
+export const thirtyDaysFromNow = (): Date =>
+  new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+
 export const calculateExpirationDate = (expiresIn: string = '15m'): Date => {
   // Match number + unit (m = minutes, h = hours, d = days)
   const match = expiresIn.match(/^(\d+)([mhd])$/);

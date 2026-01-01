@@ -4,7 +4,7 @@ export interface IUser {
   id: string;
   name: string;
   email: string;
-  password?: string;
+  password: string;
   isEmailVerified: boolean;
   userPreferences: UserPreferences;
   updatedAt?: Date;
@@ -20,7 +20,7 @@ export class User implements IUser {
     public userPreferences: UserPreferences,
     public createdAt: Date,
     public updatedAt: Date,
-    public password?: string
+    public password: string
   ) {}
 
   // ✅ Factory method
@@ -28,7 +28,7 @@ export class User implements IUser {
     id?: string;
     name: string;
     email: string;
-    password?: string;
+    password: string;
     isEmailVerified?: boolean;
     userPreferences?: UserPreferences;
     createdAt?: Date;
@@ -42,7 +42,7 @@ export class User implements IUser {
       data.userPreferences ?? UserPreferences.create(),
       data.createdAt ?? new Date(),
       data.updatedAt ?? new Date(),
-      data?.password
+      data.password
     );
   }
 

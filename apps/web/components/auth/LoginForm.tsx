@@ -26,12 +26,18 @@ import {
   InputGroupInput
 } from '@workspace/ui/components/input-group';
 import { useState } from 'react';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, Loader } from 'lucide-react';
 import { Button } from '@workspace/ui/components/button';
 import { GoogleLogoIcon } from '@phosphor-icons/react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useMutation } from '@tanstack/react-query';
+import { loginUserMutaionFn } from '@/lib/apis/auth';
+import { toast } from 'sonner';
 
 function LoginForm() {
+  const router = useRouter();
+
   const [showPassword, setShowPassword] = useState(false);
 
   const form = useForm<z.infer<typeof loginSchema>>({
@@ -42,8 +48,24 @@ function LoginForm() {
     }
   });
 
+  const { mutate, isPending } = useMutation({
+    mutationFn: loginUserMutaionFn
+  });
+
   const onSubmit = (data: z.infer<typeof loginSchema>) => {
-    console.log({ data });
+    mutate(data, {
+      onSuccess: (response) => {
+        if (response.data?.mfaRequired) {
+          router.push(`/verify-mfa?email=${data.email}`);
+        } else {
+          toast.success('Logged in successfully');
+          router.push('/dashboard');
+        }
+      },
+      onError: (error) => {
+        toast.error('Login Error', { description: error.message });
+      }
+    });
   };
   return (
     <div className='flex flex-col gap-6'>
@@ -70,6 +92,8 @@ function LoginForm() {
                     <Input
                       {...field}
                       aria-invalid={fieldState.invalid}
+                      disabled={isPending}
+                      type='email'
                       placeholder='example@gmail.com'
                       autoComplete='email'
                     />
@@ -91,6 +115,7 @@ function LoginForm() {
                         {...field}
                         aria-invalid={fieldState.invalid}
                         type={showPassword ? 'text' : 'password'}
+                        disabled={isPending}
                         autoComplete='new-password'
                         placeholder='********'
                       />
@@ -117,10 +142,15 @@ function LoginForm() {
               type='submit'
               form='login-form'
               className='bg-purple-500 text-white shadow-md shadow-purple-500/30 transition hover:bg-violet-600'
+              disabled={isPending}
             >
+              {isPending && <Loader className='animate-spin' />}
               Login
             </Button>
-            <Button variant='outline'>
+            <Button
+              variant='outline'
+              disabled={isPending}
+            >
               <GoogleLogoIcon />
               Login With Google
             </Button>

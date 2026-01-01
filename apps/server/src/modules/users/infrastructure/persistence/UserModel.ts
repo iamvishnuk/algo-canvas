@@ -15,8 +15,6 @@ export interface IUserDocument extends Document {
   userPreferences: IUserPreferencesDocument;
   createdAt: Date;
   updatedAt: Date;
-
-  comparePassword(value: string): Promise<boolean>;
 }
 
 const userPreferencesSchema = new Schema<IUserPreferencesDocument>({
@@ -55,9 +53,5 @@ UserSchema.pre('save', async function () {
   if (!this.isModified('password')) return;
   this.password = await hashValue(this.password);
 });
-
-UserSchema.methods.comparePassword = async function (value: string) {
-  return compareHashValue(value, this.password);
-};
 
 export const UserModel = mongoose.model<IUserDocument>('User', UserSchema);

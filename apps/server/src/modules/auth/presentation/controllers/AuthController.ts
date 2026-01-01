@@ -10,14 +10,20 @@ import { VerificationCodeRepository } from '../../infrastructure/persistence/Ver
 import { VerifyEmailUseCase } from '../../application/use-cases/VerifyEmailUseCase';
 import { TEmailVerificationCodeBody } from '../validators/EmailVerificationCodeValidator';
 import { TRegisterUserBody } from '../validators/RegisterUserValidator';
+import { TLoginUserBody } from '../validators/LoginUserValidator';
+import { ISessionRepository } from '../../domain/repositories/ISessionRepository';
+import { SessionRepository } from '../../infrastructure/persistence/SessionRepository';
+import { LoginUserUseCase } from '../../application/use-cases/LoginUserUseCase';
 
 export class AuthController {
   private readonly userRepository: IUserRepository;
   private readonly verificationCodeRepository: IVerificaionCodeRepository;
+  private readonly sessionRepository: ISessionRepository;
 
   constructor() {
     this.userRepository = new UserRepository();
     this.verificationCodeRepository = new VerificationCodeRepository();
+    this.sessionRepository = new SessionRepository();
   }
 
   public registerUser = asyncHandler(
@@ -56,6 +62,39 @@ export class AuthController {
         user,
         HTTPSTATUS.OK,
         'Account verified successfully'
+      );
+    }
+  );
+
+  public loginUser = asyncHandler(
+    async (req: Request<{}, {}, TLoginUserBody>, res: Response) => {
+      const userAgent = req.headers['user-agent'] as string;
+      const { email, password } = req.body;
+
+      const loginUserUseCase = new LoginUserUseCase(
+        this.userRepository,
+        this.sessionRepository
+      );
+
+      const { user, mfaRequired, accessToken, refreshToken } =
+        await loginUserUseCase.execute(email, password, userAgent);
+
+      if (mfaRequired) {
+        return ResponseHandler.success(
+          res,
+          { user, mfaRequired },
+          HTTPSTATUS.OK,
+          'MFA required'
+        );
+      }
+
+      ResponseHandler.authSuccess(
+        res,
+        { user, mfaRequired },
+        accessToken,
+        refreshToken,
+        HTTPSTATUS.OK,
+        'User Logged in successfully'
       );
     }
   );
