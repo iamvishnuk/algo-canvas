@@ -1,8 +1,8 @@
 import { BadRequestError } from '../../../../shared/error/Error';
 import { compareHashValue } from '../../../../shared/utils/Bcrypt';
+import { ISessionRepository } from '../../../session/domain/repositories/ISessionRepository';
 import { IUserRepository } from '../../../users/domain/repositories/IUserRepository';
 import { UserMapper } from '../../../users/infrastructure/mappers/UserMapper';
-import { ISessionRepository } from '../../domain/repositories/ISessionRepository';
 import {
   refreshTokenSignOptions,
   TokenService

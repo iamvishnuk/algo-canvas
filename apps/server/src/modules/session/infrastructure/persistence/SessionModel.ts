@@ -1,8 +1,9 @@
 import mongoose, { Types, Document, Schema } from 'mongoose';
 import { thirtyDaysFromNow } from '../../../../shared/utils/DateTime';
+import { IUserDocument } from '../../../users/infrastructure/persistence/UserModel';
 
 export interface ISessionDocument extends Document {
-  userId: Types.ObjectId;
+  userId: Types.ObjectId | IUserDocument;
   userAgent: string;
   createdAt: Date;
   expiredAt: Date;

@@ -24,7 +24,13 @@ export class UserMapper {
     return {
       name: user.name,
       email: user.email,
-      password: user.password
+      password: user.password,
+      isEmailVerified: user.isEmailVerified,
+      userPreferences: {
+        emailNotification: user.userPreferences?.emailNotification,
+        enable2FA: user.userPreferences?.enable2FA,
+        twoFactorSecret: user.userPreferences?.twoFactorSecret
+      }
     };
   }
 

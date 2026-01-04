@@ -8,10 +8,12 @@ import { sanitizeRequestMiddleware } from './shared/middleware/SanitizeRequestMi
 import { logger } from './shared/utils/Logger';
 import { AppError } from './shared/error/AppError';
 import { errorHandler } from './shared/middleware/ErrorHandler';
+import passport from './shared/middleware/PassportMiddleware';
 
 // Import Routes
-import userRouter from './modules/users/presentation/routes/UserRoutes';
-import authRouter from './modules/auth/presentation/routes/AuthRoutes';
+import userRoutes from './modules/users/presentation/routes/UserRoutes';
+import authRoutes from './modules/auth/presentation/routes/AuthRoutes';
+import sessionRoutes from './modules/session/presentation/routes/SessionRoutes';
 
 const app: Application = express();
 
@@ -24,6 +26,7 @@ app.use(
   })
 );
 app.use(cookieParser());
+app.use(passport.initialize());
 app.use(helmet());
 
 app.use(sanitizeRequestMiddleware);
@@ -47,8 +50,9 @@ app.get(`${EnvConfig.API_PREFIX}/health`, (_: Request, res: Response) => {
   });
 });
 
-app.use(`${EnvConfig.API_PREFIX}/auth`, authRouter);
-app.use(`${EnvConfig.API_PREFIX}/users`, userRouter);
+app.use(`${EnvConfig.API_PREFIX}/auth`, authRoutes);
+app.use(`${EnvConfig.API_PREFIX}/users`, userRoutes);
+app.use(`${EnvConfig.API_PREFIX}/session`, sessionRoutes);
 
 app.all('/*splat', (req, _, next) => {
   const err = new AppError(`Cannot ${req.method} ${req.originalUrl}`, 404);

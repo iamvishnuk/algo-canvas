@@ -23,7 +23,11 @@ export class UserRepository implements IUserRepository {
     id: string,
     data: Partial<User>
   ): Promise<User | null> {
-    const userDoc = await UserModel.findByIdAndUpdate(id, data, { new: true });
+    const userDoc = await UserModel.findByIdAndUpdate(
+      id,
+      UserMapper.toPersistence(data),
+      { new: true }
+    );
     return userDoc ? UserMapper.toDomain(userDoc) : null;
   }
 }

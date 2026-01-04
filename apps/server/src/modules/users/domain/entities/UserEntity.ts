@@ -49,12 +49,4 @@ export class User implements IUser {
   hasPassword(): boolean {
     return !!this.password;
   }
-
-  enableTwoFactor(secret: string): void {
-    this.userPreferences = this.userPreferences.enableTwoFactor(secret);
-  }
-
-  disableTwoFactor(): void {
-    this.userPreferences = this.userPreferences.disableTwoFactor();
-  }
 }

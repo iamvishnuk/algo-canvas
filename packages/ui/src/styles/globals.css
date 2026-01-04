@@ -220,3 +220,13 @@
 .cursor-line {
   @apply cursor-[url('/cursors/slash-light.svg')_0_20,_auto] dark:cursor-[url('/cursors/slash-dark.svg')_0_20,_auto];
 }
+
+.steps-gradient {
+  background: linear-gradient(
+    180deg,
+    transparent 0,
+    #7c3aed 10%,
+    #7c3aed 90%,
+    transparent 100%
+  );
+}

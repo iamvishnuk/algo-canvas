@@ -11,9 +11,17 @@ import { VerifyEmailUseCase } from '../../application/use-cases/VerifyEmailUseCa
 import { TEmailVerificationCodeBody } from '../validators/EmailVerificationCodeValidator';
 import { TRegisterUserBody } from '../validators/RegisterUserValidator';
 import { TLoginUserBody } from '../validators/LoginUserValidator';
-import { ISessionRepository } from '../../domain/repositories/ISessionRepository';
-import { SessionRepository } from '../../infrastructure/persistence/SessionRepository';
 import { LoginUserUseCase } from '../../application/use-cases/LoginUserUseCase';
+import { UnauthorizedError } from '../../../../shared/error/Error';
+import { RefreshTokenUseCase } from '../../application/use-cases/RefreshTokenUseCase';
+import { SetupMfaUseCase } from '../../application/use-cases/SetupMfaUseCase';
+import { ISessionRepository } from '../../../session/domain/repositories/ISessionRepository';
+import { SessionRepository } from '../../../session/infrastructure/persistence/SessionRepository';
+import { VerifyMfaSetupUseCase } from '../../application/use-cases/VerifyMfaSetupUseCase';
+import { TVerifyMfaSetupBody } from '../validators/VerifyMfaSetupValidator';
+import { RevokeMfaUseCase } from '../../application/use-cases/RevokeMfaUseCase';
+import { MfaLoginUseCase } from '../../application/use-cases/MfaLoginUseCase';
+import { IMfaLoginBody } from '../validators/MfaLoginValidator';
 
 export class AuthController {
   private readonly userRepository: IUserRepository;
@@ -91,6 +99,100 @@ export class AuthController {
       ResponseHandler.authSuccess(
         res,
         { user, mfaRequired },
+        accessToken,
+        refreshToken,
+        HTTPSTATUS.OK,
+        'User Logged in successfully'
+      );
+    }
+  );
+
+  public refreshToken = asyncHandler(async (req: Request, res: Response) => {
+    const { refreshToken } = req.cookies as Record<string, string | undefined>;
+
+    if (!refreshToken) {
+      throw new UnauthorizedError('Missing refresh token');
+    }
+
+    const refreshTokenUseCase = new RefreshTokenUseCase(this.sessionRepository);
+    const { accessToken, newRefreshToken } =
+      await refreshTokenUseCase.execute(refreshToken);
+
+    ResponseHandler.authSuccess(
+      res,
+      {},
+      accessToken,
+      newRefreshToken,
+      HTTPSTATUS.OK,
+      'Token refreshed successfully'
+    );
+  });
+
+  public setupMfa = asyncHandler(async (req: Request, res: Response) => {
+    const user = req.user!;
+
+    const setupMfaUseCase = new SetupMfaUseCase(this.userRepository);
+
+    const { message, qrImageUrl, secret } = await setupMfaUseCase.execute(
+      user.id
+    );
+
+    ResponseHandler.success(
+      res,
+      { secret, qrImageUrl },
+      HTTPSTATUS.OK,
+      message
+    );
+  });
+
+  public verifyMfaSetup = asyncHandler(
+    async (req: Request<{}, {}, TVerifyMfaSetupBody>, res: Response) => {
+      const { code, secretKey } = req.body;
+      const userId = req.user?.id!;
+
+      const verifyMfaSetupUseCase = new VerifyMfaSetupUseCase(
+        this.userRepository
+      );
+
+      const { message, userPreferences } = await verifyMfaSetupUseCase.execute(
+        userId,
+        code,
+        secretKey
+      );
+
+      ResponseHandler.success(res, { userPreferences }, HTTPSTATUS.OK, message);
+    }
+  );
+
+  public revokeMfa = asyncHandler(async (req: Request, res: Response) => {
+    const userId = req.user?.id!;
+
+    const revokeMfaUseCase = new RevokeMfaUseCase(this.userRepository);
+
+    const { message, userPreferences } = await revokeMfaUseCase.execute(userId);
+
+    ResponseHandler.success(res, { userPreferences }, HTTPSTATUS.OK, message);
+  });
+
+  public mfaLogin = asyncHandler(
+    async (req: Request<{}, {}, IMfaLoginBody>, res: Response) => {
+      const { code, email } = req.body;
+      const userAgent = req.headers['user-agent'] as string;
+
+      const mfaLoginUseCase = new MfaLoginUseCase(
+        this.userRepository,
+        this.sessionRepository
+      );
+
+      const { user, accessToken, refreshToken } = await mfaLoginUseCase.execute(
+        email,
+        code,
+        userAgent
+      );
+
+      ResponseHandler.authSuccess(
+        res,
+        { user },
         accessToken,
         refreshToken,
         HTTPSTATUS.OK,

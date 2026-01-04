@@ -64,3 +64,9 @@ export const loginSchema = z.object({
       message: 'Password must contain at least one special character'
     })
 });
+
+export const MfaVerifySchema = z.object({
+  pin: z.string().min(6, {
+    message: 'Your one-time password must be 6 characters.'
+  })
+});

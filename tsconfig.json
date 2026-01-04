@@ -1,4 +1,17 @@
 {
-  "extends": "@workspace/typescript-config/base.json"
+  "extends": "@workspace/typescript-config/base.json",
+  "references": [
+    {
+      "path": "./apps/web"
+    },
+    {
+      "path": "./apps/server"
+    },
+    {
+      "path": "./packages/ui"
+    },
+    {
+      "path": "./packages/types"
+    }
+  ]
 }
-

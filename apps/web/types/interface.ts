@@ -23,3 +23,27 @@ export interface IUser {
   updatedAt?: Date;
   createdAt?: Date;
 }
+
+export interface ISession {
+  _id: string;
+  userAgent: string;
+  userId: string;
+  createdAt: Date;
+  expiredAt: Date;
+  isCurrent: boolean;
+}
+
+export interface ISetupMfaRes {
+  secret: string;
+  qrImageUrl: string;
+}
+
+export interface IVerifyMfa {
+  code: string;
+  secretKey: string;
+}
+
+export interface IVerifyMfaAndLogin {
+  code: string;
+  email: string;
+}

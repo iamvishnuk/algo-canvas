@@ -1,5 +1,7 @@
 import { add } from 'date-fns';
 
+export const ONE_DAY_IN_MILLISECONDS = 24 * 60 * 60 * 1000;
+
 export const anHourFromNow = (): Date => {
   const now = new Date();
   now.setHours(now.getHours() + 1);

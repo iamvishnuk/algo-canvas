@@ -1,10 +1,10 @@
-import mongoose, { Document, Schema, Types } from 'mongoose';
-import { compareHashValue, hashValue } from '../../../../shared/utils/Bcrypt';
+import mongoose, { Document, Schema } from 'mongoose';
+import { hashValue } from '../../../../shared/utils/Bcrypt';
 
 export interface IUserPreferencesDocument {
-  enable2FA: boolean;
-  emailNotification: boolean;
-  twoFactorSecret: string;
+  enable2FA?: boolean;
+  emailNotification?: boolean;
+  twoFactorSecret?: string;
 }
 
 export interface IUserDocument extends Document {

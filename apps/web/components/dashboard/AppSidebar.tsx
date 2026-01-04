@@ -3,6 +3,7 @@ import { DASHBOARD_MENU_ITEMS } from '@/lib/constant';
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarHeader,
@@ -14,6 +15,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ComponentProps } from 'react';
+import SiteFooter from './SiteFooter';
 
 export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
   const pathname = usePathname();
@@ -66,6 +68,9 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+      <SidebarFooter>
+        <SiteFooter />
+      </SidebarFooter>
     </Sidebar>
   );
 }
