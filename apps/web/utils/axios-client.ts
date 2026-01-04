@@ -13,7 +13,7 @@ export const APIRefresh = axios.create(options);
 APIRefresh.interceptors.response.use((response) => response);
 
 export const handleUnauthorized = () => {
-  redirect('/auth/login');
+  redirect('/auth/sign-in');
 };
 
 API.interceptors.response.use(
