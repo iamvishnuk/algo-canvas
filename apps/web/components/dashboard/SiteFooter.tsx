@@ -33,10 +33,13 @@ import {
 } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import Link from 'next/link';
+import { useAuthContext } from '@/providers/AuthProvider';
 
 const SiteFooter = () => {
   const { theme, setTheme } = useTheme();
+
   const { isMobile } = useSidebar();
+  const { user } = useAuthContext();
 
   return (
     <SidebarMenu>
@@ -55,8 +58,8 @@ const SiteFooter = () => {
                 <AvatarFallback className='rounded-lg'>CN</AvatarFallback>
               </Avatar>
               <div className='grid flex-1 text-left text-sm leading-tight'>
-                <span className='truncate font-medium'>Demo User</span>
-                <span className='truncate text-xs'>user@example.com</span>
+                <span className='truncate font-medium'>{user?.name}</span>
+                <span className='truncate text-xs'>{user?.email}</span>
               </div>
               <ChevronsUpDown className='ml-auto size-4' />
             </SidebarMenuButton>
@@ -74,12 +77,14 @@ const SiteFooter = () => {
                     src={'/avatars/acdhns.jpg'}
                     alt={'changeme'}
                   />
-                  <AvatarFallback className='rounded-lg'>CN</AvatarFallback>
+                  <AvatarFallback className='rounded-lg uppercase'>
+                    {user?.name.slice(0, 2)}
+                  </AvatarFallback>
                 </Avatar>
                 <div className='grid flex-1 text-left text-sm leading-tight'>
-                  <span className='truncate font-medium'>Demo User</span>
+                  <span className='truncate font-medium'>{user?.name}</span>
                   <span className='line-clamp-1 w-full text-xs'>
-                    user@example.com
+                    {user?.email}
                   </span>
                 </div>
               </div>
@@ -93,9 +98,11 @@ const SiteFooter = () => {
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <BadgeCheck />
-                Account
+              <DropdownMenuItem asChild>
+                <Link href={'/profile'}>
+                  <BadgeCheck />
+                  Account
+                </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
                 <Link href='/session-and-security'>

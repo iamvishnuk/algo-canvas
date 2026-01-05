@@ -70,3 +70,66 @@ export const MfaVerifySchema = z.object({
     message: 'Your one-time password must be 6 characters.'
   })
 });
+
+export const UpdateEmailSchema = z.object({
+  email: z
+    .string({ required_error: 'Email is required' })
+    .transform((val) => val.trim())
+    .transform((val) => val.toLocaleLowerCase())
+    .pipe(z.string().email({ message: 'Invalid email' }))
+});
+
+export const VerifyCodeSchema = z.object({
+  code: z
+    .string({ required_error: 'Verification code is requied' })
+    .transform((val) => val.trim())
+    .pipe(
+      z
+        .string()
+        .min(6, { message: 'Your verification code must be 6 characters' })
+        .max(6, { message: 'Your verification code must be 6 characters' })
+    )
+});
+
+export const UpdatePasswordSchema = z
+  .object({
+    oldPassword: z
+      .string({ required_error: 'Password is required' })
+      .min(8, { message: 'Password must have at least 8 characters' })
+      .max(255, { message: 'Password must have at most 255 characters' })
+      .refine((password) => /[A-Z]/.test(password), {
+        message: 'Password must contain at least one uppercase letter'
+      })
+      .refine((password) => /[a-z]/.test(password), {
+        message: 'Password must contain at least one lowercase letter'
+      })
+      .refine((password) => /[0-9]/.test(password), {
+        message: 'Password must contain at least one number'
+      })
+      .refine((password) => /[^A-Za-z0-9]/.test(password), {
+        message: 'Password must contain at least one special character'
+      }),
+    newPassword: z
+      .string({ required_error: 'Password is required' })
+      .min(8, { message: 'Password must have at least 8 characters' })
+      .max(255, { message: 'Password must have at most 255 characters' })
+      .refine((password) => /[A-Z]/.test(password), {
+        message: 'Password must contain at least one uppercase letter'
+      })
+      .refine((password) => /[a-z]/.test(password), {
+        message: 'Password must contain at least one lowercase letter'
+      })
+      .refine((password) => /[0-9]/.test(password), {
+        message: 'Password must contain at least one number'
+      })
+      .refine((password) => /[^A-Za-z0-9]/.test(password), {
+        message: 'Password must contain at least one special character'
+      }),
+    confirmPassword: z
+      .string({ required_error: 'Password is required' })
+      .min(8, { message: 'Passwrod must have at least 8 characters' })
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: 'Password do not match',
+    path: ['confirmPassword']
+  });
