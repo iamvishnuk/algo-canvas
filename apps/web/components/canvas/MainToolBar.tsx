@@ -8,14 +8,39 @@ import {
   TooltipTrigger
 } from '@workspace/ui/components/tooltip';
 import { cn } from '@workspace/ui/lib/utils';
-import { Settings } from 'lucide-react';
+import { Plus, Settings } from 'lucide-react';
 
 const MainToolBar = () => {
   const dispatch = useAppDispatch();
   const { tool } = useAppSelector((state) => state.canvas);
 
+  console.log({ tool });
+
   return (
     <div className='dark:bg-brand-bg absolute top-4 left-4 flex flex-col space-y-px rounded-md border shadow-md'>
+      <Tooltip delayDuration={1000}>
+        <TooltipTrigger asChild>
+          <Button
+            className={cn(
+              'dark:bg-brand-bg dark:hover:bg-brand-primary relative size-11',
+              tool === 'insert' && 'dark:bg-brand-primary bg-brand-primary'
+            )}
+            onClick={() => dispatch(changeTool({ tool: 'insert' }))}
+          >
+            <Plus className='dark:text-neutral-400' />
+            <span
+              className={cn(
+                'absolute right-2 bottom-1 text-[8px] text-neutral-400 uppercase'
+              )}
+            >
+              i
+            </span>
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent side='left'>
+          <p>Insert</p>
+        </TooltipContent>
+      </Tooltip>
       {MAIN_TOOLS.map((toolItem) => (
         <Tooltip
           key={toolItem.name}
@@ -55,7 +80,13 @@ const MainToolBar = () => {
       ))}
       <Tooltip delayDuration={1000}>
         <TooltipTrigger asChild>
-          <Button className='dark:bg-brand-bg dark:hover:bg-brand-primary relative size-11'>
+          <Button
+            className={cn(
+              'dark:bg-brand-bg dark:hover:bg-brand-primary relative size-11',
+              tool === 'settings' && 'dark:bg-brand-primary bg-brand-primary'
+            )}
+            onClick={() => dispatch(changeTool({ tool: 'settings' }))}
+          >
             <Settings className='dark:text-neutral-400' />
             <span
               className={cn(

@@ -102,3 +102,41 @@ export const drawLine = (
 
   ctx.stroke();
 };
+
+export const drawArray = (
+  ctx: CanvasRenderingContext2D,
+  startX: number,
+  startY: number,
+  values: string[],
+  scale: number
+) => {
+  const cellWidth = 50;
+  const cellHeight = 40;
+
+  values.forEach((value, index) => {
+    const x = startX + index * cellWidth;
+    const y = startY;
+
+    ctx.strokeStyle = '#3b82f6';
+    ctx.fillStyle = '#1e40af';
+    ctx.lineWidth = 2 / scale;
+    ctx.fillRect(x, y, cellWidth, cellHeight);
+    ctx.strokeRect(x, y, cellWidth, cellHeight);
+
+    // Array value
+    ctx.fillStyle = '#ffffff';
+    ctx.font = `${16 / scale}px Arial`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(value, x + cellWidth / 2, y + cellHeight / 2);
+
+    // Array index
+    ctx.fillStyle = '#9ca3af';
+    ctx.font = `${12 / scale}px Arial`;
+    ctx.fillText(
+      index.toString(),
+      x + cellWidth / 2,
+      y + cellHeight + 15 / scale
+    );
+  });
+};

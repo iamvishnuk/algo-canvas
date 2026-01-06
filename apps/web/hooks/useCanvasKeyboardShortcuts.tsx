@@ -56,6 +56,12 @@ export const useCanvasKeyboardShortcuts = () => {
       description: 'Selection'
     },
     {
+      key: 'Escape',
+      action: () => dispatch(changeTool({ tool: 'selection' })),
+      description: 'Selection'
+    },
+
+    {
       key: 'r',
       action: () => dispatch(changeTool({ tool: 'rectangle' })),
       description: 'Rectangle'
@@ -79,11 +85,33 @@ export const useCanvasKeyboardShortcuts = () => {
       key: 'l',
       action: () => dispatch(changeTool({ tool: 'line' })),
       description: 'Line'
+    },
+    {
+      key: 'i',
+      action: () => dispatch(changeTool({ tool: 'insert' })),
+      description: 'Insert'
+    },
+    {
+      key: 's',
+      action: () => dispatch(changeTool({ tool: 'settings' })),
+      description: 'Insert'
     }
   ];
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement;
+      if (
+        (target.tagName === 'INPUT' ||
+          target.tagName === 'TEXTAREA' ||
+          target.isContentEditable) &&
+        e.key !== 'Escape'
+      ) {
+        return;
+      }
+
+      console.log('Pressed Key:', e.key);
+
       for (const shortcut of shortcuts) {
         // Check if all required modifiers match
         const ctrlMatch = !shortcut.modifiers?.ctrl || e.ctrlKey || e.metaKey;

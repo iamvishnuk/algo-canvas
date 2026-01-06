@@ -1,3 +1,4 @@
+import { DSAElement } from '@/lib/canvas/constant';
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import {
   BackgroundType,
@@ -9,6 +10,10 @@ import {
 export interface ICanvasState {
   view: ViewState;
   tool: Tool;
+  size: {
+    width: number;
+    height: number;
+  };
   elements: DrawElements[];
   drawingState: {
     isDrawing: boolean;
@@ -17,6 +22,7 @@ export interface ICanvasState {
     backgroudType: BackgroundType;
     backgroundColor: string;
   };
+  showArrayDialog: boolean;
 }
 
 const initialState: ICanvasState = {
@@ -24,6 +30,10 @@ const initialState: ICanvasState = {
     scale: 1,
     offsetX: 0,
     offsetY: 0
+  },
+  size: {
+    width: 0,
+    height: 0
   },
   tool: 'selection',
   elements: [],
@@ -33,7 +43,8 @@ const initialState: ICanvasState = {
   ui: {
     backgroudType: 'grid',
     backgroundColor: '#1a1a1a'
-  }
+  },
+  showArrayDialog: false
 };
 
 const canvasSlice = createSlice({
@@ -48,6 +59,13 @@ const canvasSlice = createSlice({
           Math.min(5, state.view.scale - action.payload.delta)
         )
       };
+    },
+    setCanvasSize: (
+      state,
+      action: PayloadAction<{ width: number; height: number }>
+    ) => {
+      state.size.width = action.payload.width;
+      state.size.height = action.payload.height;
     },
     updateOffSet: (state, action: PayloadAction<{ x: number; y: number }>) => {
       state.view = {
@@ -86,6 +104,14 @@ const canvasSlice = createSlice({
         ...state.ui,
         backgroundColor: action.payload.color
       };
+    },
+    toggleDialog: (
+      state,
+      { payload }: PayloadAction<{ value: DSAElement }>
+    ) => {
+      if (payload.value === 'array') {
+        state.showArrayDialog = !state.showArrayDialog;
+      }
     }
   }
 });
@@ -94,11 +120,13 @@ export const {
   handleZoom,
   updateOffSet,
   resetView,
+  setCanvasSize,
   changeTool,
   addElements,
   clearCanvas,
   changeBackgroudColor,
-  changeBackgroudType
+  changeBackgroudType,
+  toggleDialog
 } = canvasSlice.actions;
 
 export default canvasSlice.reducer;

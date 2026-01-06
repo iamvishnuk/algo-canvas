@@ -1,11 +1,12 @@
 'use client';
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, Activity } from 'react';
 import { DrawArrow, DrawLine, DrawPoint, DrawRect } from '@workspace/types';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import BottomToolBar from './BottomToolBar';
 import {
   addElements,
   handleZoom,
+  setCanvasSize,
   updateOffSet
 } from '@/features/canvas/canvasSlice';
 import { useCanvasKeyboardShortcuts } from '@/hooks/useCanvasKeyboardShortcuts';
@@ -25,6 +26,8 @@ import { drawGrid } from '@/lib/canvas/rendering/drawGrid';
 import { drawElements } from '@/lib/canvas/rendering/drawElements';
 import { drawElementsPreview } from '@/lib/canvas/rendering/drawElementsPreview';
 import { drawSelectionBox } from '@/lib/canvas/rendering/drawSelectionBox';
+import InsertPanel from './InsertPanel';
+import ArrayDialog from './ArrayDialog';
 
 const CanvasArea = () => {
   const dispatch = useAppDispatch();
@@ -127,10 +130,16 @@ const CanvasArea = () => {
     const drawCanvas = drawCanvasRef.current;
     if (!bgCanvas || !drawCanvas) return;
 
-    bgCanvas.width = window.innerWidth;
-    bgCanvas.height = window.innerHeight;
-    drawCanvas.width = window.innerWidth;
-    drawCanvas.height = window.innerHeight;
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+
+    bgCanvas.width = width;
+    bgCanvas.height = height;
+    drawCanvas.width = width;
+    drawCanvas.height = height;
+
+    dispatch(setCanvasSize({ width, height }));
+
     drawGrid(bgCanvasRef, view);
     redrawCanvas();
   };
@@ -537,6 +546,10 @@ const CanvasArea = () => {
 
       <MainToolBar />
       <BottomToolBar />
+      <Activity mode={tool === 'insert' ? 'visible' : 'hidden'}>
+        <InsertPanel />
+      </Activity>
+      <ArrayDialog />
     </div>
   );
 };

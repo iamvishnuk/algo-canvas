@@ -1,12 +1,15 @@
 import { Tool } from '@workspace/types/canvas';
 import {
+  Brackets,
   Circle,
   Hand,
   MousePointer2,
   MoveUpRight,
+  Network,
   Pencil,
   Slash,
   Square,
+  Workflow,
   type LucideIcon
 } from 'lucide-react';
 
@@ -18,6 +21,14 @@ export interface ITool {
   toolTipDelayDuration: number;
   toolType: Tool;
   toolTipSide: 'left' | 'right' | 'bottom' | 'top';
+}
+
+export type DSAElement = 'array' | 'linked-list' | 'tree';
+
+export interface IDSAElements {
+  name: string;
+  value: DSAElement;
+  icon: LucideIcon;
 }
 
 export const MAIN_TOOLS: ITool[] = [
@@ -93,5 +104,25 @@ export const CURSOR_MAP: Record<Tool, string> = {
   line: 'cursor-line',
   rectangle: 'cursor-rectangle',
   selection: '',
-  arrow: ''
+  arrow: '',
+  insert: '',
+  settings: ''
 };
+
+export const DSA_ELEMENTS: IDSAElements[] = [
+  {
+    name: 'Array',
+    value: 'array',
+    icon: Brackets
+  },
+  {
+    name: 'Linked List',
+    value: 'linked-list',
+    icon: Workflow
+  },
+  {
+    name: 'Tree',
+    value: 'tree',
+    icon: Network
+  }
+];

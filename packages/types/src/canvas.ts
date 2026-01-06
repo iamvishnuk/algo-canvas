@@ -47,12 +47,20 @@ export type DrawArrow = {
   endY: number;
 };
 
+export type DrawArray = {
+  type: 'array';
+  x: number;
+  y: number;
+  value: string[];
+};
+
 export type DrawElements =
   | DrawPath
   | DrawCircle
   | DrawRect
   | DrawLine
-  | DrawArrow;
+  | DrawArrow
+  | DrawArray;
 
 export type Tool =
   | 'move'
@@ -61,6 +69,8 @@ export type Tool =
   | 'circle'
   | 'arrow'
   | 'draw'
-  | 'line';
+  | 'line'
+  | 'insert'
+  | 'settings';
 
 export type BackgroundType = 'solid' | 'grid' | 'dots';

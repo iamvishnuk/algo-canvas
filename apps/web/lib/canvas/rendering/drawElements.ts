@@ -1,5 +1,12 @@
 import { DrawElements } from '@workspace/types/canvas';
-import { draw, drawArrow, drawCircle, drawLine, drawRectangle } from './draw';
+import {
+  draw,
+  drawArray,
+  drawArrow,
+  drawCircle,
+  drawLine,
+  drawRectangle
+} from './draw';
 
 export const drawElements = (
   ctx: CanvasRenderingContext2D,
@@ -40,6 +47,8 @@ export const drawElements = (
         element.endY,
         scale
       );
+    } else if (element.type === 'array') {
+      drawArray(ctx, element.x, element.y, element.value, scale);
     }
   });
 };

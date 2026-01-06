@@ -133,3 +133,20 @@ export const UpdatePasswordSchema = z
     message: 'Password do not match',
     path: ['confirmPassword']
   });
+
+// DSA relaated
+export const ArraySchema = z.object({
+  value: z
+    .string({ required_error: 'values are required' })
+    .transform((value) => value.trim())
+    .refine(
+      (value) =>
+        value
+          .split(',')
+          .map((v) => v.trim())
+          .every((v) => v.length > 0),
+      {
+        message: 'Must be a valid comma-separated string'
+      }
+    )
+});

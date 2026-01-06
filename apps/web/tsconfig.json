@@ -15,7 +15,10 @@
     "composite": true,
     "incremental": true
   },
-  "references": [{ "path": "../../packages/ui" }],
+  "references": [
+    { "path": "../../packages/ui" },
+    { "path": "../../packages/types" }
+  ],
   "include": [
     "next-env.d.ts",
     "next.config.ts",
