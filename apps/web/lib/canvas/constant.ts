@@ -23,7 +23,7 @@ export interface ITool {
   toolTipSide: 'left' | 'right' | 'bottom' | 'top';
 }
 
-export type DSAElement = 'array' | 'linked-list' | 'tree';
+export type DSAElement = 'array' | 'linked-list' | 'binary-tree';
 
 export interface IDSAElements {
   name: string;
@@ -122,7 +122,7 @@ export const DSA_ELEMENTS: IDSAElements[] = [
   },
   {
     name: 'Tree',
-    value: 'tree',
+    value: 'binary-tree',
     icon: Network
   }
 ];

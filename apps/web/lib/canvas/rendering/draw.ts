@@ -1,4 +1,5 @@
-import { DrawPoint } from '@workspace/types/canvas';
+import { getDepth } from '@/lib/data-structures/tree';
+import { DrawPoint, TreeNode } from '@workspace/types/canvas';
 
 export const drawCircle = (
   ctx: CanvasRenderingContext2D,
@@ -139,4 +140,103 @@ export const drawArray = (
       y + cellHeight + 15 / scale
     );
   });
+};
+
+export const drawNode = (
+  ctx: CanvasRenderingContext2D,
+  node: TreeNode | undefined,
+  x: number,
+  y: number,
+  horizontalOffset: number,
+  levelHeight: number,
+  nodeRadius: number,
+  scale: number
+) => {
+  if (!node) return;
+
+  if (node.left) {
+    const childX = x - horizontalOffset;
+    const childY = y + levelHeight;
+    ctx.strokeStyle = '#6b7280';
+    ctx.lineWidth = 2 / scale;
+    ctx.beginPath();
+    ctx.moveTo(x, y + nodeRadius);
+    ctx.lineTo(childX, childY - nodeRadius);
+    ctx.stroke();
+    drawNode(
+      ctx,
+      node.left,
+      childX,
+      childY,
+      horizontalOffset / 2,
+      levelHeight,
+      nodeRadius,
+      scale
+    );
+  }
+
+  if (node.right) {
+    const childX = x + horizontalOffset;
+    const childY = y + levelHeight;
+    ctx.strokeStyle = '#6b7280';
+    ctx.lineWidth = 2 / scale;
+    ctx.beginPath();
+    ctx.moveTo(x, y + nodeRadius);
+    ctx.lineTo(childX, childY - nodeRadius);
+    ctx.stroke();
+    drawNode(
+      ctx,
+      node.right,
+      childX,
+      childY,
+      horizontalOffset / 2,
+      levelHeight,
+      nodeRadius,
+      scale
+    );
+  }
+
+  // Draw node circle
+  ctx.strokeStyle = '#10b981';
+  ctx.fillStyle = '#059669';
+  ctx.lineWidth = 2 / scale;
+  ctx.beginPath();
+  ctx.arc(x, y, nodeRadius, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+
+  // Draw node value
+  ctx.fillStyle = '#ffffff';
+  ctx.font = `${16 / scale}px Arial`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(node.value, x, y);
+};
+
+export const drawBinaryTree = (
+  ctx: CanvasRenderingContext2D,
+  root: TreeNode,
+  startX: number,
+  startY: number,
+  scale: number
+) => {
+  const nodeRadius = 25;
+  const levelHeight = 80;
+
+  // find the the tree
+  const dept = getDepth(root);
+  const baseSpacing = 50;
+
+  const horizontalSpacing = baseSpacing * Math.pow(2, dept - 1);
+
+  drawNode(
+    ctx,
+    root,
+    startX,
+    startY,
+    horizontalSpacing / 2,
+    levelHeight,
+    nodeRadius,
+    scale
+  );
 };

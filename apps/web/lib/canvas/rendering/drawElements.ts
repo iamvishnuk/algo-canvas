@@ -3,6 +3,7 @@ import {
   draw,
   drawArray,
   drawArrow,
+  drawBinaryTree,
   drawCircle,
   drawLine,
   drawRectangle
@@ -49,6 +50,8 @@ export const drawElements = (
       );
     } else if (element.type === 'array') {
       drawArray(ctx, element.x, element.y, element.value, scale);
+    } else if (element.type === 'binary-tree') {
+      drawBinaryTree(ctx, element.root, element.x, element.y, scale);
     }
   });
 };

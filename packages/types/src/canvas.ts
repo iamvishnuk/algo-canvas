@@ -54,13 +54,27 @@ export type DrawArray = {
   value: string[];
 };
 
+export type TreeNode = {
+  value: string;
+  left?: TreeNode;
+  right?: TreeNode;
+};
+
+export type DrawBinaryTree = {
+  type: 'binary-tree';
+  x: number;
+  y: number;
+  root: TreeNode;
+};
+
 export type DrawElements =
   | DrawPath
   | DrawCircle
   | DrawRect
   | DrawLine
   | DrawArrow
-  | DrawArray;
+  | DrawArray
+  | DrawBinaryTree;
 
 export type Tool =
   | 'move'

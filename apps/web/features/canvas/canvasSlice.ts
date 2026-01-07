@@ -23,6 +23,7 @@ export interface ICanvasState {
     backgroundColor: string;
   };
   showArrayDialog: boolean;
+  showTreeDialog: boolean;
 }
 
 const initialState: ICanvasState = {
@@ -44,7 +45,8 @@ const initialState: ICanvasState = {
     backgroudType: 'grid',
     backgroundColor: '#1a1a1a'
   },
-  showArrayDialog: false
+  showArrayDialog: false,
+  showTreeDialog: false
 };
 
 const canvasSlice = createSlice({
@@ -111,6 +113,8 @@ const canvasSlice = createSlice({
     ) => {
       if (payload.value === 'array') {
         state.showArrayDialog = !state.showArrayDialog;
+      } else if (payload.value === 'binary-tree') {
+        state.showTreeDialog = !state.showTreeDialog;
       }
     }
   }

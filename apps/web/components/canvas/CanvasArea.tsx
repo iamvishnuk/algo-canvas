@@ -28,6 +28,7 @@ import { drawElementsPreview } from '@/lib/canvas/rendering/drawElementsPreview'
 import { drawSelectionBox } from '@/lib/canvas/rendering/drawSelectionBox';
 import InsertPanel from './InsertPanel';
 import ArrayDialog from './ArrayDialog';
+import TreeDialog from './TreeDialog';
 
 const CanvasArea = () => {
   const dispatch = useAppDispatch();
@@ -550,6 +551,7 @@ const CanvasArea = () => {
         <InsertPanel />
       </Activity>
       <ArrayDialog />
+      <TreeDialog />
     </div>
   );
 };
