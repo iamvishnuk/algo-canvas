@@ -29,6 +29,7 @@ import { drawSelectionBox } from '@/lib/canvas/rendering/drawSelectionBox';
 import InsertPanel from './InsertPanel';
 import ArrayDialog from './ArrayDialog';
 import TreeDialog from './TreeDialog';
+import LinkedListDialog from './LinkedListDialog';
 
 const CanvasArea = () => {
   const dispatch = useAppDispatch();
@@ -552,6 +553,7 @@ const CanvasArea = () => {
       </Activity>
       <ArrayDialog />
       <TreeDialog />
+      <LinkedListDialog />
     </div>
   );
 };

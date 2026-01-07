@@ -6,6 +6,7 @@ import {
   drawBinaryTree,
   drawCircle,
   drawLine,
+  drawLinkedList,
   drawRectangle
 } from './draw';
 
@@ -52,6 +53,8 @@ export const drawElements = (
       drawArray(ctx, element.x, element.y, element.value, scale);
     } else if (element.type === 'binary-tree') {
       drawBinaryTree(ctx, element.root, element.x, element.y, scale);
+    } else if (element.type === 'linked-list') {
+      drawLinkedList(ctx, element.x, element.y, element.values, scale);
     }
   });
 };

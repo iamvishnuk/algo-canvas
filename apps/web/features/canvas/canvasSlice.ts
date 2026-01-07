@@ -24,6 +24,7 @@ export interface ICanvasState {
   };
   showArrayDialog: boolean;
   showTreeDialog: boolean;
+  showLinkedListDialog: boolean;
 }
 
 const initialState: ICanvasState = {
@@ -46,7 +47,8 @@ const initialState: ICanvasState = {
     backgroundColor: '#1a1a1a'
   },
   showArrayDialog: false,
-  showTreeDialog: false
+  showTreeDialog: false,
+  showLinkedListDialog: false
 };
 
 const canvasSlice = createSlice({
@@ -115,6 +117,8 @@ const canvasSlice = createSlice({
         state.showArrayDialog = !state.showArrayDialog;
       } else if (payload.value === 'binary-tree') {
         state.showTreeDialog = !state.showTreeDialog;
+      } else if (payload.value === 'linked-list') {
+        state.showLinkedListDialog = !state.showLinkedListDialog;
       }
     }
   }

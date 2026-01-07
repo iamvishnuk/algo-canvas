@@ -67,6 +67,13 @@ export type DrawBinaryTree = {
   root: TreeNode;
 };
 
+export type DrawLinkedList = {
+  type: 'linked-list';
+  x: number;
+  y: number;
+  values: string[];
+};
+
 export type DrawElements =
   | DrawPath
   | DrawCircle
@@ -74,7 +81,8 @@ export type DrawElements =
   | DrawLine
   | DrawArrow
   | DrawArray
-  | DrawBinaryTree;
+  | DrawBinaryTree
+  | DrawLinkedList;
 
 export type Tool =
   | 'move'

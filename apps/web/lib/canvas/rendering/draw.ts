@@ -240,3 +240,68 @@ export const drawBinaryTree = (
     scale
   );
 };
+
+export const drawLinkedList = (
+  ctx: CanvasRenderingContext2D,
+  startX: number,
+  startY: number,
+  values: string[],
+  scale: number
+) => {
+  const nodeWidth = 60;
+  const nodeHeight = 40;
+  const spacing = 30;
+  const arrowLength = 30;
+
+  values.forEach((value, index) => {
+    const x = startX + index * (nodeWidth + spacing + arrowLength);
+    const y = startY;
+
+    // Draw node box
+    ctx.strokeStyle = '#f59e0b';
+    ctx.fillStyle = '#d97706';
+    ctx.lineWidth = 2 / scale;
+    ctx.fillRect(x, y, nodeWidth, nodeHeight);
+    ctx.strokeRect(x, y, nodeWidth, nodeHeight);
+
+    // Draw value text
+    ctx.fillStyle = '#ffffff';
+    ctx.font = `${14 / scale}px Arial`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(value, x + nodeWidth / 2, y + nodeHeight / 2);
+
+    // Draw arrow to next node (if not last node)
+    if (index < values.length - 1) {
+      ctx.strokeStyle = '#9ca3af';
+      ctx.fillStyle = '#9ca3af';
+      ctx.lineWidth = 2 / scale;
+
+      const arrowStartX = x + nodeWidth;
+      const arrowStartY = y + nodeHeight / 2;
+      const arrowEndX = arrowStartX + arrowLength;
+      const arrowEndY = arrowStartY;
+
+      // Draw arrow line
+      ctx.beginPath();
+      ctx.moveTo(arrowStartX, arrowStartY);
+      ctx.lineTo(arrowEndX, arrowEndY);
+      ctx.stroke();
+
+      // Draw arrow head
+      const headSize = 8 / scale;
+      ctx.beginPath();
+      ctx.moveTo(arrowEndX, arrowEndY);
+      ctx.lineTo(arrowEndX - headSize, arrowEndY - headSize / 2);
+      ctx.lineTo(arrowEndX - headSize, arrowEndY + headSize / 2);
+      ctx.closePath();
+      ctx.fill();
+    } else {
+      // Draw null indicator for last node
+      ctx.fillStyle = '#9ca3af';
+      ctx.font = `${12 / scale}px Arial`;
+      ctx.textAlign = 'left';
+      ctx.fillText('null', x + nodeWidth + 10, y + nodeHeight / 2);
+    }
+  });
+};

@@ -20,10 +20,10 @@ import { Input } from '@workspace/ui/components/input';
 import { useForm, Controller } from 'react-hook-form';
 import z from 'zod';
 
-const ArrayDialog = () => {
+const LinkedListDialog = () => {
   const dispatch = useAppDispatch();
 
-  const { showArrayDialog, view, size } = useAppSelector(
+  const { showLinkedListDialog, view, size } = useAppSelector(
     (state) => state.canvas
   );
 
@@ -36,37 +36,38 @@ const ArrayDialog = () => {
 
   const onSubmit = (data: z.infer<typeof ArraySchema>) => {
     const { value } = data;
-    const centerX = (size.width / 2 - view.offsetX) / view.scale;
-    const topY = (100 - view.offsetY) / view.scale;
     const values = value
       .split(',')
       .map((v) => v.trim())
       .filter((v) => v !== '');
 
+    const centerX = (size.width / 2 - view.offsetX) / view.scale;
+    const topY = (100 - view.offsetY) / view.scale;
+
     dispatch(
       addElements({
         element: {
-          type: 'array',
-          x: centerX - (value.length * 50) / 2,
+          type: 'linked-list',
+          x: centerX,
           y: topY,
-          value: values
+          values
         }
       })
     );
 
     form.reset();
-    dispatch(toggleDialog({ value: 'array' }));
+    dispatch(toggleDialog({ value: 'linked-list' }));
   };
 
   return (
     <Dialog
-      open={showArrayDialog}
-      onOpenChange={() => dispatch(toggleDialog({ value: 'array' }))}
+      open={showLinkedListDialog}
+      onOpenChange={() => dispatch(toggleDialog({ value: 'linked-list' }))}
     >
       <DialogContent>
         <DialogHeader>
           <DialogTitle className='text-brand-primary text-xl font-bold'>
-            Add Array
+            Add Linked List
           </DialogTitle>
         </DialogHeader>
         <form
@@ -81,7 +82,7 @@ const ArrayDialog = () => {
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
                   <FieldLabel className='text-white'>
-                    Enter array values (comma-separated)
+                    Enter linked list values (comma-separated)
                   </FieldLabel>
                   <Input
                     {...field}
@@ -102,7 +103,7 @@ const ArrayDialog = () => {
             <Button
               type='button'
               className='bg-red-700 text-white hover:cursor-pointer hover:bg-red-800'
-              onClick={() => dispatch(toggleDialog({ value: 'array' }))}
+              onClick={() => dispatch(toggleDialog({ value: 'linked-list' }))}
             >
               Cancel
             </Button>
@@ -120,4 +121,4 @@ const ArrayDialog = () => {
   );
 };
 
-export default ArrayDialog;
+export default LinkedListDialog;
