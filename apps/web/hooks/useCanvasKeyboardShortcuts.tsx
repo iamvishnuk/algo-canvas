@@ -1,6 +1,7 @@
 import {
   changeTool,
   handleZoom,
+  removeElements,
   resetView
 } from '@/features/canvas/canvasSlice';
 import { useAppDispatch } from '@/store/hooks';
@@ -95,6 +96,11 @@ export const useCanvasKeyboardShortcuts = () => {
       key: 's',
       action: () => dispatch(changeTool({ tool: 'settings' })),
       description: 'Insert'
+    },
+    {
+      key: 'Delete',
+      action: () => dispatch(removeElements()),
+      description: 'Remove element'
     }
   ];
 
@@ -109,6 +115,8 @@ export const useCanvasKeyboardShortcuts = () => {
       ) {
         return;
       }
+
+      console.log('key ->', e.key);
 
       for (const shortcut of shortcuts) {
         // Check if all required modifiers match

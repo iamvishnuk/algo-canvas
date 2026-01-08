@@ -101,7 +101,7 @@ const BottomToolBar = () => {
             </Button>
           </TooltipTrigger>
           <TooltipContent side='top'>
-            <p>Clear</p>
+            <p>Clear Canvas</p>
           </TooltipContent>
         </Tooltip>
       </div>

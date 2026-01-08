@@ -5,6 +5,8 @@ import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import BottomToolBar from './BottomToolBar';
 import {
   addElements,
+  addSelectedEleementIndex,
+  addselectedElementsIndice,
   handleZoom,
   setCanvasSize,
   updateOffSet
@@ -36,7 +38,8 @@ import LinkedListDialog from './LinkedListDialog';
 
 const CanvasArea = () => {
   const dispatch = useAppDispatch();
-  const { view, tool, elements } = useAppSelector((state) => state.canvas);
+  const { view, tool, elements, selectedElementIndex, selectedElementsIndice } =
+    useAppSelector((state) => state.canvas);
 
   useCanvasKeyboardShortcuts();
 
@@ -47,12 +50,6 @@ const CanvasArea = () => {
   const [isDrawing, setIsDrawing] = useState(false);
   const [currentPath, setCurrentPath] = useState<DrawPoint[]>([]);
   const [cursorOnElement, setCursorOnElement] = useState<boolean>(false);
-  const [selecteElementIndex, setSelectedElementIndex] = useState<
-    number | null
-  >(null);
-  const [selectedElementsIndices, setSelectedElementsIndices] = useState<
-    number[]
-  >([]);
 
   // Area Selecting states
   const [isAreaSelecting, setIsAreasSelecting] = useState<boolean>(false);
@@ -84,6 +81,8 @@ const CanvasArea = () => {
     DrawArrow,
     'type'
   > | null>(null);
+
+  console.log({ selectedElementIndex });
 
   const redrawCanvas = () => {
     const canvas = drawCanvasRef.current;
@@ -117,10 +116,10 @@ const CanvasArea = () => {
     if (tool === 'selection') {
       drawSelectionBox(
         ctx,
-        selecteElementIndex,
+        selectedElementIndex,
         elements,
         view,
-        selectedElementsIndices,
+        selectedElementsIndice,
         isAreaSelecting,
         areaSelectionStart,
         areaSelectionEnd
@@ -162,8 +161,8 @@ const CanvasArea = () => {
     currentRect,
     currentLine,
     currentArrow,
-    selecteElementIndex,
-    selectedElementsIndices,
+    selectedElementIndex,
+    selectedElementsIndice,
     isAreaSelecting,
     areaSelectionStart,
     areaSelectionEnd
@@ -182,8 +181,8 @@ const CanvasArea = () => {
     currentCircle,
     currentRect,
     currentLine,
-    selecteElementIndex,
-    selectedElementsIndices,
+    selectedElementIndex,
+    selectedElementsIndice,
     isAreaSelecting,
     areaSelectionStart,
     areaSelectionEnd,
@@ -191,8 +190,8 @@ const CanvasArea = () => {
   ]);
 
   useEffect(() => {
-    setSelectedElementIndex(null);
-    setSelectedElementsIndices([]);
+    dispatch(addSelectedEleementIndex(null));
+    dispatch(addselectedElementsIndice([]));
     setIsAreasSelecting(false);
     setAreaSelectionStart(null);
     setAreaSelectionEnd(null);
@@ -276,8 +275,8 @@ const CanvasArea = () => {
         setIsAreasSelecting(true);
         setAreaSelectionStart(worldPos);
         setAreaSelectionEnd(worldPos);
-        setSelectedElementIndex(null);
-        setSelectedElementsIndices([]);
+        dispatch(addSelectedEleementIndex(null));
+        dispatch(addselectedElementsIndice([]));
       }
     }
   };
@@ -464,7 +463,7 @@ const CanvasArea = () => {
         }
       });
 
-      setSelectedElementsIndices(selectedIndecies);
+      dispatch(addselectedElementsIndice(selectedIndecies));
       setIsAreasSelecting(false);
       setAreaSelectionStart(null);
       setAreaSelectionEnd(null);
@@ -541,14 +540,14 @@ const CanvasArea = () => {
       console.log({ isHit });
 
       if (isHit) {
-        setSelectedElementIndex(i);
-        setSelectedElementsIndices([]);
+        dispatch(addSelectedEleementIndex(i));
+        dispatch(addselectedElementsIndice([]));
         return;
       }
     }
 
     // If no element was clicked, deselect
-    setSelectedElementIndex(null);
+    dispatch(addSelectedEleementIndex(null));
   };
 
   const handleContextMenu = (e: React.MouseEvent) => {

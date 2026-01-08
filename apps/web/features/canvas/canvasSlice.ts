@@ -6,6 +6,7 @@ import {
   Tool,
   ViewState
 } from '@workspace/types/canvas';
+import { select } from 'motion/react-m';
 
 export interface ICanvasState {
   view: ViewState;
@@ -15,6 +16,8 @@ export interface ICanvasState {
     height: number;
   };
   elements: DrawElements[];
+  selectedElementIndex: number | null;
+  selectedElementsIndice: number[];
   drawingState: {
     isDrawing: boolean;
   };
@@ -39,6 +42,8 @@ const initialState: ICanvasState = {
   },
   tool: 'selection',
   elements: [],
+  selectedElementIndex: null,
+  selectedElementsIndice: [],
   drawingState: {
     isDrawing: false
   },
@@ -120,6 +125,28 @@ const canvasSlice = createSlice({
       } else if (payload.value === 'linked-list') {
         state.showLinkedListDialog = !state.showLinkedListDialog;
       }
+    },
+    addSelectedEleementIndex: (state, action: PayloadAction<number | null>) => {
+      state.selectedElementIndex = action.payload;
+    },
+    addselectedElementsIndice: (state, action: PayloadAction<number[]>) => {
+      state.selectedElementsIndice = action.payload;
+    },
+    removeElements: (state) => {
+      if (state.selectedElementIndex !== null) {
+        state.elements = state.elements.filter(
+          (_, index) => index !== state.selectedElementIndex
+        );
+        state.selectedElementIndex = null;
+      }
+
+      if (state.selectedElementsIndice.length > 0) {
+        state.elements = state.elements.filter(
+          (_, index) => !state.selectedElementsIndice.includes(index)
+        );
+
+        state.selectedElementsIndice = [];
+      }
     }
   }
 });
@@ -134,7 +161,10 @@ export const {
   clearCanvas,
   changeBackgroudColor,
   changeBackgroudType,
-  toggleDialog
+  toggleDialog,
+  addselectedElementsIndice,
+  addSelectedEleementIndex,
+  removeElements
 } = canvasSlice.actions;
 
 export default canvasSlice.reducer;
