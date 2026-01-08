@@ -14,8 +14,6 @@ const MainToolBar = () => {
   const dispatch = useAppDispatch();
   const { tool } = useAppSelector((state) => state.canvas);
 
-  console.log({ tool });
-
   return (
     <div className='dark:bg-brand-bg absolute top-4 left-4 flex flex-col space-y-px rounded-md border shadow-md'>
       <Tooltip delayDuration={1000}>

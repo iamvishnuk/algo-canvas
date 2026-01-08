@@ -17,6 +17,9 @@ import CanvasBackground from './CanvasBackground';
 import { screenToWorld } from '@/lib/canvas/coordinates';
 import {
   distanceFromPointToLineSegment,
+  isCursorOnArray,
+  isCursorOnLinkedList,
+  isCursorOnTree,
   isElementInSelectionArea,
   isPointNearPath,
   isPointNearRectangle
@@ -474,7 +477,9 @@ const CanvasArea = () => {
     if (tool !== 'selection') return;
 
     const worldPos = screenToWorld(e.clientX, e.clientY, drawCanvasRef, view);
+
     const HIT_TOLERANCE = 6 / view.scale;
+
     // Check elements in reverse order (top to bottom)
     for (let i = elements.length - 1; i >= 0; i--) {
       const element = elements[i];
@@ -506,8 +511,34 @@ const CanvasArea = () => {
             { x: element.endX, y: element.endY }
           );
           isHit = distance <= HIT_TOLERANCE;
+        } else if (element.type === 'array') {
+          isHit = isCursorOnArray(
+            worldPos,
+            element.x,
+            element.y,
+            element.value.length,
+            HIT_TOLERANCE
+          );
+        } else if (element.type === 'linked-list') {
+          isHit = isCursorOnLinkedList(
+            worldPos,
+            element.x,
+            element.y,
+            element.values.length,
+            HIT_TOLERANCE
+          );
+        } else if (element.type === 'binary-tree') {
+          isHit = isCursorOnTree(
+            worldPos,
+            element.x,
+            element.y,
+            element.root,
+            HIT_TOLERANCE
+          );
         }
       }
+
+      console.log({ isHit });
 
       if (isHit) {
         setSelectedElementIndex(i);

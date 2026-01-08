@@ -1,4 +1,6 @@
-import { getDepth } from '@/lib/data-structures/tree';
+import { ARRAY_CONSTANTS } from '@/lib/data-structures/array';
+import { LINKED_LIST_CONSTANTS } from '@/lib/data-structures/linked-list';
+import { getDepth, TREE_CONSTANTS } from '@/lib/data-structures/tree';
 import { DrawPoint, TreeNode } from '@workspace/types/canvas';
 
 export const drawCircle = (
@@ -111,8 +113,8 @@ export const drawArray = (
   values: string[],
   scale: number
 ) => {
-  const cellWidth = 50;
-  const cellHeight = 40;
+  const cellWidth = ARRAY_CONSTANTS.cellWidth;
+  const cellHeight = ARRAY_CONSTANTS.cellHeight;
 
   values.forEach((value, index) => {
     const x = startX + index * cellWidth;
@@ -220,12 +222,12 @@ export const drawBinaryTree = (
   startY: number,
   scale: number
 ) => {
-  const nodeRadius = 25;
-  const levelHeight = 80;
+  const nodeRadius = TREE_CONSTANTS.nodeRadius;
+  const levelHeight = TREE_CONSTANTS.levelHeight;
 
   // find the the tree
   const dept = getDepth(root);
-  const baseSpacing = 50;
+  const baseSpacing = TREE_CONSTANTS.baseSpacing;
 
   const horizontalSpacing = baseSpacing * Math.pow(2, dept - 1);
 
@@ -248,10 +250,10 @@ export const drawLinkedList = (
   values: string[],
   scale: number
 ) => {
-  const nodeWidth = 60;
-  const nodeHeight = 40;
-  const spacing = 30;
-  const arrowLength = 30;
+  const nodeWidth = LINKED_LIST_CONSTANTS.nodeWidth;
+  const nodeHeight = LINKED_LIST_CONSTANTS.nodeHeight;
+  const spacing = LINKED_LIST_CONSTANTS.nodeSpacing;
+  const arrowLength = LINKED_LIST_CONSTANTS.arrowLength;
 
   values.forEach((value, index) => {
     const x = startX + index * (nodeWidth + spacing + arrowLength);

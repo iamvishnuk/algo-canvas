@@ -1,5 +1,11 @@
 import { TreeNode } from '@workspace/types/canvas';
 
+export const TREE_CONSTANTS = {
+  nodeRadius: 25,
+  levelHeight: 80,
+  baseSpacing: 50
+};
+
 export const buildTreeFromArray = (values: string[]): TreeNode | undefined => {
   if (!values.length || values[0] === 'null' || values[0] === '') {
     return undefined;
