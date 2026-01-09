@@ -3,6 +3,7 @@ import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import {
   BackgroundType,
   DrawElements,
+  DrawPoint,
   Tool,
   ViewState
 } from '@workspace/types/canvas';
@@ -147,6 +148,27 @@ const canvasSlice = createSlice({
 
         state.selectedElementsIndice = [];
       }
+    },
+    updateElementPosition: (
+      state,
+      action: PayloadAction<{
+        index: number;
+        x: number;
+        y: number;
+        dragStart: DrawPoint;
+      }>
+    ) => {
+      const { index, x, y, dragStart } = action.payload;
+
+      if (!state.elements[index]) return;
+
+      if (state.elements[index].type === 'rectangle') {
+        const dx = x - state.elements[index].x;
+        const dy = y - state.elements[index].y;
+
+        state.elements[index].x += dx - state.elements[index].width;
+        state.elements[index].y += dy - state.elements[index].height;
+      }
     }
   }
 });
@@ -164,7 +186,8 @@ export const {
   toggleDialog,
   addselectedElementsIndice,
   addSelectedEleementIndex,
-  removeElements
+  removeElements,
+  updateElementPosition
 } = canvasSlice.actions;
 
 export default canvasSlice.reducer;

@@ -9,6 +9,7 @@ import {
   addselectedElementsIndice,
   handleZoom,
   setCanvasSize,
+  updateElementPosition,
   updateOffSet
 } from '@/features/canvas/canvasSlice';
 import { useCanvasKeyboardShortcuts } from '@/hooks/useCanvasKeyboardShortcuts';
@@ -82,7 +83,15 @@ const CanvasArea = () => {
     'type'
   > | null>(null);
 
-  console.log({ selectedElementIndex });
+  // Dragging Elements
+  const [isDraggingElement, setIsDraggingElements] = useState(false);
+  const [draggedElementStart, setDraggedElementStart] = useState<DrawPoint>({
+    x: 0,
+    y: 0
+  });
+  const [draggingElementIndex, setDraggingElementIndex] = useState<
+    number | null
+  >(null);
 
   const redrawCanvas = () => {
     const canvas = drawCanvasRef.current;
@@ -226,8 +235,8 @@ const CanvasArea = () => {
       setIsDrawing(true);
       setLineStart(worldPos);
       setCurrentLine({
-        startX: worldPos.x,
-        startY: worldPos.y,
+        x: worldPos.x,
+        y: worldPos.y,
         endX: worldPos.x,
         endY: worldPos.y
       });
@@ -237,6 +246,7 @@ const CanvasArea = () => {
     } else if (tool === 'selection') {
       const HIT_TOLERANCE = 6 / view.scale;
       let clickedOnElement = false;
+      let elementIndex: number | null = null;
 
       for (let i = elements.length - 1; i >= 0; i--) {
         const element = elements[i];
@@ -249,15 +259,15 @@ const CanvasArea = () => {
             isHit = isPointNearRectangle(worldPos, element, HIT_TOLERANCE);
           } else if (element.type === 'circle') {
             const distanceFromCenter = Math.hypot(
-              worldPos.x - element.centerX,
-              worldPos.y - element.centerY
+              worldPos.x - element.x,
+              worldPos.y - element.y
             );
             isHit =
               Math.abs(distanceFromCenter - element.radius) <= HIT_TOLERANCE;
           } else if (element.type === 'line') {
             const distance = distanceFromPointToLineSegment(
               worldPos,
-              { x: element.startX, y: element.startY },
+              { x: element.x, y: element.y },
               { x: element.endX, y: element.endY }
             );
             isHit = distance <= HIT_TOLERANCE;
@@ -265,14 +275,25 @@ const CanvasArea = () => {
 
           if (isHit) {
             clickedOnElement = true;
+            elementIndex = i;
             break;
           }
         }
       }
 
       // If not clicking on an element, start area selection
-      if (!clickedOnElement) {
+      if (clickedOnElement) {
+        if (elementIndex === selectedElementIndex) {
+          setIsDraggingElements(true);
+          setDraggedElementStart(worldPos);
+        } else {
+          setIsDraggingElements(true);
+          setDraggingElementIndex(elementIndex);
+          setDraggedElementStart(worldPos);
+        }
+      } else {
         setIsAreasSelecting(true);
+        setIsDraggingElements(false);
         setAreaSelectionStart(worldPos);
         setAreaSelectionEnd(worldPos);
         dispatch(addSelectedEleementIndex(null));
@@ -302,8 +323,8 @@ const CanvasArea = () => {
       }
       if (element.type === 'circle') {
         const distanceFromCenter = Math.hypot(
-          worldPos.x - element.centerX,
-          worldPos.y - element.centerY
+          worldPos.x - element.x,
+          worldPos.y - element.y
         );
 
         if (Math.abs(distanceFromCenter - element.radius) <= HIT_TOLERANCE) {
@@ -314,7 +335,7 @@ const CanvasArea = () => {
       if (element.type === 'line') {
         const distance = distanceFromPointToLineSegment(
           worldPos,
-          { x: element.startX, y: element.startY },
+          { x: element.x, y: element.x },
           { x: element.endX, y: element.endY }
         );
 
@@ -326,7 +347,7 @@ const CanvasArea = () => {
       if (element.type === 'arrow') {
         const distance = distanceFromPointToLineSegment(
           worldPos,
-          { x: element.startX, y: element.startY },
+          { x: element.x, y: element.y },
           { x: element.endX, y: element.endY }
         );
 
@@ -358,24 +379,39 @@ const CanvasArea = () => {
       setCurrentRect({ x: rectStart.x, y: rectStart.y, width, height });
     } else if (isDrawing && tool === 'line' && lineStart) {
       setCurrentLine({
-        startX: lineStart.x,
-        startY: lineStart.y,
+        x: lineStart.x,
+        y: lineStart.y,
         endX: worldPos.x,
         endY: worldPos.y
       });
     } else if (tool === 'arrow' && arrowStart) {
       setCurrentArrow({
-        startX: arrowStart.x,
-        startY: arrowStart.y,
+        x: arrowStart.x,
+        y: arrowStart.y,
         endX: worldPos.x,
         endY: worldPos.y
       });
     } else if (tool === 'selection' && isAreaSelecting && areaSelectionStart) {
       setAreaSelectionEnd(worldPos);
+    } else if (tool === 'selection' && isDraggingElement) {
+      if (draggingElementIndex !== null) {
+        dispatch(
+          updateElementPosition({
+            index: draggingElementIndex,
+            x: worldPos.x,
+            y: worldPos.y,
+            dragStart: draggedElementStart
+          })
+        );
+      }
     } else if (tool === 'selection') {
       handleSelectionHover(e);
     }
   };
+
+  // TODO: update drag end position on handMouseUp
+  //  - set is Draggin to false
+  //  - fix the movement
 
   const handleMouseUp = () => {
     if (isDrawing && tool === 'draw' && currentPath.length > 0) {
@@ -395,8 +431,8 @@ const CanvasArea = () => {
         addElements({
           element: {
             type: 'circle',
-            centerX: currentCircle.center.x,
-            centerY: currentCircle.center.y,
+            x: currentCircle.center.x,
+            y: currentCircle.center.y,
             radius: currentCircle.radius,
             color: '#7A3EFF'
           }
@@ -423,8 +459,8 @@ const CanvasArea = () => {
         addElements({
           element: {
             type: 'line',
-            startX: currentLine.startX,
-            startY: currentLine.startY,
+            x: currentLine.x,
+            y: currentLine.y,
             endX: currentLine.endX,
             endY: currentLine.endY
           }
@@ -437,8 +473,8 @@ const CanvasArea = () => {
         addElements({
           element: {
             type: 'arrow',
-            startX: currentArrow.startX,
-            startY: currentArrow.startY,
+            x: currentArrow.x,
+            y: currentArrow.y,
             endX: currentArrow.endX,
             endY: currentArrow.endY
           }
@@ -470,6 +506,7 @@ const CanvasArea = () => {
     }
     setIsDragging(false);
     setIsDrawing(false);
+    setIsDraggingElements(false);
   };
 
   const handleOnClick = (e: React.MouseEvent) => {
@@ -491,22 +528,22 @@ const CanvasArea = () => {
           isHit = isPointNearRectangle(worldPos, element, HIT_TOLERANCE);
         } else if (element.type === 'circle') {
           const distanceFromCenter = Math.hypot(
-            worldPos.x - element.centerX,
-            worldPos.y - element.centerY
+            worldPos.x - element.x,
+            worldPos.y - element.y
           );
           isHit =
             Math.abs(distanceFromCenter - element.radius) <= HIT_TOLERANCE;
         } else if (element.type === 'line') {
           const distance = distanceFromPointToLineSegment(
             worldPos,
-            { x: element.startX, y: element.startY },
+            { x: element.x, y: element.y },
             { x: element.endX, y: element.endY }
           );
           isHit = distance <= HIT_TOLERANCE;
         } else if (element.type === 'arrow') {
           const distance = distanceFromPointToLineSegment(
             worldPos,
-            { x: element.startX, y: element.startY },
+            { x: element.x, y: element.y },
             { x: element.endX, y: element.endY }
           );
           isHit = distance <= HIT_TOLERANCE;
@@ -523,8 +560,7 @@ const CanvasArea = () => {
             worldPos,
             element.x,
             element.y,
-            element.values.length,
-            HIT_TOLERANCE
+            element.values.length
           );
         } else if (element.type === 'binary-tree') {
           isHit = isCursorOnTree(
@@ -536,8 +572,6 @@ const CanvasArea = () => {
           );
         }
       }
-
-      console.log({ isHit });
 
       if (isHit) {
         dispatch(addSelectedEleementIndex(i));

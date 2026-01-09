@@ -17,8 +17,8 @@ export type DrawPath = {
 
 export type DrawCircle = {
   type: 'circle';
-  centerX: number;
-  centerY: number;
+  x: number;
+  y: number;
   radius: number;
   color: string;
 };
@@ -33,16 +33,16 @@ export type DrawRect = {
 
 export type DrawLine = {
   type: 'line';
-  startX: number;
-  startY: number;
+  x: number;
+  y: number;
   endX: number;
   endY: number;
 };
 
 export type DrawArrow = {
   type: 'arrow';
-  startX: number;
-  startY: number;
+  x: number;
+  y: number;
   endX: number;
   endY: number;
 };

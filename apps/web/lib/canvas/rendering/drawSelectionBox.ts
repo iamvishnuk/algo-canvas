@@ -13,11 +13,9 @@ export const drawSelectionBox = (
 ) => {
   if (selectedElementIndex !== null) {
     const element = elements[selectedElementIndex];
-    console.log('selected element ->', element);
     if (!element) return;
 
     const bounds = getElementBounds(element);
-    console.log('bounds', bounds);
     if (!bounds) return;
 
     const padding = 10 / view.scale;

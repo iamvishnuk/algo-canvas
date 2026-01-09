@@ -69,7 +69,7 @@ export const drawElementsPreview = (
     ctx.lineWidth = 2 / scale;
 
     ctx.beginPath();
-    ctx.moveTo(currentLine.startX, currentLine.startY);
+    ctx.moveTo(currentLine.x, currentLine.y);
     ctx.lineTo(currentLine.endX, currentLine.endY);
 
     ctx.stroke();
@@ -78,8 +78,8 @@ export const drawElementsPreview = (
   if (currentArrow) {
     drawArrow(
       ctx,
-      currentArrow.startX,
-      currentArrow.startY,
+      currentArrow.x,
+      currentArrow.y,
       currentArrow.endX,
       currentArrow.endY,
       scale

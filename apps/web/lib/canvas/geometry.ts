@@ -140,8 +140,7 @@ export const isCursorOnLinkedList = (
   point: DrawPoint,
   x: number,
   y: number,
-  length: number,
-  tolerance: number
+  length: number
 ): boolean => {
   const width =
     length *
@@ -238,6 +237,8 @@ export const cursorOnTree = (
       return true;
     }
   }
+
+  return false;
 };
 
 export const isCursorOnTree = (

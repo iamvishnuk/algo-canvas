@@ -21,7 +21,7 @@ export const drawElements = (
 
       draw(ctx, element.points, scale);
     } else if (element.type === 'circle') {
-      drawCircle(ctx, element.centerX, element.centerY, element.radius, scale);
+      drawCircle(ctx, element.x, element.y, element.radius, scale);
     } else if (element.type === 'rectangle') {
       drawRectangle(
         ctx,
@@ -32,23 +32,9 @@ export const drawElements = (
         scale
       );
     } else if (element.type === 'line') {
-      drawLine(
-        ctx,
-        element.startX,
-        element.startY,
-        element.endX,
-        element.endY,
-        scale
-      );
+      drawLine(ctx, element.x, element.y, element.endX, element.endY, scale);
     } else if (element.type === 'arrow') {
-      drawArrow(
-        ctx,
-        element.startX,
-        element.startY,
-        element.endX,
-        element.endY,
-        scale
-      );
+      drawArrow(ctx, element.x, element.y, element.endX, element.endY, scale);
     } else if (element.type === 'array') {
       drawArray(ctx, element.x, element.y, element.value, scale);
     } else if (element.type === 'binary-tree') {
