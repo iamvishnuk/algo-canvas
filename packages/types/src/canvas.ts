@@ -11,6 +11,8 @@ export type DrawPoint = {
 
 export type DrawPath = {
   type: 'draw';
+  x: number;
+  y: number;
   points: DrawPoint[];
   color: string;
 };

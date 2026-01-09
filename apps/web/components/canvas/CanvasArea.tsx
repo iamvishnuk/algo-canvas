@@ -89,6 +89,10 @@ const CanvasArea = () => {
     x: 0,
     y: 0
   });
+  const [dragElementOffset, setDragElementOffset] = useState<DrawPoint>({
+    x: 0,
+    y: 0
+  });
   const [draggingElementIndex, setDraggingElementIndex] = useState<
     number | null
   >(null);
@@ -283,13 +287,16 @@ const CanvasArea = () => {
 
       // If not clicking on an element, start area selection
       if (clickedOnElement) {
-        if (elementIndex === selectedElementIndex) {
-          setIsDraggingElements(true);
-          setDraggedElementStart(worldPos);
-        } else {
+        if (elementIndex !== null) {
+          const element = elements[elementIndex]!;
           setIsDraggingElements(true);
           setDraggingElementIndex(elementIndex);
           setDraggedElementStart(worldPos);
+
+          setDragElementOffset({
+            x: worldPos.x - element.x,
+            y: worldPos.y - element.y
+          });
         }
       } else {
         setIsAreasSelecting(true);
@@ -335,7 +342,7 @@ const CanvasArea = () => {
       if (element.type === 'line') {
         const distance = distanceFromPointToLineSegment(
           worldPos,
-          { x: element.x, y: element.x },
+          { x: element.x, y: element.y },
           { x: element.endX, y: element.endY }
         );
 
@@ -394,13 +401,14 @@ const CanvasArea = () => {
     } else if (tool === 'selection' && isAreaSelecting && areaSelectionStart) {
       setAreaSelectionEnd(worldPos);
     } else if (tool === 'selection' && isDraggingElement) {
+      console.log('first');
       if (draggingElementIndex !== null) {
         dispatch(
           updateElementPosition({
             index: draggingElementIndex,
             x: worldPos.x,
             y: worldPos.y,
-            dragStart: draggedElementStart
+            offset: dragElementOffset
           })
         );
       }
@@ -417,7 +425,13 @@ const CanvasArea = () => {
     if (isDrawing && tool === 'draw' && currentPath.length > 0) {
       dispatch(
         addElements({
-          element: { type: 'draw', points: currentPath, color: '#7A3EFF' }
+          element: {
+            type: 'draw',
+            points: currentPath,
+            color: '#7A3EFF',
+            x: 0, // TODO: change the later x, y
+            y: 0
+          }
         })
       );
       setCurrentPath([]);

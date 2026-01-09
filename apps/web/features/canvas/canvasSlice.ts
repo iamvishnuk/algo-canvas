@@ -155,19 +155,17 @@ const canvasSlice = createSlice({
         index: number;
         x: number;
         y: number;
-        dragStart: DrawPoint;
+        offset: DrawPoint;
       }>
     ) => {
-      const { index, x, y, dragStart } = action.payload;
+      console.log('this called');
+      const { index, x, y, offset } = action.payload;
 
       if (!state.elements[index]) return;
 
       if (state.elements[index].type === 'rectangle') {
-        const dx = x - state.elements[index].x;
-        const dy = y - state.elements[index].y;
-
-        state.elements[index].x += dx - state.elements[index].width;
-        state.elements[index].y += dy - state.elements[index].height;
+        state.elements[index].x = x - offset.x;
+        state.elements[index].y = y - offset.y;
       }
     }
   }
