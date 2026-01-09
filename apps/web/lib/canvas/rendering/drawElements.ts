@@ -29,7 +29,8 @@ export const drawElements = (
         element.y,
         element.width,
         element.height,
-        scale
+        scale,
+        element.rotate
       );
     } else if (element.type === 'line') {
       drawLine(ctx, element.x, element.y, element.endX, element.endY, scale);

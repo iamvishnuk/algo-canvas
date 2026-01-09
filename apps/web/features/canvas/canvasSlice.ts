@@ -180,6 +180,15 @@ const canvasSlice = createSlice({
         element.x = x - offset.x;
         element.y = y - offset.y;
       }
+    },
+    updateElementRotation: (
+      state,
+      action: PayloadAction<{ elementIndex: number; rotation: number }>
+    ) => {
+      const element = state.elements[action.payload.elementIndex];
+      if (element) {
+        element.rotate = action.payload.rotation;
+      }
     }
   }
 });
@@ -198,7 +207,8 @@ export const {
   addSelectedElementsIndices,
   addSelectedElementIndex,
   removeElements,
-  updateElementPosition
+  updateElementPosition,
+  updateElementRotation
 } = canvasSlice.actions;
 
 export default canvasSlice.reducer;

@@ -66,31 +66,43 @@ export const isPointNearRectangle = (
   rect: DrawRect,
   tolerance: number
 ): boolean => {
-  const { x, y, width, height } = rect;
+  const angle = rect.rotate ?? 0;
+
+  const cx = rect.x + rect.width / 2;
+  const cy = rect.y + rect.height / 2;
+
+  // 🔁 Unrotate the point
+  const dx = point.x - cx;
+  const dy = point.y - cy;
+
+  const unrotated = {
+    x: cx + dx * Math.cos(-angle) - dy * Math.sin(-angle),
+    y: cy + dx * Math.sin(-angle) + dy * Math.cos(-angle)
+  };
+
   const edges = [
     [
-      { x, y },
-      { x: x + width, y }
+      { x: rect.x, y: rect.y },
+      { x: rect.x + rect.width, y: rect.y }
     ],
     [
-      { x: x + width, y },
-      { x: x + width, y: y + height }
+      { x: rect.x + rect.width, y: rect.y },
+      { x: rect.x + rect.width, y: rect.y + rect.height }
     ],
     [
-      { x: x + width, y: y + height },
-      { x, y: y + height }
+      { x: rect.x + rect.width, y: rect.y + rect.height },
+      { x: rect.x, y: rect.y + rect.height }
     ],
     [
-      { x, y: y + height },
-      { x, y }
+      { x: rect.x, y: rect.y + rect.height },
+      { x: rect.x, y: rect.y }
     ]
   ];
 
-  return edges.some(([start, end]) => {
-    if (start && end) {
-      return distanceFromPointToLineSegment(point, start, end) <= tolerance;
-    }
-  });
+  return edges.some(
+    ([start, end]) =>
+      distanceFromPointToLineSegment(unrotated, start!, end!) <= tolerance
+  );
 };
 
 export const isCursorOnArray = (

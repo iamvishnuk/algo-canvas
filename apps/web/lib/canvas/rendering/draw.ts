@@ -59,14 +59,23 @@ export const drawRectangle = (
   y: number,
   width: number,
   height: number,
-  scale: number
+  scale: number,
+  rotation: number = 0
 ) => {
+  const cx = x + width / 2;
+  const cy = y + height / 2;
+
+  ctx.save();
+
+  ctx.translate(cx, cy);
+  ctx.rotate(rotation);
+
   ctx.strokeStyle = '#7A3EFF';
   ctx.lineWidth = 2 / scale;
 
-  ctx.beginPath();
-  ctx.rect(x, y, width, height);
-  ctx.stroke();
+  ctx.strokeRect(-width / 2, -height / 2, width, height);
+
+  ctx.restore();
 };
 
 export const drawPath = (

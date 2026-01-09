@@ -116,8 +116,6 @@ export const useCanvasKeyboardShortcuts = () => {
         return;
       }
 
-      console.log('key ->', e.key);
-
       for (const shortcut of shortcuts) {
         // Check if all required modifiers match
         const ctrlMatch = !shortcut.modifiers?.ctrl || e.ctrlKey || e.metaKey;

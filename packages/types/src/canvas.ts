@@ -15,6 +15,7 @@ export type DrawPath = {
   y: number;
   points: DrawPoint[];
   color: string;
+  rotate: number;
 };
 
 export type DrawCircle = {
@@ -23,6 +24,7 @@ export type DrawCircle = {
   y: number;
   radius: number;
   color: string;
+  rotate: number;
 };
 
 export type DrawRect = {
@@ -31,6 +33,7 @@ export type DrawRect = {
   y: number;
   width: number;
   height: number;
+  rotate: number;
 };
 
 export type DrawLine = {
@@ -39,6 +42,7 @@ export type DrawLine = {
   y: number;
   endX: number;
   endY: number;
+  rotate: number;
 };
 
 export type DrawArrow = {
@@ -47,6 +51,7 @@ export type DrawArrow = {
   y: number;
   endX: number;
   endY: number;
+  rotate: number;
 };
 
 export type DrawArray = {
@@ -54,12 +59,14 @@ export type DrawArray = {
   x: number;
   y: number;
   value: string[];
+  rotate: number;
 };
 
 export type TreeNode = {
   value: string;
   left?: TreeNode;
   right?: TreeNode;
+  rotate: number;
 };
 
 export type DrawBinaryTree = {
@@ -67,6 +74,7 @@ export type DrawBinaryTree = {
   x: number;
   y: number;
   root: TreeNode;
+  rotate: number;
 };
 
 export type DrawLinkedList = {
@@ -74,6 +82,7 @@ export type DrawLinkedList = {
   x: number;
   y: number;
   values: string[];
+  rotate: number;
 };
 
 export type DrawElements =

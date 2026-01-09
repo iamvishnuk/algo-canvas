@@ -16,6 +16,7 @@ import {
   handleZoom,
   setCanvasSize,
   updateElementPosition,
+  updateElementRotation,
   updateOffSet
 } from '@/features/canvas/canvasSlice';
 import { useCanvasKeyboardShortcuts } from '@/hooks/useCanvasKeyboardShortcuts';
@@ -30,11 +31,15 @@ import { CURSOR_MAP } from '@/lib/canvas/constant';
 import { drawGrid } from '@/lib/canvas/rendering/drawGrid';
 import { drawElements } from '@/lib/canvas/rendering/drawElements';
 import { drawElementsPreview } from '@/lib/canvas/rendering/drawElementsPreview';
-import { drawSelectionBox } from '@/lib/canvas/rendering/drawSelectionBox';
+import {
+  drawSelectionBox,
+  rotatePoint
+} from '@/lib/canvas/rendering/drawSelectionBox';
 import InsertPanel from './InsertPanel';
 import ArrayDialog from './ArrayDialog';
 import TreeDialog from './TreeDialog';
 import LinkedListDialog from './LinkedListDialog';
+import { getElementBounds } from '@/lib/canvas/utils';
 
 const CanvasArea = () => {
   const dispatch = useAppDispatch();
@@ -97,6 +102,15 @@ const CanvasArea = () => {
     number | null
   >(null);
 
+  // Rotation State
+  const [isRotating, setIsRotating] = useState(false);
+  const [rotationState, setRotationState] = useState<{
+    index: number;
+    center: DrawPoint;
+    startAngle: number;
+    initialRotation: number;
+  } | null>(null);
+
   // Used to trigger redraw after resize
   const [resizeKey, setResizeKey] = useState(0);
 
@@ -128,8 +142,6 @@ const CanvasArea = () => {
   useEffect(() => {
     drawGrid(bgCanvasRef, view);
   }, [view, resizeKey]);
-
-  console.log({ isDrawing });
 
   useEffect(() => {
     const canvas = drawCanvasRef.current;
@@ -217,7 +229,13 @@ const CanvasArea = () => {
     } else if (tool === 'rectangle') {
       setIsDrawing(true);
       setRectStart(worldPos);
-      setCurrentRect({ x: worldPos.x, y: worldPos.y, width: 0, height: 0 });
+      setCurrentRect({
+        x: worldPos.x,
+        y: worldPos.y,
+        width: 0,
+        height: 0,
+        rotate: 0
+      });
     } else if (tool === 'line') {
       setIsDrawing(true);
       setLineStart(worldPos);
@@ -225,39 +243,92 @@ const CanvasArea = () => {
         x: worldPos.x,
         y: worldPos.y,
         endX: worldPos.x,
-        endY: worldPos.y
+        endY: worldPos.y,
+        rotate: 0
       });
     } else if (tool === 'arrow') {
       setIsDrawing(true);
       setArrowStart(worldPos);
     } else if (tool === 'selection') {
       const HIT_TOLERANCE = 6 / view.scale;
+
+      // 🔁 1. ROTATION HANDLE CHECK (FIRST)
+      if (selectedElementIndex !== null) {
+        const element = elements[selectedElementIndex]!;
+        const bound = getElementBounds(element);
+        if (bound) {
+          const padding = 10 / view.scale;
+          const rotateOffset = 20 / view.scale;
+          const rotateRadius = 10 / view.scale;
+
+          const center = {
+            x: (bound.minX + bound.maxX) / 2,
+            y: (bound.minY + bound.maxY) / 2
+          };
+
+          // 🔹 raw (unrotated) rotation handle position
+          const rawRotatePoint = {
+            x: center.x,
+            y: bound.minY - padding - rotateOffset
+          };
+
+          // 🔹 rotate handle if element is rotated
+          const finalRotatePoint =
+            element.type === 'rectangle' && element.rotate
+              ? rotatePoint(
+                  rawRotatePoint.x,
+                  rawRotatePoint.y,
+                  center.x,
+                  center.y,
+                  element.rotate
+                )
+              : rawRotatePoint;
+
+          // 🔹 hit test
+          const dx = worldPos.x - finalRotatePoint.x;
+          const dy = worldPos.y - finalRotatePoint.y;
+
+          if (dx * dx + dy * dy <= rotateRadius * rotateRadius) {
+            setIsRotating(true);
+            setRotationState({
+              index: selectedElementIndex,
+              center,
+              startAngle: Math.atan2(
+                worldPos.y - center.y,
+                worldPos.x - center.x
+              ),
+              initialRotation: element.rotate ?? 0
+            });
+            return;
+          }
+        }
+      }
+
       const elementIndex = findElementAtPosition(
         worldPos,
         elements,
         HIT_TOLERANCE
       );
-      const clickedOnElement = elementIndex !== null;
 
-      // If not clicking on an element, start area selection
-      if (clickedOnElement) {
-        const element = elements[elementIndex];
+      if (elementIndex !== null) {
+        const element = elements[elementIndex]!;
+
         setIsDraggingElements(true);
         setDraggingElementIndex(elementIndex);
-        if (element) {
-          setDragElementOffset({
-            x: worldPos.x - element.x,
-            y: worldPos.y - element.y
-          });
-        }
-      } else {
-        setIsAreasSelecting(true);
-        setIsDraggingElements(false);
-        setAreaSelectionStart(worldPos);
-        setAreaSelectionEnd(worldPos);
-        dispatch(addSelectedElementIndex(null));
-        dispatch(addSelectedElementsIndices([]));
+        setDragElementOffset({
+          x: worldPos.x - element.x,
+          y: worldPos.y - element.y
+        });
+
+        dispatch(addSelectedElementIndex(elementIndex));
+        return;
       }
+
+      setIsAreasSelecting(true);
+      setAreaSelectionStart(worldPos);
+      setAreaSelectionEnd(worldPos);
+      dispatch(addSelectedElementIndex(null));
+      dispatch(addSelectedElementsIndices([]));
     }
   };
 
@@ -288,20 +359,28 @@ const CanvasArea = () => {
     } else if (isDrawing && tool === 'rectangle' && rectStart) {
       const width = worldPos.x - rectStart.x;
       const height = worldPos.y - rectStart.y;
-      setCurrentRect({ x: rectStart.x, y: rectStart.y, width, height });
+      setCurrentRect({
+        x: rectStart.x,
+        y: rectStart.y,
+        width,
+        height,
+        rotate: 0
+      });
     } else if (isDrawing && tool === 'line' && lineStart) {
       setCurrentLine({
         x: lineStart.x,
         y: lineStart.y,
         endX: worldPos.x,
-        endY: worldPos.y
+        endY: worldPos.y,
+        rotate: 0
       });
     } else if (tool === 'arrow' && arrowStart) {
       setCurrentArrow({
         x: arrowStart.x,
         y: arrowStart.y,
         endX: worldPos.x,
-        endY: worldPos.y
+        endY: worldPos.y,
+        rotate: 0
       });
     } else if (tool === 'selection' && isAreaSelecting && areaSelectionStart) {
       setAreaSelectionEnd(worldPos);
@@ -316,12 +395,25 @@ const CanvasArea = () => {
           })
         );
       }
+    } else if (tool === 'selection' && isRotating && rotationState) {
+      const { index, center, startAngle, initialRotation } = rotationState;
+
+      const angle = Math.atan2(worldPos.y - center.y, worldPos.x - center.x);
+
+      const delta = angle - startAngle;
+
+      dispatch(
+        updateElementRotation({
+          elementIndex: index,
+          rotation: initialRotation + delta
+        })
+      );
+
+      return;
     } else if (tool === 'selection') {
       handleSelectionHover(e);
     }
   };
-
-  console.log(elements);
 
   const handleMouseUp = () => {
     if (isDraggingElements) {
@@ -345,7 +437,8 @@ const CanvasArea = () => {
             x: anchorX,
             y: anchorY,
             points: relativePoints,
-            color: '#7A3EFF'
+            color: '#7A3EFF',
+            rotate: 0
           }
         })
       );
@@ -364,7 +457,8 @@ const CanvasArea = () => {
             x: currentCircle.center.x,
             y: currentCircle.center.y,
             radius: currentCircle.radius,
-            color: '#7A3EFF'
+            color: '#7A3EFF',
+            rotate: 0
           }
         })
       );
@@ -378,7 +472,8 @@ const CanvasArea = () => {
             x: currentRect.x,
             y: currentRect.y,
             width: currentRect.width,
-            height: currentRect.height
+            height: currentRect.height,
+            rotate: 0
           }
         })
       );
@@ -392,7 +487,8 @@ const CanvasArea = () => {
             x: currentLine.x,
             y: currentLine.y,
             endX: currentLine.endX,
-            endY: currentLine.endY
+            endY: currentLine.endY,
+            rotate: 0
           }
         })
       );
@@ -406,7 +502,8 @@ const CanvasArea = () => {
             x: currentArrow.x,
             y: currentArrow.y,
             endX: currentArrow.endX,
-            endY: currentArrow.endY
+            endY: currentArrow.endY,
+            rotate: 0
           }
         })
       );
@@ -433,6 +530,10 @@ const CanvasArea = () => {
       setIsAreasSelecting(false);
       setAreaSelectionStart(null);
       setAreaSelectionEnd(null);
+    } else if (isRotating) {
+      setIsRotating(false);
+      setRotationState(null);
+      return;
     }
     setIsDragging(false);
     setIsDrawing(false);
