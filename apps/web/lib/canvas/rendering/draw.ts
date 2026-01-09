@@ -69,22 +69,27 @@ export const drawRectangle = (
   ctx.stroke();
 };
 
-export const draw = (
+export const drawPath = (
   ctx: CanvasRenderingContext2D,
   points: DrawPoint[],
+  x: number,
+  y: number,
   scale: number
 ) => {
+  if (points.length === 0) return;
+
   ctx.strokeStyle = '#7A3EFF';
   ctx.lineWidth = 2 / scale;
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
 
   ctx.beginPath();
-  ctx.moveTo(points[0]!.x, points[0]!.y);
+  ctx.moveTo(x + points[0]!.x, y + points[0]!.y);
 
   for (let i = 1; i < points.length; i++) {
-    ctx.lineTo(points[i]!.x, points[i]!.y);
+    ctx.lineTo(x + points[i]!.x, y + points[i]!.y);
   }
+
   ctx.stroke();
 };
 

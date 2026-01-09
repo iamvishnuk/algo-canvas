@@ -7,7 +7,6 @@ import {
   Tool,
   ViewState
 } from '@workspace/types/canvas';
-import { select } from 'motion/react-m';
 
 export interface ICanvasState {
   view: ViewState;
@@ -18,12 +17,12 @@ export interface ICanvasState {
   };
   elements: DrawElements[];
   selectedElementIndex: number | null;
-  selectedElementsIndice: number[];
+  selectedElementsIndices: number[];
   drawingState: {
     isDrawing: boolean;
   };
   ui: {
-    backgroudType: BackgroundType;
+    backgroundType: BackgroundType;
     backgroundColor: string;
   };
   showArrayDialog: boolean;
@@ -44,12 +43,12 @@ const initialState: ICanvasState = {
   tool: 'selection',
   elements: [],
   selectedElementIndex: null,
-  selectedElementsIndice: [],
+  selectedElementsIndices: [],
   drawingState: {
     isDrawing: false
   },
   ui: {
-    backgroudType: 'grid',
+    backgroundType: 'grid',
     backgroundColor: '#1a1a1a'
   },
   showArrayDialog: false,
@@ -100,16 +99,19 @@ const canvasSlice = createSlice({
     clearCanvas: (state) => {
       state.elements = [];
     },
-    changeBackgroudType: (
+    changeBackgroundType: (
       state,
       action: PayloadAction<{ type: BackgroundType }>
     ) => {
       state.ui = {
         ...state.ui,
-        backgroudType: action.payload.type
+        backgroundType: action.payload.type
       };
     },
-    changeBackgroudColor: (state, action: PayloadAction<{ color: string }>) => {
+    changeBackgroundColor: (
+      state,
+      action: PayloadAction<{ color: string }>
+    ) => {
       state.ui = {
         ...state.ui,
         backgroundColor: action.payload.color
@@ -127,11 +129,11 @@ const canvasSlice = createSlice({
         state.showLinkedListDialog = !state.showLinkedListDialog;
       }
     },
-    addSelectedEleementIndex: (state, action: PayloadAction<number | null>) => {
+    addSelectedElementIndex: (state, action: PayloadAction<number | null>) => {
       state.selectedElementIndex = action.payload;
     },
-    addselectedElementsIndice: (state, action: PayloadAction<number[]>) => {
-      state.selectedElementsIndice = action.payload;
+    addSelectedElementsIndices: (state, action: PayloadAction<number[]>) => {
+      state.selectedElementsIndices = action.payload;
     },
     removeElements: (state) => {
       if (state.selectedElementIndex !== null) {
@@ -141,12 +143,12 @@ const canvasSlice = createSlice({
         state.selectedElementIndex = null;
       }
 
-      if (state.selectedElementsIndice.length > 0) {
+      if (state.selectedElementsIndices.length > 0) {
         state.elements = state.elements.filter(
-          (_, index) => !state.selectedElementsIndice.includes(index)
+          (_, index) => !state.selectedElementsIndices.includes(index)
         );
 
-        state.selectedElementsIndice = [];
+        state.selectedElementsIndices = [];
       }
     },
     updateElementPosition: (
@@ -158,14 +160,25 @@ const canvasSlice = createSlice({
         offset: DrawPoint;
       }>
     ) => {
-      console.log('this called');
       const { index, x, y, offset } = action.payload;
+      const element = state.elements[index];
+      if (!element) return;
 
-      if (!state.elements[index]) return;
+      if (element.type === 'draw') {
+        // Only move the anchor
+        element.x = x - offset.x;
+        element.y = y - offset.y;
+      } else if (element.type === 'line' || element.type === 'arrow') {
+        const dx = x - element.x - offset.x;
+        const dy = y - element.y - offset.y;
 
-      if (state.elements[index].type === 'rectangle') {
-        state.elements[index].x = x - offset.x;
-        state.elements[index].y = y - offset.y;
+        element.x += dx;
+        element.y += dy;
+        element.endX += dx;
+        element.endY += dy;
+      } else {
+        element.x = x - offset.x;
+        element.y = y - offset.y;
       }
     }
   }
@@ -179,11 +192,11 @@ export const {
   changeTool,
   addElements,
   clearCanvas,
-  changeBackgroudColor,
-  changeBackgroudType,
+  changeBackgroundColor,
+  changeBackgroundType,
   toggleDialog,
-  addselectedElementsIndice,
-  addSelectedEleementIndex,
+  addSelectedElementsIndices,
+  addSelectedElementIndex,
   removeElements,
   updateElementPosition
 } = canvasSlice.actions;

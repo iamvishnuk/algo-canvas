@@ -1,12 +1,18 @@
 'use client';
-import React, { useRef, useEffect, useState, Activity } from 'react';
+import React, {
+  useRef,
+  useEffect,
+  useState,
+  useCallback,
+  Activity
+} from 'react';
 import { DrawArrow, DrawLine, DrawPoint, DrawRect } from '@workspace/types';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import BottomToolBar from './BottomToolBar';
 import {
   addElements,
-  addSelectedEleementIndex,
-  addselectedElementsIndice,
+  addSelectedElementIndex,
+  addSelectedElementsIndices,
   handleZoom,
   setCanvasSize,
   updateElementPosition,
@@ -18,15 +24,8 @@ import MainToolBar from './MainToolBar';
 import { cn } from '@workspace/ui/lib/utils';
 import CanvasBackground from './CanvasBackground';
 import { screenToWorld } from '@/lib/canvas/coordinates';
-import {
-  distanceFromPointToLineSegment,
-  isCursorOnArray,
-  isCursorOnLinkedList,
-  isCursorOnTree,
-  isElementInSelectionArea,
-  isPointNearPath,
-  isPointNearRectangle
-} from '@/lib/canvas/geometry';
+import { isElementInSelectionArea } from '@/lib/canvas/geometry';
+import { findElementAtPosition } from '@/lib/canvas/hitDetection';
 import { CURSOR_MAP } from '@/lib/canvas/constant';
 import { drawGrid } from '@/lib/canvas/rendering/drawGrid';
 import { drawElements } from '@/lib/canvas/rendering/drawElements';
@@ -39,8 +38,13 @@ import LinkedListDialog from './LinkedListDialog';
 
 const CanvasArea = () => {
   const dispatch = useAppDispatch();
-  const { view, tool, elements, selectedElementIndex, selectedElementsIndice } =
-    useAppSelector((state) => state.canvas);
+  const {
+    view,
+    tool,
+    elements,
+    selectedElementIndex,
+    selectedElementsIndices
+  } = useAppSelector((state) => state.canvas);
 
   useCanvasKeyboardShortcuts();
 
@@ -84,11 +88,7 @@ const CanvasArea = () => {
   > | null>(null);
 
   // Dragging Elements
-  const [isDraggingElement, setIsDraggingElements] = useState(false);
-  const [draggedElementStart, setDraggedElementStart] = useState<DrawPoint>({
-    x: 0,
-    y: 0
-  });
+  const [isDraggingElements, setIsDraggingElements] = useState(false);
   const [dragElementOffset, setDragElementOffset] = useState<DrawPoint>({
     x: 0,
     y: 0
@@ -97,7 +97,41 @@ const CanvasArea = () => {
     number | null
   >(null);
 
-  const redrawCanvas = () => {
+  // Used to trigger redraw after resize
+  const [resizeKey, setResizeKey] = useState(0);
+
+  const resizeCanvas = useCallback(() => {
+    const bgCanvas = bgCanvasRef.current;
+    const drawCanvas = drawCanvasRef.current;
+    if (!bgCanvas || !drawCanvas) return;
+
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+
+    bgCanvas.width = width;
+    bgCanvas.height = height;
+    drawCanvas.width = width;
+    drawCanvas.height = height;
+
+    dispatch(setCanvasSize({ width, height }));
+    // Trigger redraw after resize
+    setResizeKey((prev) => prev + 1);
+  }, [dispatch]);
+
+  // Handle window resize - stable event listener
+  useEffect(() => {
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+    return () => window.removeEventListener('resize', resizeCanvas);
+  }, [resizeCanvas]);
+
+  useEffect(() => {
+    drawGrid(bgCanvasRef, view);
+  }, [view, resizeKey]);
+
+  console.log({ isDrawing });
+
+  useEffect(() => {
     const canvas = drawCanvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
@@ -132,7 +166,7 @@ const CanvasArea = () => {
         selectedElementIndex,
         elements,
         view,
-        selectedElementsIndice,
+        selectedElementsIndices,
         isAreaSelecting,
         areaSelectionStart,
         areaSelectionEnd
@@ -140,81 +174,30 @@ const CanvasArea = () => {
     }
 
     ctx.restore();
-  };
-
-  const resizeCanvas = () => {
-    const bgCanvas = bgCanvasRef.current;
-    const drawCanvas = drawCanvasRef.current;
-    if (!bgCanvas || !drawCanvas) return;
-
-    const width = window.innerWidth;
-    const height = window.innerHeight;
-
-    bgCanvas.width = width;
-    bgCanvas.height = height;
-    drawCanvas.width = width;
-    drawCanvas.height = height;
-
-    dispatch(setCanvasSize({ width, height }));
-
-    drawGrid(bgCanvasRef, view);
-    redrawCanvas();
-  };
-
-  useEffect(() => {
-    resizeCanvas();
-    window.addEventListener('resize', resizeCanvas);
-    return () => window.removeEventListener('resize', resizeCanvas);
   }, [
-    elements,
     view,
-    tool,
+    elements,
     currentPath,
     currentCircle,
     currentRect,
     currentLine,
     currentArrow,
     selectedElementIndex,
-    selectedElementsIndice,
-    isAreaSelecting,
-    areaSelectionStart,
-    areaSelectionEnd
-  ]);
-
-  useEffect(() => {
-    drawGrid(bgCanvasRef, view);
-  }, [view]);
-
-  useEffect(() => {
-    redrawCanvas();
-  }, [
-    view,
-    elements,
-    currentPath,
-    currentCircle,
-    currentRect,
-    currentLine,
-    selectedElementIndex,
-    selectedElementsIndice,
+    selectedElementsIndices,
     isAreaSelecting,
     areaSelectionStart,
     areaSelectionEnd,
-    currentArrow
+    tool,
+    resizeKey
   ]);
 
   useEffect(() => {
-    dispatch(addSelectedEleementIndex(null));
-    dispatch(addselectedElementsIndice([]));
+    dispatch(addSelectedElementIndex(null));
+    dispatch(addSelectedElementsIndices([]));
     setIsAreasSelecting(false);
     setAreaSelectionStart(null);
     setAreaSelectionEnd(null);
-  }, [tool]);
-
-  const handleWheel = (e: React.WheelEvent) => {
-    e.preventDefault();
-    const delta = e.deltaY > 0 ? 0.1 : -0.1;
-    dispatch(handleZoom({ delta }));
-  };
+  }, [tool, dispatch]);
 
   const handleMouseDown = (e: React.MouseEvent) => {
     const worldPos = screenToWorld(e.clientX, e.clientY, drawCanvasRef, view);
@@ -249,50 +232,19 @@ const CanvasArea = () => {
       setArrowStart(worldPos);
     } else if (tool === 'selection') {
       const HIT_TOLERANCE = 6 / view.scale;
-      let clickedOnElement = false;
-      let elementIndex: number | null = null;
-
-      for (let i = elements.length - 1; i >= 0; i--) {
-        const element = elements[i];
-        let isHit = false;
-
-        if (element) {
-          if (element.type === 'draw') {
-            isHit = isPointNearPath(worldPos, element.points, HIT_TOLERANCE);
-          } else if (element.type === 'rectangle') {
-            isHit = isPointNearRectangle(worldPos, element, HIT_TOLERANCE);
-          } else if (element.type === 'circle') {
-            const distanceFromCenter = Math.hypot(
-              worldPos.x - element.x,
-              worldPos.y - element.y
-            );
-            isHit =
-              Math.abs(distanceFromCenter - element.radius) <= HIT_TOLERANCE;
-          } else if (element.type === 'line') {
-            const distance = distanceFromPointToLineSegment(
-              worldPos,
-              { x: element.x, y: element.y },
-              { x: element.endX, y: element.endY }
-            );
-            isHit = distance <= HIT_TOLERANCE;
-          }
-
-          if (isHit) {
-            clickedOnElement = true;
-            elementIndex = i;
-            break;
-          }
-        }
-      }
+      const elementIndex = findElementAtPosition(
+        worldPos,
+        elements,
+        HIT_TOLERANCE
+      );
+      const clickedOnElement = elementIndex !== null;
 
       // If not clicking on an element, start area selection
       if (clickedOnElement) {
-        if (elementIndex !== null) {
-          const element = elements[elementIndex]!;
-          setIsDraggingElements(true);
-          setDraggingElementIndex(elementIndex);
-          setDraggedElementStart(worldPos);
-
+        const element = elements[elementIndex];
+        setIsDraggingElements(true);
+        setDraggingElementIndex(elementIndex);
+        if (element) {
           setDragElementOffset({
             x: worldPos.x - element.x,
             y: worldPos.y - element.y
@@ -303,8 +255,8 @@ const CanvasArea = () => {
         setIsDraggingElements(false);
         setAreaSelectionStart(worldPos);
         setAreaSelectionEnd(worldPos);
-        dispatch(addSelectedEleementIndex(null));
-        dispatch(addselectedElementsIndice([]));
+        dispatch(addSelectedElementIndex(null));
+        dispatch(addSelectedElementsIndices([]));
       }
     }
   };
@@ -312,59 +264,12 @@ const CanvasArea = () => {
   const handleSelectionHover = (e: React.MouseEvent) => {
     const worldPos = screenToWorld(e.clientX, e.clientY, drawCanvasRef, view);
     const HIT_TOLERANCE = 6 / view.scale;
-
-    let isCursorOnElement = false;
-
-    for (const element of elements) {
-      if (element.type === 'draw') {
-        if (isPointNearPath(worldPos, element.points, HIT_TOLERANCE)) {
-          isCursorOnElement = true;
-          break;
-        }
-      }
-      if (element.type === 'rectangle') {
-        if (isPointNearRectangle(worldPos, element, HIT_TOLERANCE)) {
-          isCursorOnElement = true;
-          break;
-        }
-      }
-      if (element.type === 'circle') {
-        const distanceFromCenter = Math.hypot(
-          worldPos.x - element.x,
-          worldPos.y - element.y
-        );
-
-        if (Math.abs(distanceFromCenter - element.radius) <= HIT_TOLERANCE) {
-          isCursorOnElement = true;
-          break;
-        }
-      }
-      if (element.type === 'line') {
-        const distance = distanceFromPointToLineSegment(
-          worldPos,
-          { x: element.x, y: element.y },
-          { x: element.endX, y: element.endY }
-        );
-
-        if (distance <= HIT_TOLERANCE) {
-          isCursorOnElement = true;
-          break;
-        }
-      }
-      if (element.type === 'arrow') {
-        const distance = distanceFromPointToLineSegment(
-          worldPos,
-          { x: element.x, y: element.y },
-          { x: element.endX, y: element.endY }
-        );
-
-        if (distance <= HIT_TOLERANCE) {
-          isCursorOnElement = true;
-          break;
-        }
-      }
-    }
-    setCursorOnElement(isCursorOnElement);
+    const elementIndex = findElementAtPosition(
+      worldPos,
+      elements,
+      HIT_TOLERANCE
+    );
+    setCursorOnElement(elementIndex !== null);
   };
 
   const handleMouseMove = (e: React.MouseEvent) => {
@@ -400,8 +305,7 @@ const CanvasArea = () => {
       });
     } else if (tool === 'selection' && isAreaSelecting && areaSelectionStart) {
       setAreaSelectionEnd(worldPos);
-    } else if (tool === 'selection' && isDraggingElement) {
-      console.log('first');
+    } else if (tool === 'selection' && isDraggingElements) {
       if (draggingElementIndex !== null) {
         dispatch(
           updateElementPosition({
@@ -417,23 +321,35 @@ const CanvasArea = () => {
     }
   };
 
-  // TODO: update drag end position on handMouseUp
-  //  - set is Draggin to false
-  //  - fix the movement
+  console.log(elements);
 
   const handleMouseUp = () => {
-    if (isDrawing && tool === 'draw' && currentPath.length > 0) {
+    if (isDraggingElements) {
+      setIsDragging(false);
+      setIsDraggingElements(false);
+      return;
+    }
+    if (isDrawing && tool === 'draw' && currentPath.length > 1) {
+      const anchorX = currentPath[0]!.x;
+      const anchorY = currentPath[0]!.y;
+
+      const relativePoints = currentPath.map((p) => ({
+        x: p.x - anchorX,
+        y: p.y - anchorY
+      }));
+
       dispatch(
         addElements({
           element: {
             type: 'draw',
-            points: currentPath,
-            color: '#7A3EFF',
-            x: 0, // TODO: change the later x, y
-            y: 0
+            x: anchorX,
+            y: anchorY,
+            points: relativePoints,
+            color: '#7A3EFF'
           }
         })
       );
+
       setCurrentPath([]);
     } else if (
       isDrawing &&
@@ -513,7 +429,7 @@ const CanvasArea = () => {
         }
       });
 
-      dispatch(addselectedElementsIndice(selectedIndecies));
+      dispatch(addSelectedElementsIndices(selectedIndecies));
       setIsAreasSelecting(false);
       setAreaSelectionStart(null);
       setAreaSelectionEnd(null);
@@ -527,79 +443,31 @@ const CanvasArea = () => {
     if (tool !== 'selection') return;
 
     const worldPos = screenToWorld(e.clientX, e.clientY, drawCanvasRef, view);
-
     const HIT_TOLERANCE = 6 / view.scale;
 
-    // Check elements in reverse order (top to bottom)
-    for (let i = elements.length - 1; i >= 0; i--) {
-      const element = elements[i];
-      let isHit = false;
+    const elementIndex = findElementAtPosition(
+      worldPos,
+      elements,
+      HIT_TOLERANCE
+    );
 
-      if (element) {
-        if (element.type === 'draw') {
-          isHit = isPointNearPath(worldPos, element.points, HIT_TOLERANCE);
-        } else if (element.type === 'rectangle') {
-          isHit = isPointNearRectangle(worldPos, element, HIT_TOLERANCE);
-        } else if (element.type === 'circle') {
-          const distanceFromCenter = Math.hypot(
-            worldPos.x - element.x,
-            worldPos.y - element.y
-          );
-          isHit =
-            Math.abs(distanceFromCenter - element.radius) <= HIT_TOLERANCE;
-        } else if (element.type === 'line') {
-          const distance = distanceFromPointToLineSegment(
-            worldPos,
-            { x: element.x, y: element.y },
-            { x: element.endX, y: element.endY }
-          );
-          isHit = distance <= HIT_TOLERANCE;
-        } else if (element.type === 'arrow') {
-          const distance = distanceFromPointToLineSegment(
-            worldPos,
-            { x: element.x, y: element.y },
-            { x: element.endX, y: element.endY }
-          );
-          isHit = distance <= HIT_TOLERANCE;
-        } else if (element.type === 'array') {
-          isHit = isCursorOnArray(
-            worldPos,
-            element.x,
-            element.y,
-            element.value.length,
-            HIT_TOLERANCE
-          );
-        } else if (element.type === 'linked-list') {
-          isHit = isCursorOnLinkedList(
-            worldPos,
-            element.x,
-            element.y,
-            element.values.length
-          );
-        } else if (element.type === 'binary-tree') {
-          isHit = isCursorOnTree(
-            worldPos,
-            element.x,
-            element.y,
-            element.root,
-            HIT_TOLERANCE
-          );
-        }
-      }
-
-      if (isHit) {
-        dispatch(addSelectedEleementIndex(i));
-        dispatch(addselectedElementsIndice([]));
-        return;
-      }
+    if (elementIndex !== null) {
+      dispatch(addSelectedElementIndex(elementIndex));
+      dispatch(addSelectedElementsIndices([]));
+    } else {
+      // If no element was clicked, deselect
+      dispatch(addSelectedElementIndex(null));
     }
-
-    // If no element was clicked, deselect
-    dispatch(addSelectedEleementIndex(null));
   };
 
   const handleContextMenu = (e: React.MouseEvent) => {
     e.preventDefault();
+  };
+
+  const handleWheel = (e: React.WheelEvent) => {
+    e.preventDefault();
+    const delta = e.deltaY > 0 ? 0.1 : -0.1;
+    dispatch(handleZoom({ delta }));
   };
 
   return (

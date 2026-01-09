@@ -5,8 +5,9 @@ import { getDepth, TREE_CONSTANTS } from '../data-structures/tree';
 
 export const getElementBounds = (element: DrawElements) => {
   if (element.type === 'draw') {
-    const xs = element.points.map((p: DrawPoint) => p.x);
-    const ys = element.points.map((p: DrawPoint) => p.y);
+    const xs = element.points.map((p) => element.x + p.x);
+    const ys = element.points.map((p) => element.y + p.y);
+
     return {
       minX: Math.min(...xs),
       minY: Math.min(...ys),
@@ -22,24 +23,24 @@ export const getElementBounds = (element: DrawElements) => {
     };
   } else if (element.type === 'circle') {
     return {
-      minX: element.centerX - element.radius,
-      minY: element.centerY - element.radius,
-      maxX: element.centerX + element.radius,
-      maxY: element.centerY + element.radius
+      minX: element.x - element.radius,
+      minY: element.y - element.radius,
+      maxX: element.x + element.radius,
+      maxY: element.y + element.radius
     };
   } else if (element.type === 'line') {
     return {
-      minX: Math.min(element.startX, element.endX),
-      minY: Math.min(element.startY, element.endY),
-      maxX: Math.max(element.startX, element.endX),
-      maxY: Math.max(element.startY, element.endY)
+      minX: Math.min(element.x, element.endX),
+      minY: Math.min(element.y, element.endY),
+      maxX: Math.max(element.x, element.endX),
+      maxY: Math.max(element.y, element.endY)
     };
   } else if (element.type === 'arrow') {
     return {
-      minX: Math.min(element.startX, element.endX),
-      maxX: Math.max(element.startX, element.endX),
-      minY: Math.min(element.startY, element.endY),
-      maxY: Math.max(element.startY, element.endY)
+      minX: Math.min(element.x, element.endX),
+      maxX: Math.max(element.x, element.endX),
+      minY: Math.min(element.y, element.endY),
+      maxY: Math.max(element.y, element.endY)
     };
   } else if (element.type === 'array') {
     return {

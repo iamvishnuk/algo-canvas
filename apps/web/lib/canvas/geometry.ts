@@ -40,21 +40,23 @@ export const distanceFromPointToLineSegment = (
 
 export const isPointNearPath = (
   point: DrawPoint,
-  path: DrawPoint[],
-  tolerance: number
-): boolean => {
-  for (let i = 0; i < path.length - 1; i++) {
-    const currentPoint = path[i];
-    const nextPoint = path[i + 1];
+  points: DrawPoint[],
+  tolerance: number,
+  offsetX: number,
+  offsetY: number
+) => {
+  for (let i = 0; i < points.length - 1; i++) {
+    const p1 = {
+      x: offsetX + points[i]!.x,
+      y: offsetY + points[i]!.y
+    };
+    const p2 = {
+      x: offsetX + points[i + 1]!.x,
+      y: offsetY + points[i + 1]!.y
+    };
 
-    if (
-      currentPoint &&
-      nextPoint &&
-      distanceFromPointToLineSegment(point, currentPoint, nextPoint) <=
-        tolerance
-    ) {
-      return true;
-    }
+    const d = distanceFromPointToLineSegment(point, p1, p2);
+    if (d <= tolerance) return true;
   }
   return false;
 };

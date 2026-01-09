@@ -4,7 +4,7 @@ import {
   DrawPoint,
   DrawRect
 } from '@workspace/types/canvas';
-import { drawArrow } from './draw';
+import { drawArrow, drawCircle, drawLine, drawRectangle } from './draw';
 
 export const drawElementsPreview = (
   ctx: CanvasRenderingContext2D,
@@ -36,43 +36,35 @@ export const drawElementsPreview = (
 
   // Draw current circle being drawn
   if (currentCircle) {
-    ctx.strokeStyle = '#7A3EFF';
-    ctx.lineWidth = 2 / scale;
-
-    ctx.beginPath();
-    ctx.arc(
+    drawCircle(
+      ctx,
       currentCircle.center.x,
       currentCircle.center.y,
       currentCircle.radius,
-      0,
-      Math.PI * 2
+      scale
     );
-    ctx.stroke();
   }
 
   if (currentRect) {
-    ctx.strokeStyle = '#7A3EFF';
-    ctx.lineWidth = 2 / scale;
-
-    ctx.beginPath();
-    ctx.rect(
+    drawRectangle(
+      ctx,
       currentRect.x,
       currentRect.y,
       currentRect.width,
-      currentRect.height
+      currentRect.height,
+      scale
     );
-    ctx.stroke();
   }
 
   if (currentLine) {
-    ctx.strokeStyle = '#7A3EFF';
-    ctx.lineWidth = 2 / scale;
-
-    ctx.beginPath();
-    ctx.moveTo(currentLine.x, currentLine.y);
-    ctx.lineTo(currentLine.endX, currentLine.endY);
-
-    ctx.stroke();
+    drawLine(
+      ctx,
+      currentLine.x,
+      currentLine.y,
+      currentLine.endX,
+      currentLine.endY,
+      scale
+    );
   }
 
   if (currentArrow) {

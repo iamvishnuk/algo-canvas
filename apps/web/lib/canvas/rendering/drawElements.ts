@@ -1,12 +1,12 @@
 import { DrawElements } from '@workspace/types/canvas';
 import {
-  draw,
   drawArray,
   drawArrow,
   drawBinaryTree,
   drawCircle,
   drawLine,
   drawLinkedList,
+  drawPath,
   drawRectangle
 } from './draw';
 
@@ -19,7 +19,7 @@ export const drawElements = (
     if (element.type === 'draw') {
       if (element.points.length < 2) return;
 
-      draw(ctx, element.points, scale);
+      drawPath(ctx, element.points, element.x, element.y, scale);
     } else if (element.type === 'circle') {
       drawCircle(ctx, element.x, element.y, element.radius, scale);
     } else if (element.type === 'rectangle') {
