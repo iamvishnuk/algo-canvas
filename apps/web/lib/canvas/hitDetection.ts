@@ -36,8 +36,8 @@ export function getResizeHandle(
   const centerX = (minX + maxX) / 2;
   const centerY = (minY + maxY) / 2;
 
-  const isRectangle = element.type === 'rectangle';
-  const rotation = isRectangle ? (element.rotate ?? 0) : 0;
+  const isRotatable = element.type === 'rectangle' || element.type === 'text';
+  const rotation = isRotatable ? (element.rotate ?? 0) : 0;
 
   // Define corner handle positions (with padding)
   const corners: { handle: ResizeHandle; x: number; y: number }[] = [

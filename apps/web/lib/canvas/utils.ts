@@ -283,6 +283,20 @@ export const resizeElement = (
       break;
     }
 
+    case 'text': {
+      const oldBounds = getElementBounds(element);
+      if (oldBounds) {
+        const oldHeight = oldBounds.maxY - oldBounds.minY || 1;
+        const newHeight = newBounds.maxY - newBounds.minY;
+        const scaleFactor = newHeight / oldHeight;
+
+        element.x = newBounds.minX;
+        element.y = newBounds.minY;
+        element.fontSize = Math.max(8, element.fontSize * scaleFactor); // Min font size of 8
+      }
+      break;
+    }
+
     default:
       // Data structures (array, tree, linked-list) - just move, don't resize
       element.x = minX;
