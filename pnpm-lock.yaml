@@ -126,6 +126,9 @@ importers:
       '@types/speakeasy':
         specifier: ^2.0.10
         version: 2.0.10
+      eslint:
+        specifier: ^9.39.1
+        version: 9.39.1(jiti@2.6.1)
       nodemon:
         specifier: ^3.1.11
         version: 3.1.11

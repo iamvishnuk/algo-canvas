@@ -1,14 +1,11 @@
-import { nextJsConfig } from '@workspace/eslint-config/next-js';
+import { config } from '@workspace/eslint-config/base';
 
 /** @type {import("eslint").Linter.Config} */
 export default [
-  ...nextJsConfig,
-  {
-    ignores: ['node_modules/**', '.next/**']
-  },
+  ...config,
   {
     rules: {
-      // Disable turbo env var warnings - handled by Next.js env config
+      // Disable turbo env var warnings - not relevant for server-side code
       'turbo/no-undeclared-env-vars': 'off',
       // Allow unused vars with underscore prefix
       '@typescript-eslint/no-unused-vars': [
@@ -17,7 +14,8 @@ export default [
           argsIgnorePattern: '^_',
           varsIgnorePattern: '^_'
         }
-      ]
+      ],
+      '@typescript-eslint/no-empty-object-type': 'off'
     }
   }
 ];

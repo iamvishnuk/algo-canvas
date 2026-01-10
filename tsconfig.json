@@ -2,9 +2,6 @@
   "extends": "@workspace/typescript-config/base.json",
   "references": [
     {
-      "path": "./apps/web"
-    },
-    {
       "path": "./apps/server"
     },
     {
