@@ -7,14 +7,24 @@ export const drawCircle = (
   ctx: CanvasRenderingContext2D,
   centerX: number,
   centerY: number,
-  radius: number,
-  scale: number
+  radiusX: number,
+  radiusY: number,
+  scale: number,
+  rotation: number = 0
 ) => {
   ctx.strokeStyle = '#7A3EFF';
   ctx.lineWidth = 2 / scale;
 
   ctx.beginPath();
-  ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+  ctx.ellipse(
+    centerX,
+    centerY,
+    Math.abs(radiusX),
+    Math.abs(radiusY),
+    rotation,
+    0,
+    Math.PI * 2
+  );
   ctx.stroke();
 };
 

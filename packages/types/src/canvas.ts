@@ -22,7 +22,8 @@ export type DrawCircle = {
   type: 'circle';
   x: number;
   y: number;
-  radius: number;
+  radiusX: number;
+  radiusY: number;
   color: string;
   rotate: number;
 };

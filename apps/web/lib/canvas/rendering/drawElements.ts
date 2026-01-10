@@ -21,7 +21,15 @@ export const drawElements = (
 
       drawPath(ctx, element.points, element.x, element.y, scale);
     } else if (element.type === 'circle') {
-      drawCircle(ctx, element.x, element.y, element.radius, scale);
+      drawCircle(
+        ctx,
+        element.x,
+        element.y,
+        element.radiusX,
+        element.radiusY,
+        scale,
+        element.rotate
+      );
     } else if (element.type === 'rectangle') {
       drawRectangle(
         ctx,

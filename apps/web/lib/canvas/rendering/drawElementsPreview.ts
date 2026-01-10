@@ -11,8 +11,10 @@ export const drawElementsPreview = (
   scale: number,
   currentPath: DrawPoint[],
   currentCircle: {
-    center: DrawPoint;
-    radius: number;
+    radiusX: number;
+    radiusY: number;
+    centerX: number;
+    centerY: number;
   } | null,
   currentRect: Omit<DrawRect, 'type'> | null,
   currentLine: Omit<DrawLine, 'type'> | null,
@@ -38,9 +40,10 @@ export const drawElementsPreview = (
   if (currentCircle) {
     drawCircle(
       ctx,
-      currentCircle.center.x,
-      currentCircle.center.y,
-      currentCircle.radius,
+      currentCircle.centerX,
+      currentCircle.centerY,
+      currentCircle.radiusX,
+      currentCircle.radiusY,
       scale
     );
   }

@@ -27,6 +27,7 @@ export const drawSelectionBox = (
   areaSelectionStart: DrawPoint | null,
   areaSelectionEnd: DrawPoint | null
 ) => {
+  // ================= SINGLE SELECTION =================
   if (selectedElementIndex !== null) {
     const element = elements[selectedElementIndex];
     if (!element) return;
@@ -43,16 +44,19 @@ export const drawSelectionBox = (
     const centerX = (minX + maxX) / 2;
     const centerY = (minY + maxY) / 2;
 
-    const isRotated = element.type === 'rectangle' && element.rotate !== 0;
+    const isRectangle = element.type === 'rectangle';
+    const isRotated = isRectangle && (element.rotate ?? 0) !== 0;
 
     ctx.save();
 
+    // 🔹 Rotate selection box ONLY for rectangles
     if (isRotated) {
       ctx.translate(centerX, centerY);
       ctx.rotate(element.rotate);
       ctx.translate(-centerX, -centerY);
     }
 
+    // 🔹 Selection rectangle
     ctx.strokeStyle = '#3b82f6';
     ctx.lineWidth = 2 / view.scale;
     ctx.setLineDash([5 / view.scale, 5 / view.scale]);
@@ -66,7 +70,7 @@ export const drawSelectionBox = (
 
     ctx.setLineDash([]);
 
-    // 🔹 CORNER HANDLES
+    // 🔹 Corner resize handles
     ctx.fillStyle = '#3b82f6';
 
     const corners = [
@@ -87,37 +91,38 @@ export const drawSelectionBox = (
 
     ctx.restore();
 
-    // 🔹 ROTATION HANDLE (NOT ROTATED WITH CANVAS)
-    const rawRotatePoint = {
-      x: centerX,
-      y: minY - padding - rotateOffset
-    };
+    // 🔹 ROTATION HANDLE (RECTANGLE ONLY)
+    if (isRectangle) {
+      const rawRotatePoint = {
+        x: centerX,
+        y: minY - padding - rotateOffset
+      };
 
-    const rotatePointFinal = isRotated
-      ? rotatePoint(
-          rawRotatePoint.x,
-          rawRotatePoint.y,
-          centerX,
-          centerY,
-          element.rotate
-        )
-      : rawRotatePoint;
+      const rotatePointFinal = isRotated
+        ? rotatePoint(
+            rawRotatePoint.x,
+            rawRotatePoint.y,
+            centerX,
+            centerY,
+            element.rotate
+          )
+        : rawRotatePoint;
 
-    ctx.beginPath();
-    ctx.arc(
-      rotatePointFinal.x,
-      rotatePointFinal.y,
-      rotateRadius,
-      0,
-      Math.PI * 2
-    );
-    ctx.fillStyle = '#3b82f6';
-    ctx.fill();
+      ctx.beginPath();
+      ctx.arc(
+        rotatePointFinal.x,
+        rotatePointFinal.y,
+        rotateRadius,
+        0,
+        Math.PI * 2
+      );
+      ctx.fillStyle = '#3b82f6';
+      ctx.fill();
+    }
   }
 
-  // Draw multiple elements selection
+  // ================= MULTI SELECTION =================
   if (selectedElementsIndices.length > 0) {
-    // Draw individual selection boxes for each element
     selectedElementsIndices.forEach((index) => {
       const element = elements[index];
       if (!element) return;
@@ -130,17 +135,15 @@ export const drawSelectionBox = (
 
       ctx.strokeStyle = '#3b82f6';
       ctx.lineWidth = 2 / view.scale;
-      // ctx.setLineDash([5 / view.scale, 5 / view.scale]);
+
       ctx.strokeRect(
         minX - padding,
         minY - padding,
         maxX - minX + padding * 2,
         maxY - minY + padding * 2
       );
-      ctx.setLineDash([]);
     });
 
-    // Draw overall bounding box around all selected elements
     let overallMinX = Infinity;
     let overallMinY = Infinity;
     let overallMaxX = -Infinity;
@@ -162,10 +165,10 @@ export const drawSelectionBox = (
     if (overallMinX !== Infinity) {
       const padding = 25 / view.scale;
 
-      // Draw overall bounding box with different style
       ctx.strokeStyle = '#3b82f6';
       ctx.lineWidth = 3 / view.scale;
       ctx.setLineDash([5 / view.scale, 5 / view.scale]);
+
       ctx.strokeRect(
         overallMinX - padding,
         overallMinY - padding,
@@ -173,9 +176,12 @@ export const drawSelectionBox = (
         overallMaxY - overallMinY + padding * 2
       );
 
-      // Draw larger corner handles for the overall box
+      ctx.setLineDash([]);
+
+      // 🔹 Overall resize handles
       const handleSize = 10 / view.scale;
       ctx.fillStyle = '#3b82f6';
+
       const corners = [
         { x: overallMinX - padding, y: overallMinY - padding },
         { x: overallMaxX + padding, y: overallMinY - padding },
@@ -191,38 +197,41 @@ export const drawSelectionBox = (
           handleSize
         );
       });
+
+      // 🔹 ROTATION HANDLE (ONLY IF ALL ARE RECTANGLES)
+      const allRectangles = selectedElementsIndices.every(
+        (i) => elements[i]?.type === 'rectangle'
+      );
+
+      if (allRectangles) {
+        const rotateOffset = 20 / view.scale;
+        const rotateRadius = 6 / view.scale;
+
+        const rotateX = (overallMinX + overallMaxX) / 2;
+        const rotateY = overallMinY - padding - rotateOffset;
+
+        ctx.beginPath();
+        ctx.arc(rotateX, rotateY, rotateRadius, 0, Math.PI * 2);
+        ctx.fillStyle = '#3b82f6';
+        ctx.fill();
+      }
     }
-
-    // Rotation handle
-    const rotateOffset = 20 / view.scale;
-    const rotateRadius = 6 / view.scale;
-    const padding = 25 / view.scale;
-
-    const rotateX = (overallMinX + overallMaxX) / 2;
-    const rotateY = overallMinY - padding - rotateOffset;
-
-    // Draw rotation dot
-    ctx.beginPath();
-    ctx.arc(rotateX, rotateY, rotateRadius, 0, Math.PI * 2);
-    ctx.fillStyle = '#3b82f6';
-    ctx.fill();
   }
 
-  // Draw area selection rectangle
+  // ================= AREA SELECTION =================
   if (isAreaSelecting && areaSelectionStart && areaSelectionEnd) {
     const minX = Math.min(areaSelectionStart.x, areaSelectionEnd.x);
     const minY = Math.min(areaSelectionStart.y, areaSelectionEnd.y);
     const maxX = Math.max(areaSelectionStart.x, areaSelectionEnd.x);
     const maxY = Math.max(areaSelectionStart.y, areaSelectionEnd.y);
 
-    // Draw selection rectangle
     ctx.strokeStyle = '#3b82f6';
     ctx.lineWidth = 1 / view.scale;
     ctx.setLineDash([5 / view.scale, 5 / view.scale]);
-    ctx.strokeRect(minX, minY, maxX - minX, maxY - minY);
-    ctx.setLineDash([]);
 
-    // Draw semi-transparent fill
+    ctx.strokeRect(minX, minY, maxX - minX, maxY - minY);
+
+    ctx.setLineDash([]);
     ctx.fillStyle = 'rgba(59, 130, 246, 0.1)';
     ctx.fillRect(minX, minY, maxX - minX, maxY - minY);
   }

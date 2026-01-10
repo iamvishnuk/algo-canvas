@@ -30,11 +30,22 @@ export function isElementHit(
       return isPointNearRectangle(worldPos, element, hitTolerance);
 
     case 'circle': {
-      const distanceFromCenter = Math.hypot(
-        worldPos.x - element.x,
-        worldPos.y - element.y
-      );
-      return Math.abs(distanceFromCenter - element.radius) <= hitTolerance;
+      const dx = worldPos.x - element.x;
+      const dy = worldPos.y - element.y;
+
+      const rx = Math.abs(element.radiusX);
+      const ry = Math.abs(element.radiusY);
+
+      if (rx === 0 || ry === 0) return false;
+
+      // Normalize point to ellipse space
+      const normalized = (dx * dx) / (rx * rx) + (dy * dy) / (ry * ry);
+
+      // Convert hitTolerance to normalized space
+      const tolerance = hitTolerance / Math.max(rx, ry);
+
+      // Near ellipse border (≈ 1)
+      return Math.abs(normalized - 1) <= tolerance;
     }
 
     case 'line':

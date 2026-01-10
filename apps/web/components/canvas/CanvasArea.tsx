@@ -71,8 +71,10 @@ const CanvasArea = () => {
 
   const [circleStart, setCircleStart] = useState<DrawPoint | null>(null);
   const [currentCircle, setCurrentCircle] = useState<{
-    center: DrawPoint;
-    radius: number;
+    radiusX: number;
+    radiusY: number;
+    centerX: number;
+    centerY: number;
   } | null>(null);
 
   const [rectStart, setRectStart] = useState<DrawPoint | null>(null);
@@ -225,7 +227,13 @@ const CanvasArea = () => {
     } else if (tool === 'circle') {
       setIsDrawing(true);
       setCircleStart(worldPos);
-      setCurrentCircle({ center: worldPos, radius: 0 });
+
+      setCurrentCircle({
+        centerX: worldPos.x,
+        centerY: worldPos.y,
+        radiusX: 0,
+        radiusY: 0
+      });
     } else if (tool === 'rectangle') {
       setIsDrawing(true);
       setRectStart(worldPos);
@@ -252,7 +260,6 @@ const CanvasArea = () => {
     } else if (tool === 'selection') {
       const HIT_TOLERANCE = 6 / view.scale;
 
-      // 🔁 1. ROTATION HANDLE CHECK (FIRST)
       if (selectedElementIndex !== null) {
         const element = elements[selectedElementIndex]!;
         const bound = getElementBounds(element);
@@ -352,10 +359,12 @@ const CanvasArea = () => {
     } else if (isDrawing && tool === 'draw') {
       setCurrentPath((prev) => [...prev, worldPos]);
     } else if (isDrawing && tool === 'circle' && circleStart) {
-      const dx = worldPos.x - circleStart.x;
-      const dy = worldPos.y - circleStart.y;
-      const radius = Math.sqrt(dx * dx + dy * dy);
-      setCurrentCircle({ center: circleStart, radius });
+      const radiusX = Math.abs(worldPos.x - circleStart.x) / 2;
+      const radiusY = Math.abs(worldPos.y - circleStart.y) / 2;
+
+      const centerX = (circleStart.x + worldPos.x) / 2;
+      const centerY = (circleStart.y + worldPos.y) / 2;
+      setCurrentCircle({ radiusX, radiusY, centerX, centerY });
     } else if (isDrawing && tool === 'rectangle' && rectStart) {
       const width = worldPos.x - rectStart.x;
       const height = worldPos.y - rectStart.y;
@@ -444,19 +453,15 @@ const CanvasArea = () => {
       );
 
       setCurrentPath([]);
-    } else if (
-      isDrawing &&
-      tool === 'circle' &&
-      currentCircle &&
-      currentCircle.radius > 0
-    ) {
+    } else if (isDrawing && tool === 'circle' && currentCircle) {
       dispatch(
         addElements({
           element: {
             type: 'circle',
-            x: currentCircle.center.x,
-            y: currentCircle.center.y,
-            radius: currentCircle.radius,
+            x: currentCircle.centerX,
+            y: currentCircle.centerY,
+            radiusX: currentCircle.radiusX,
+            radiusY: currentCircle.radiusY,
             color: '#7A3EFF',
             rotate: 0
           }

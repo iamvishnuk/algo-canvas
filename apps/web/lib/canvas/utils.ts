@@ -22,11 +22,14 @@ export const getElementBounds = (element: DrawElements) => {
       maxY: Math.max(element.y, element.y + element.height)
     };
   } else if (element.type === 'circle') {
+    const rx = Math.abs(element.radiusX);
+    const ry = Math.abs(element.radiusY);
+
     return {
-      minX: element.x - element.radius,
-      minY: element.y - element.radius,
-      maxX: element.x + element.radius,
-      maxY: element.y + element.radius
+      minX: element.x - rx,
+      minY: element.y - ry,
+      maxX: element.x + rx,
+      maxY: element.y + ry
     };
   } else if (element.type === 'line') {
     return {
