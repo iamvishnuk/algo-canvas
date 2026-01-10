@@ -1,4 +1,5 @@
 import { DSAElement } from '@/lib/canvas/constant';
+import { resizeElement } from '@/lib/canvas/utils';
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import {
   BackgroundType,
@@ -189,6 +190,19 @@ const canvasSlice = createSlice({
       if (element) {
         element.rotate = action.payload.rotation;
       }
+    },
+    updateElementSize: (
+      state,
+      action: PayloadAction<{
+        index: number;
+        newBounds: { minX: number; minY: number; maxX: number; maxY: number };
+      }>
+    ) => {
+      const { index, newBounds } = action.payload;
+      const element = state.elements[index];
+      if (!element) return;
+
+      resizeElement(element, newBounds);
     }
   }
 });
@@ -208,7 +222,8 @@ export const {
   addSelectedElementIndex,
   removeElements,
   updateElementPosition,
-  updateElementRotation
+  updateElementRotation,
+  updateElementSize
 } = canvasSlice.actions;
 
 export default canvasSlice.reducer;

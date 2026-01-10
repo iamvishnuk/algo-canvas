@@ -99,3 +99,100 @@ export const getElementBounds = (element: DrawElements) => {
   }
   return null;
 };
+
+export type ElementBounds = {
+  minX: number;
+  minY: number;
+  maxX: number;
+  maxY: number;
+};
+
+/**
+ * Resize an element to fit new bounds
+ * Mutates the element in place
+ */
+export const resizeElement = (
+  element: DrawElements,
+  newBounds: ElementBounds
+): void => {
+  const { minX, minY, maxX, maxY } = newBounds;
+  const newWidth = maxX - minX;
+  const newHeight = maxY - minY;
+
+  switch (element.type) {
+    case 'rectangle':
+      element.x = minX;
+      element.y = minY;
+      element.width = newWidth;
+      element.height = newHeight;
+      break;
+
+    case 'circle':
+      element.x = (minX + maxX) / 2;
+      element.y = (minY + maxY) / 2;
+      element.radiusX = newWidth / 2;
+      element.radiusY = newHeight / 2;
+      break;
+
+    case 'line':
+    case 'arrow': {
+      // Calculate scale factors from original bounds
+      const origWidth = Math.abs(element.endX - element.x) || 1;
+      const origHeight = Math.abs(element.endY - element.y) || 1;
+      const scaleX = newWidth / origWidth;
+      const scaleY = newHeight / origHeight;
+
+      // Determine original min positions
+      const origMinX = Math.min(element.x, element.endX);
+      const origMinY = Math.min(element.y, element.endY);
+
+      // Scale relative to original min, then translate to new min
+      const newX = minX + (element.x - origMinX) * scaleX;
+      const newY = minY + (element.y - origMinY) * scaleY;
+      const newEndX = minX + (element.endX - origMinX) * scaleX;
+      const newEndY = minY + (element.endY - origMinY) * scaleY;
+
+      element.x = newX;
+      element.y = newY;
+      element.endX = newEndX;
+      element.endY = newEndY;
+      break;
+    }
+
+    case 'draw': {
+      // Get current bounds
+      const xs = element.points.map((p) => element.x + p.x);
+      const ys = element.points.map((p) => element.y + p.y);
+      const origMinX = Math.min(...xs);
+      const origMinY = Math.min(...ys);
+      const origMaxX = Math.max(...xs);
+      const origMaxY = Math.max(...ys);
+      const origWidth = origMaxX - origMinX || 1;
+      const origHeight = origMaxY - origMinY || 1;
+
+      const scaleX = newWidth / origWidth;
+      const scaleY = newHeight / origHeight;
+
+      // Scale all points
+      element.points = element.points.map((p) => {
+        const absX = element.x + p.x;
+        const absY = element.y + p.y;
+        const newAbsX = minX + (absX - origMinX) * scaleX;
+        const newAbsY = minY + (absY - origMinY) * scaleY;
+        return {
+          x: newAbsX - minX,
+          y: newAbsY - minY
+        };
+      });
+      element.x = minX;
+      element.y = minY;
+      break;
+    }
+
+    default:
+      // Data structures (array, tree, linked-list) - just move, don't resize
+      element.x = minX;
+      element.y = minY;
+      break;
+  }
+};

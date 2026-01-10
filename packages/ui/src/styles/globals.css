@@ -221,6 +221,14 @@
   @apply cursor-[url('/cursors/slash-light.svg')_0_20,_auto] dark:cursor-[url('/cursors/slash-dark.svg')_0_20,_auto];
 }
 
+.cursor-nwse-resize {
+  @apply cursor-nwse-resize;
+}
+
+.cursor-nesw-resize {
+  @apply cursor-nesw-resize;
+}
+
 .steps-gradient {
   background: linear-gradient(
     180deg,

@@ -17,6 +17,7 @@ import {
   setCanvasSize,
   updateElementPosition,
   updateElementRotation,
+  updateElementSize,
   updateOffSet
 } from '@/features/canvas/canvasSlice';
 import { useCanvasKeyboardShortcuts } from '@/hooks/useCanvasKeyboardShortcuts';
@@ -26,7 +27,11 @@ import { cn } from '@workspace/ui/lib/utils';
 import CanvasBackground from './CanvasBackground';
 import { screenToWorld } from '@/lib/canvas/coordinates';
 import { isElementInSelectionArea } from '@/lib/canvas/geometry';
-import { findElementAtPosition } from '@/lib/canvas/hitDetection';
+import {
+  findElementAtPosition,
+  getResizeHandle,
+  ResizeHandle
+} from '@/lib/canvas/hitDetection';
 import { CURSOR_MAP } from '@/lib/canvas/constant';
 import { drawGrid } from '@/lib/canvas/rendering/drawGrid';
 import { drawElements } from '@/lib/canvas/rendering/drawElements';
@@ -112,6 +117,16 @@ const CanvasArea = () => {
     startAngle: number;
     initialRotation: number;
   } | null>(null);
+
+  // Resize State
+  const [isResizing, setIsResizing] = useState(false);
+  const [resizeState, setResizeState] = useState<{
+    index: number;
+    handle: ResizeHandle;
+    initialBounds: { minX: number; minY: number; maxX: number; maxY: number };
+    anchorPoint: DrawPoint;
+  } | null>(null);
+  const [hoveredHandle, setHoveredHandle] = useState<ResizeHandle>(null);
 
   // Used to trigger redraw after resize
   const [resizeKey, setResizeKey] = useState(0);
@@ -264,6 +279,46 @@ const CanvasArea = () => {
         const element = elements[selectedElementIndex]!;
         const bound = getElementBounds(element);
         if (bound) {
+          // Check for resize handle first
+          const resizeHandle = getResizeHandle(worldPos, element, view);
+          if (resizeHandle) {
+            const padding = 10 / view.scale;
+            const { minX, minY, maxX, maxY } = bound;
+
+            // Determine anchor point (opposite corner)
+            let anchorX: number, anchorY: number;
+            switch (resizeHandle) {
+              case 'top-left':
+                anchorX = maxX + padding;
+                anchorY = maxY + padding;
+                break;
+              case 'top-right':
+                anchorX = minX - padding;
+                anchorY = maxY + padding;
+                break;
+              case 'bottom-left':
+                anchorX = maxX + padding;
+                anchorY = minY - padding;
+                break;
+              case 'bottom-right':
+                anchorX = minX - padding;
+                anchorY = minY - padding;
+                break;
+              default:
+                anchorX = minX;
+                anchorY = minY;
+            }
+
+            setIsResizing(true);
+            setResizeState({
+              index: selectedElementIndex,
+              handle: resizeHandle,
+              initialBounds: bound,
+              anchorPoint: { x: anchorX, y: anchorY }
+            });
+            return;
+          }
+
           const padding = 10 / view.scale;
           const rotateOffset = 20 / view.scale;
           const rotateRadius = 10 / view.scale;
@@ -342,6 +397,22 @@ const CanvasArea = () => {
   const handleSelectionHover = (e: React.MouseEvent) => {
     const worldPos = screenToWorld(e.clientX, e.clientY, drawCanvasRef, view);
     const HIT_TOLERANCE = 6 / view.scale;
+
+    // Check for resize handle hover on selected element
+    if (selectedElementIndex !== null) {
+      const element = elements[selectedElementIndex];
+      if (element) {
+        const resizeHandle = getResizeHandle(worldPos, element, view);
+        setHoveredHandle(resizeHandle);
+        if (resizeHandle) {
+          setCursorOnElement(false);
+          return;
+        }
+      }
+    } else {
+      setHoveredHandle(null);
+    }
+
     const elementIndex = findElementAtPosition(
       worldPos,
       elements,
@@ -404,6 +475,47 @@ const CanvasArea = () => {
           })
         );
       }
+    } else if (tool === 'selection' && isResizing && resizeState) {
+      const { index, handle, initialBounds } = resizeState;
+      const MIN_SIZE = 10 / view.scale;
+
+      // Calculate new bounds based on which handle is being dragged
+      let newMinX = initialBounds.minX;
+      let newMinY = initialBounds.minY;
+      let newMaxX = initialBounds.maxX;
+      let newMaxY = initialBounds.maxY;
+
+      switch (handle) {
+        case 'top-left':
+          newMinX = Math.min(worldPos.x, newMaxX - MIN_SIZE);
+          newMinY = Math.min(worldPos.y, newMaxY - MIN_SIZE);
+          break;
+        case 'top-right':
+          newMaxX = Math.max(worldPos.x, newMinX + MIN_SIZE);
+          newMinY = Math.min(worldPos.y, newMaxY - MIN_SIZE);
+          break;
+        case 'bottom-left':
+          newMinX = Math.min(worldPos.x, newMaxX - MIN_SIZE);
+          newMaxY = Math.max(worldPos.y, newMinY + MIN_SIZE);
+          break;
+        case 'bottom-right':
+          newMaxX = Math.max(worldPos.x, newMinX + MIN_SIZE);
+          newMaxY = Math.max(worldPos.y, newMinY + MIN_SIZE);
+          break;
+      }
+
+      dispatch(
+        updateElementSize({
+          index,
+          newBounds: {
+            minX: newMinX,
+            minY: newMinY,
+            maxX: newMaxX,
+            maxY: newMaxY
+          }
+        })
+      );
+      return;
     } else if (tool === 'selection' && isRotating && rotationState) {
       const { index, center, startAngle, initialRotation } = rotationState;
 
@@ -539,6 +651,10 @@ const CanvasArea = () => {
       setIsRotating(false);
       setRotationState(null);
       return;
+    } else if (isResizing) {
+      setIsResizing(false);
+      setResizeState(null);
+      return;
     }
     setIsDragging(false);
     setIsDrawing(false);
@@ -570,6 +686,20 @@ const CanvasArea = () => {
     e.preventDefault();
   };
 
+  // Get resize cursor based on hovered handle
+  const getResizeCursor = (handle: ResizeHandle): string => {
+    switch (handle) {
+      case 'top-left':
+      case 'bottom-right':
+        return 'cursor-nwse-resize';
+      case 'top-right':
+      case 'bottom-left':
+        return 'cursor-nesw-resize';
+      default:
+        return '';
+    }
+  };
+
   const handleWheel = (e: React.WheelEvent) => {
     e.preventDefault();
     const delta = e.deltaY > 0 ? 0.1 : -0.1;
@@ -594,7 +724,8 @@ const CanvasArea = () => {
         className={cn(
           '!dark:text-white absolute top-0 left-0',
           CURSOR_MAP[tool],
-          cursorOnElement && 'cursor-move'
+          hoveredHandle && getResizeCursor(hoveredHandle),
+          !hoveredHandle && cursorOnElement && 'cursor-move'
         )}
       />
 

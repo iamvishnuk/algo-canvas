@@ -1,4 +1,4 @@
-import { DrawElements, DrawPoint } from '@workspace/types/canvas';
+import { DrawElements, DrawPoint, ViewState } from '@workspace/types/canvas';
 import {
   distanceFromPointToLineSegment,
   isCursorOnArray,
@@ -7,6 +7,65 @@ import {
   isPointNearPath,
   isPointNearRectangle
 } from './geometry';
+import { getElementBounds } from './utils';
+import { rotatePoint } from './rendering/drawSelectionBox';
+
+export type ResizeHandle =
+  | 'top-left'
+  | 'top-right'
+  | 'bottom-left'
+  | 'bottom-right'
+  | null;
+
+/**
+ * Get the resize handle at the given world position for a selected element
+ */
+export function getResizeHandle(
+  worldPos: DrawPoint,
+  element: DrawElements,
+  view: ViewState
+): ResizeHandle {
+  const bounds = getElementBounds(element);
+  if (!bounds) return null;
+
+  const { minX, minY, maxX, maxY } = bounds;
+  const padding = 10 / view.scale;
+  const handleSize = 8 / view.scale;
+  const hitTolerance = handleSize;
+
+  const centerX = (minX + maxX) / 2;
+  const centerY = (minY + maxY) / 2;
+
+  const isRectangle = element.type === 'rectangle';
+  const rotation = isRectangle ? (element.rotate ?? 0) : 0;
+
+  // Define corner handle positions (with padding)
+  const corners: { handle: ResizeHandle; x: number; y: number }[] = [
+    { handle: 'top-left', x: minX - padding, y: minY - padding },
+    { handle: 'top-right', x: maxX + padding, y: minY - padding },
+    { handle: 'bottom-left', x: minX - padding, y: maxY + padding },
+    { handle: 'bottom-right', x: maxX + padding, y: maxY + padding }
+  ];
+
+  // Transform cursor to element's local space if rotated
+  let localPos = worldPos;
+  if (rotation !== 0) {
+    // Inverse rotation: rotate cursor position back
+    localPos = rotatePoint(worldPos.x, worldPos.y, centerX, centerY, -rotation);
+  }
+
+  for (const corner of corners) {
+    const dx = localPos.x - corner.x;
+    const dy = localPos.y - corner.y;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+
+    if (distance <= hitTolerance) {
+      return corner.handle;
+    }
+  }
+
+  return null;
+}
 
 /**
  * Check if a point hits a specific canvas element
