@@ -10,12 +10,16 @@
     "prepare": "husky"
   },
   "lint-staged": {
-    "apps/**/*.{ts,tsx}": [
-      "eslint --fix",
+    "apps/web/**/*.{ts,tsx}": [
+      "pnpm --filter @workspace/web exec eslint --fix",
       "prettier --write"
     ],
-    "packages/**/*.{ts,tsx}": [
-      "eslint --fix",
+    "apps/server/**/*.{ts,tsx}": [
+      "pnpm --filter @workspace/server exec eslint --fix",
+      "prettier --write"
+    ],
+    "packages/ui/**/*.{ts,tsx}": [
+      "pnpm --filter @workspace/ui exec eslint --fix",
       "prettier --write"
     ],
     "*.{json,md,yml}": [

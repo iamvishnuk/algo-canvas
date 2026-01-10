@@ -1,8 +1,11 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import {
   changeTool,
   handleZoom,
   removeElements,
-  resetView
+  resetView,
+  undo,
+  redo
 } from '@/features/canvas/canvasSlice';
 import { useAppDispatch } from '@/store/hooks';
 import { useEffect } from 'react';
@@ -98,6 +101,18 @@ export const useCanvasKeyboardShortcuts = () => {
       description: 'Insert'
     },
     {
+      key: 'z',
+      modifiers: { ctrl: true },
+      action: () => dispatch(undo()),
+      description: 'Undo'
+    },
+    {
+      key: 'z',
+      modifiers: { ctrl: true, shift: true },
+      action: () => dispatch(redo()),
+      description: 'Redo'
+    },
+    {
       key: 'Delete',
       action: () => dispatch(removeElements()),
       description: 'Remove element'
@@ -129,7 +144,7 @@ export const useCanvasKeyboardShortcuts = () => {
         const noExtraAlt = shortcut.modifiers?.alt || !e.altKey;
 
         if (
-          e.key === shortcut.key &&
+          e.key.toLowerCase() === shortcut.key.toLowerCase() &&
           ctrlMatch &&
           shiftMatch &&
           altMatch &&

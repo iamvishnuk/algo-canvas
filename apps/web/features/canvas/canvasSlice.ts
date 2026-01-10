@@ -1,6 +1,6 @@
 import { DSAElement } from '@/lib/canvas/constant';
 import { resizeElement } from '@/lib/canvas/utils';
-import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, current, type PayloadAction } from '@reduxjs/toolkit';
 import {
   BackgroundType,
   DrawElements,
@@ -29,6 +29,10 @@ export interface ICanvasState {
   showArrayDialog: boolean;
   showTreeDialog: boolean;
   showLinkedListDialog: boolean;
+  history: {
+    past: DrawElements[][];
+    future: DrawElements[][];
+  };
 }
 
 const initialState: ICanvasState = {
@@ -54,7 +58,21 @@ const initialState: ICanvasState = {
   },
   showArrayDialog: false,
   showTreeDialog: false,
-  showLinkedListDialog: false
+  showLinkedListDialog: false,
+  history: {
+    past: [],
+    future: []
+  }
+};
+
+const HISTORY_LIMIT = 50;
+
+const saveToHistory = (state: ICanvasState) => {
+  state.history.past.push(structuredClone(current(state.elements)));
+  if (state.history.past.length > HISTORY_LIMIT) {
+    state.history.past = state.history.past.slice(-HISTORY_LIMIT);
+  }
+  state.history.future = [];
 };
 
 const canvasSlice = createSlice({
@@ -95,9 +113,11 @@ const canvasSlice = createSlice({
       state.tool = action.payload.tool;
     },
     addElements: (state, action: PayloadAction<{ element: DrawElements }>) => {
+      saveToHistory(state);
       state.elements = [...state.elements, action.payload.element];
     },
     clearCanvas: (state) => {
+      saveToHistory(state);
       state.elements = [];
     },
     changeBackgroundType: (
@@ -138,6 +158,7 @@ const canvasSlice = createSlice({
     },
     removeElements: (state) => {
       if (state.selectedElementIndex !== null) {
+        saveToHistory(state);
         state.elements = state.elements.filter(
           (_, index) => index !== state.selectedElementIndex
         );
@@ -145,6 +166,7 @@ const canvasSlice = createSlice({
       }
 
       if (state.selectedElementsIndices.length > 0) {
+        saveToHistory(state);
         state.elements = state.elements.filter(
           (_, index) => !state.selectedElementsIndices.includes(index)
         );
@@ -159,9 +181,13 @@ const canvasSlice = createSlice({
         x: number;
         y: number;
         offset: DrawPoint;
+        isStart?: boolean;
       }>
     ) => {
-      const { index, x, y, offset } = action.payload;
+      const { index, x, y, offset, isStart } = action.payload;
+      if (isStart) {
+        saveToHistory(state);
+      }
       const element = state.elements[index];
       if (!element) return;
 
@@ -184,8 +210,15 @@ const canvasSlice = createSlice({
     },
     updateElementRotation: (
       state,
-      action: PayloadAction<{ elementIndex: number; rotation: number }>
+      action: PayloadAction<{
+        elementIndex: number;
+        rotation: number;
+        isStart?: boolean;
+      }>
     ) => {
+      if (action.payload.isStart) {
+        saveToHistory(state);
+      }
       const element = state.elements[action.payload.elementIndex];
       if (element) {
         element.rotate = action.payload.rotation;
@@ -196,13 +229,37 @@ const canvasSlice = createSlice({
       action: PayloadAction<{
         index: number;
         newBounds: { minX: number; minY: number; maxX: number; maxY: number };
+        isStart?: boolean;
       }>
     ) => {
-      const { index, newBounds } = action.payload;
+      const { index, newBounds, isStart } = action.payload;
+      if (isStart) {
+        saveToHistory(state);
+      }
       const element = state.elements[index];
       if (!element) return;
 
       resizeElement(element, newBounds);
+    },
+    undo: (state) => {
+      if (state.history.past.length === 0) return;
+
+      const previous = state.history.past.pop()!;
+      state.history.future.push(structuredClone(current(state.elements)));
+      state.elements = previous;
+
+      state.selectedElementIndex = null;
+      state.selectedElementsIndices = [];
+    },
+    redo: (state) => {
+      if (state.history.future.length === 0) return;
+
+      const next = state.history.future.pop()!;
+      state.history.past.push(structuredClone(current(state.elements)));
+      state.elements = next;
+
+      state.selectedElementIndex = null;
+      state.selectedElementsIndices = [];
     }
   }
 });
@@ -223,7 +280,9 @@ export const {
   removeElements,
   updateElementPosition,
   updateElementRotation,
-  updateElementSize
+  updateElementSize,
+  undo,
+  redo
 } = canvasSlice.actions;
 
 export default canvasSlice.reducer;

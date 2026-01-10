@@ -1,7 +1,9 @@
 import {
   clearCanvas,
   handleZoom,
-  resetView
+  resetView,
+  undo,
+  redo
 } from '@/features/canvas/canvasSlice';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { Button } from '@workspace/ui/components/button';
@@ -14,7 +16,7 @@ import { Minus, Plus, Redo2, Trash, Undo2 } from 'lucide-react';
 
 const BottomToolBar = () => {
   const dispatch = useAppDispatch();
-  const view = useAppSelector((state) => state.canvas.view);
+  const { view, history } = useAppSelector((state) => state.canvas);
 
   return (
     <div className='absolute bottom-4 left-4 flex gap-4'>
@@ -67,12 +69,14 @@ const BottomToolBar = () => {
             <Button
               className='dark:bg-brand-bg dark:hover:bg-brand-primary'
               size='icon'
+              onClick={() => dispatch(undo())}
+              disabled={history.past.length === 0}
             >
               <Undo2 className='dark:text-neutral-400' />
             </Button>
           </TooltipTrigger>
           <TooltipContent side='top'>
-            <p>Undo</p>
+            <p>Undo Ctrl+Z</p>
           </TooltipContent>
         </Tooltip>
         <Tooltip>
@@ -80,12 +84,14 @@ const BottomToolBar = () => {
             <Button
               className='dark:bg-brand-bg dark:hover:bg-brand-primary'
               size='icon'
+              onClick={() => dispatch(redo())}
+              disabled={history.future.length === 0}
             >
               <Redo2 className='dark:text-neutral-400' />
             </Button>
           </TooltipTrigger>
           <TooltipContent side='top'>
-            <p>Redo</p>
+            <p>Redo Ctrl+Shift+Z</p>
           </TooltipContent>
         </Tooltip>
       </div>

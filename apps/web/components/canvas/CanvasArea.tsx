@@ -108,6 +108,7 @@ const CanvasArea = () => {
   const [draggingElementIndex, setDraggingElementIndex] = useState<
     number | null
   >(null);
+  const [isFirstDragMove, setIsFirstDragMove] = useState(false);
 
   // Rotation State
   const [isRotating, setIsRotating] = useState(false);
@@ -117,6 +118,7 @@ const CanvasArea = () => {
     startAngle: number;
     initialRotation: number;
   } | null>(null);
+  const [isFirstRotateMove, setIsFirstRotateMove] = useState(false);
 
   // Resize State
   const [isResizing, setIsResizing] = useState(false);
@@ -127,6 +129,7 @@ const CanvasArea = () => {
     anchorPoint: DrawPoint;
   } | null>(null);
   const [hoveredHandle, setHoveredHandle] = useState<ResizeHandle>(null);
+  const [isFirstResizeMove, setIsFirstResizeMove] = useState(false);
 
   // Used to trigger redraw after resize
   const [resizeKey, setResizeKey] = useState(0);
@@ -310,6 +313,7 @@ const CanvasArea = () => {
             }
 
             setIsResizing(true);
+            setIsFirstResizeMove(true);
             setResizeState({
               index: selectedElementIndex,
               handle: resizeHandle,
@@ -352,6 +356,7 @@ const CanvasArea = () => {
 
           if (dx * dx + dy * dy <= rotateRadius * rotateRadius) {
             setIsRotating(true);
+            setIsFirstRotateMove(true);
             setRotationState({
               index: selectedElementIndex,
               center,
@@ -376,6 +381,7 @@ const CanvasArea = () => {
         const element = elements[elementIndex]!;
 
         setIsDraggingElements(true);
+        setIsFirstDragMove(true);
         setDraggingElementIndex(elementIndex);
         setDragElementOffset({
           x: worldPos.x - element.x,
@@ -471,9 +477,13 @@ const CanvasArea = () => {
             index: draggingElementIndex,
             x: worldPos.x,
             y: worldPos.y,
-            offset: dragElementOffset
+            offset: dragElementOffset,
+            isStart: isFirstDragMove
           })
         );
+        if (isFirstDragMove) {
+          setIsFirstDragMove(false);
+        }
       }
     } else if (tool === 'selection' && isResizing && resizeState) {
       const { index, handle, initialBounds } = resizeState;
@@ -512,9 +522,13 @@ const CanvasArea = () => {
             minY: newMinY,
             maxX: newMaxX,
             maxY: newMaxY
-          }
+          },
+          isStart: isFirstResizeMove
         })
       );
+      if (isFirstResizeMove) {
+        setIsFirstResizeMove(false);
+      }
       return;
     } else if (tool === 'selection' && isRotating && rotationState) {
       const { index, center, startAngle, initialRotation } = rotationState;
@@ -526,9 +540,13 @@ const CanvasArea = () => {
       dispatch(
         updateElementRotation({
           elementIndex: index,
-          rotation: initialRotation + delta
+          rotation: initialRotation + delta,
+          isStart: isFirstRotateMove
         })
       );
+      if (isFirstRotateMove) {
+        setIsFirstRotateMove(false);
+      }
 
       return;
     } else if (tool === 'selection') {
