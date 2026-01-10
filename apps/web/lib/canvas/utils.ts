@@ -108,6 +108,59 @@ export type ElementBounds = {
 };
 
 /**
+ * Get combined bounds of multiple elements
+ */
+export const getCombinedBounds = (
+  elements: DrawElements[],
+  indices: number[],
+  padding: number = 0
+): ElementBounds | null => {
+  if (indices.length === 0) return null;
+
+  let minX = Infinity;
+  let minY = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
+
+  for (const idx of indices) {
+    const element = elements[idx];
+    if (!element) continue;
+
+    const bounds = getElementBounds(element);
+    if (!bounds) continue;
+
+    minX = Math.min(minX, bounds.minX);
+    minY = Math.min(minY, bounds.minY);
+    maxX = Math.max(maxX, bounds.maxX);
+    maxY = Math.max(maxY, bounds.maxY);
+  }
+
+  if (minX === Infinity) return null;
+
+  return {
+    minX: minX - padding,
+    minY: minY - padding,
+    maxX: maxX + padding,
+    maxY: maxY + padding
+  };
+};
+
+/**
+ * Check if a point is inside bounds
+ */
+export const isPointInBounds = (
+  point: DrawPoint,
+  bounds: ElementBounds
+): boolean => {
+  return (
+    point.x >= bounds.minX &&
+    point.x <= bounds.maxX &&
+    point.y >= bounds.minY &&
+    point.y <= bounds.maxY
+  );
+};
+
+/**
  * Resize an element to fit new bounds
  * Mutates the element in place
  */

@@ -44,7 +44,11 @@ import InsertPanel from './InsertPanel';
 import ArrayDialog from './ArrayDialog';
 import TreeDialog from './TreeDialog';
 import LinkedListDialog from './LinkedListDialog';
-import { getElementBounds } from '@/lib/canvas/utils';
+import {
+  getElementBounds,
+  getCombinedBounds,
+  isPointInBounds
+} from '@/lib/canvas/utils';
 
 const CanvasArea = () => {
   const dispatch = useAppDispatch();
@@ -109,6 +113,11 @@ const CanvasArea = () => {
     number | null
   >(null);
   const [isFirstDragMove, setIsFirstDragMove] = useState(false);
+  // Multi-element drag state
+  const [multiDragOffsets, setMultiDragOffsets] = useState<
+    Map<number, DrawPoint>
+  >(new Map());
+  const [isDraggingMultiple, setIsDraggingMultiple] = useState(false);
 
   // Rotation State
   const [isRotating, setIsRotating] = useState(false);
@@ -277,7 +286,49 @@ const CanvasArea = () => {
       setArrowStart(worldPos);
     } else if (tool === 'selection') {
       const HIT_TOLERANCE = 6 / view.scale;
+      const SELECTION_PADDING = 10 / view.scale;
 
+      // Check if clicking inside area-selection box (works for 1 or more elements)
+      if (selectedElementsIndices.length >= 1) {
+        const combinedBounds = getCombinedBounds(
+          elements,
+          selectedElementsIndices,
+          SELECTION_PADDING
+        );
+        if (combinedBounds && isPointInBounds(worldPos, combinedBounds)) {
+          // Start dragging selected elements
+          const offsets = new Map<number, DrawPoint>();
+          selectedElementsIndices.forEach((idx) => {
+            const el = elements[idx];
+            if (el) {
+              offsets.set(idx, {
+                x: worldPos.x - el.x,
+                y: worldPos.y - el.y
+              });
+            }
+          });
+
+          setMultiDragOffsets(offsets);
+          setIsDraggingMultiple(selectedElementsIndices.length > 1);
+          setIsDraggingElements(true);
+          setIsFirstDragMove(true);
+
+          // For single element in area selection, also set the dragging index
+          if (selectedElementsIndices.length === 1) {
+            setDraggingElementIndex(selectedElementsIndices[0]!);
+            const el = elements[selectedElementsIndices[0]!];
+            if (el) {
+              setDragElementOffset({
+                x: worldPos.x - el.x,
+                y: worldPos.y - el.y
+              });
+            }
+          }
+          return;
+        }
+      }
+
+      // Check if clicking inside single selected element's bounding box
       if (selectedElementIndex !== null) {
         const element = elements[selectedElementIndex]!;
         const bound = getElementBounds(element);
@@ -368,6 +419,25 @@ const CanvasArea = () => {
             });
             return;
           }
+
+          // Check if clicking inside the selection box (for dragging from anywhere inside)
+          const selectionBounds = {
+            minX: bound.minX - padding,
+            minY: bound.minY - padding,
+            maxX: bound.maxX + padding,
+            maxY: bound.maxY + padding
+          };
+          if (isPointInBounds(worldPos, selectionBounds)) {
+            setIsDraggingElements(true);
+            setIsFirstDragMove(true);
+            setDraggingElementIndex(selectedElementIndex);
+            setIsDraggingMultiple(false);
+            setDragElementOffset({
+              x: worldPos.x - element.x,
+              y: worldPos.y - element.y
+            });
+            return;
+          }
         }
       }
 
@@ -383,12 +453,14 @@ const CanvasArea = () => {
         setIsDraggingElements(true);
         setIsFirstDragMove(true);
         setDraggingElementIndex(elementIndex);
+        setIsDraggingMultiple(false);
         setDragElementOffset({
           x: worldPos.x - element.x,
           y: worldPos.y - element.y
         });
 
         dispatch(addSelectedElementIndex(elementIndex));
+        dispatch(addSelectedElementsIndices([]));
         return;
       }
 
@@ -471,7 +543,26 @@ const CanvasArea = () => {
     } else if (tool === 'selection' && isAreaSelecting && areaSelectionStart) {
       setAreaSelectionEnd(worldPos);
     } else if (tool === 'selection' && isDraggingElements) {
-      if (draggingElementIndex !== null) {
+      if (isDraggingMultiple && selectedElementsIndices.length > 1) {
+        // Drag multiple elements
+        selectedElementsIndices.forEach((idx) => {
+          const offset = multiDragOffsets.get(idx);
+          if (offset) {
+            dispatch(
+              updateElementPosition({
+                index: idx,
+                x: worldPos.x,
+                y: worldPos.y,
+                offset: offset,
+                isStart: isFirstDragMove
+              })
+            );
+          }
+        });
+        if (isFirstDragMove) {
+          setIsFirstDragMove(false);
+        }
+      } else if (draggingElementIndex !== null) {
         dispatch(
           updateElementPosition({
             index: draggingElementIndex,
@@ -558,6 +649,9 @@ const CanvasArea = () => {
     if (isDraggingElements) {
       setIsDragging(false);
       setIsDraggingElements(false);
+      setIsDraggingMultiple(false);
+      setMultiDragOffsets(new Map());
+      setDraggingElementIndex(null);
       return;
     }
     if (isDrawing && tool === 'draw' && currentPath.length > 1) {
