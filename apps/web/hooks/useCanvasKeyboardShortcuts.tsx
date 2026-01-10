@@ -89,6 +89,11 @@ export const useCanvasKeyboardShortcuts = () => {
       description: 'Draw'
     },
     {
+      key: 't',
+      action: () => dispatch(changeTool({ tool: 'text' })),
+      description: 'Text'
+    },
+    {
       key: 'l',
       action: () => dispatch(changeTool({ tool: 'line' })),
       description: 'Line'

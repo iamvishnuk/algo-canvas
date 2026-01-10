@@ -143,6 +143,19 @@ export function isElementHit(
         hitTolerance
       );
 
+    case 'text': {
+      // Approximate text bounding box (same calculation as getElementBounds)
+      const approxWidth = element.text.length * element.fontSize * 0.6;
+      const approxHeight = element.fontSize;
+
+      return (
+        worldPos.x >= element.x - hitTolerance &&
+        worldPos.x <= element.x + approxWidth + hitTolerance &&
+        worldPos.y >= element.y - hitTolerance &&
+        worldPos.y <= element.y + approxHeight + hitTolerance
+      );
+    }
+
     default:
       return false;
   }

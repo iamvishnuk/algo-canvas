@@ -1,6 +1,7 @@
 import { Tool } from '@workspace/types/canvas';
 import {
   Brackets,
+  CaseSensitive,
   Circle,
   Hand,
   MousePointer2,
@@ -87,6 +88,15 @@ export const MAIN_TOOLS: ITool[] = [
     toolTipSide: 'left'
   },
   {
+    name: 'Text',
+    icon: CaseSensitive,
+    keyboardShortCut: 't',
+    toolType: 'text',
+    toolTipContent: 'Text T',
+    toolTipDelayDuration: 1000,
+    toolTipSide: 'left'
+  },
+  {
     name: 'Line',
     icon: Slash,
     keyboardShortCut: 'l',
@@ -106,7 +116,8 @@ export const CURSOR_MAP: Record<Tool, string> = {
   selection: '',
   arrow: '',
   insert: '',
-  settings: ''
+  settings: '',
+  text: ''
 };
 
 export const DSA_ELEMENTS: IDSAElements[] = [

@@ -86,6 +86,17 @@ export type DrawLinkedList = {
   rotate: number;
 };
 
+export type DrawText = {
+  type: 'text';
+  x: number;
+  y: number;
+  text: string;
+  fontSize: number;
+  fontFamily: string;
+  color: string;
+  rotate: number;
+};
+
 export type DrawElements =
   | DrawPath
   | DrawCircle
@@ -94,7 +105,8 @@ export type DrawElements =
   | DrawArrow
   | DrawArray
   | DrawBinaryTree
-  | DrawLinkedList;
+  | DrawLinkedList
+  | DrawText;
 
 export type Tool =
   | 'move'
@@ -105,6 +117,7 @@ export type Tool =
   | 'draw'
   | 'line'
   | 'insert'
-  | 'settings';
+  | 'settings'
+  | 'text';
 
 export type BackgroundType = 'solid' | 'grid' | 'dots';

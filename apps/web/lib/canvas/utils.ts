@@ -3,6 +3,33 @@ import { ARRAY_CONSTANTS } from '../data-structures/array';
 import { LINKED_LIST_CONSTANTS } from '../data-structures/linked-list';
 import { getDepth, TREE_CONSTANTS } from '../data-structures/tree';
 
+// Offscreen canvas for text measurement
+let measureCanvas: HTMLCanvasElement | null = null;
+let measureCtx: CanvasRenderingContext2D | null = null;
+
+const getMeasureContext = (): CanvasRenderingContext2D | null => {
+  if (typeof document === 'undefined') return null;
+  if (!measureCanvas) {
+    measureCanvas = document.createElement('canvas');
+    measureCtx = measureCanvas.getContext('2d');
+  }
+  return measureCtx;
+};
+
+export const measureTextWidth = (
+  text: string,
+  fontSize: number,
+  fontFamily: string
+): number => {
+  const ctx = getMeasureContext();
+  if (ctx) {
+    ctx.font = `${fontSize}px ${fontFamily}`;
+    return ctx.measureText(text).width;
+  }
+  // Fallback approximation if no canvas context
+  return text.length * fontSize * 0.5;
+};
+
 export const getElementBounds = (element: DrawElements) => {
   if (element.type === 'draw') {
     const xs = element.points.map((p) => element.x + p.x);
@@ -95,6 +122,20 @@ export const getElementBounds = (element: DrawElements) => {
           (depth - 1) * TREE_CONSTANTS.levelHeight +
           TREE_CONSTANTS.nodeRadius
       )
+    };
+  } else if (element.type === 'text') {
+    // Use accurate text measurement for proper selection box alignment
+    const textWidth = measureTextWidth(
+      element.text,
+      element.fontSize,
+      element.fontFamily
+    );
+    const textHeight = element.fontSize;
+    return {
+      minX: element.x,
+      minY: element.y,
+      maxX: element.x + textWidth,
+      maxY: element.y + textHeight
     };
   }
   return null;

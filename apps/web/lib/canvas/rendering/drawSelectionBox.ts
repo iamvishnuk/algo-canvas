@@ -41,15 +41,18 @@ export const drawSelectionBox = (
     const rotateOffset = 20 / view.scale;
     const rotateRadius = 6 / view.scale;
 
+    const isRectangle = element.type === 'rectangle';
+    const isText = element.type === 'text';
+    const isRotatable = isRectangle || isText;
+    const isRotated = isRotatable && (element.rotate ?? 0) !== 0;
+
+    // Both text and rectangle rotate around the center of their bounds
     const centerX = (minX + maxX) / 2;
     const centerY = (minY + maxY) / 2;
 
-    const isRectangle = element.type === 'rectangle';
-    const isRotated = isRectangle && (element.rotate ?? 0) !== 0;
-
     ctx.save();
 
-    // 🔹 Rotate selection box ONLY for rectangles
+    // 🔹 Rotate selection box for rotatable elements (rectangle, text)
     if (isRotated) {
       ctx.translate(centerX, centerY);
       ctx.rotate(element.rotate);
@@ -91,8 +94,8 @@ export const drawSelectionBox = (
 
     ctx.restore();
 
-    // 🔹 ROTATION HANDLE (RECTANGLE ONLY)
-    if (isRectangle) {
+    // 🔹 ROTATION HANDLE (for rotatable elements: rectangle, text)
+    if (isRotatable) {
       const rawRotatePoint = {
         x: centerX,
         y: minY - padding - rotateOffset

@@ -14,7 +14,8 @@ const config: UserConfig = {
         'eslint-config',
         'typescript-config',
         'root',
-        'deps'
+        'deps',
+        'canvas'
       ]
     ],
     'scope-empty': [1, 'never']

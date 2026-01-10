@@ -64,6 +64,8 @@ const CanvasArea = () => {
 
   const bgCanvasRef = useRef<HTMLCanvasElement>(null);
   const drawCanvasRef = useRef<HTMLCanvasElement>(null);
+  const textInputRef = useRef<HTMLInputElement>(null);
+
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [isDrawing, setIsDrawing] = useState(false);
@@ -143,6 +145,12 @@ const CanvasArea = () => {
   // Used to trigger redraw after resize
   const [resizeKey, setResizeKey] = useState(0);
 
+  const [isTextInputVisible, setIsTextInputVisible] = useState(false);
+  const [textInputPosition, setTextInputPosition] = useState<DrawPoint | null>(
+    null
+  );
+  const [textInputValue, setTextInputValue] = useState('');
+
   const resizeCanvas = useCallback(() => {
     const bgCanvas = bgCanvasRef.current;
     const drawCanvas = drawCanvasRef.current;
@@ -167,6 +175,16 @@ const CanvasArea = () => {
     window.addEventListener('resize', resizeCanvas);
     return () => window.removeEventListener('resize', resizeCanvas);
   }, [resizeCanvas]);
+
+  // Focus the input handler
+  useEffect(() => {
+    if (isTextInputVisible) {
+      // Small delay ensures DOM is ready
+      requestAnimationFrame(() => {
+        textInputRef.current?.focus();
+      });
+    }
+  }, [isTextInputVisible]);
 
   useEffect(() => {
     drawGrid(bgCanvasRef, view);
@@ -238,6 +256,7 @@ const CanvasArea = () => {
     setIsAreasSelecting(false);
     setAreaSelectionStart(null);
     setAreaSelectionEnd(null);
+    setIsTextInputVisible(false);
   }, [tool, dispatch]);
 
   const handleMouseDown = (e: React.MouseEvent) => {
@@ -284,6 +303,11 @@ const CanvasArea = () => {
     } else if (tool === 'arrow') {
       setIsDrawing(true);
       setArrowStart(worldPos);
+    } else if (tool === 'text') {
+      setTextInputPosition(worldPos);
+      setIsTextInputVisible(true);
+      setTextInputValue('');
+      return;
     } else if (tool === 'selection') {
       const HIT_TOLERANCE = 6 / view.scale;
       const SELECTION_PADDING = 10 / view.scale;
@@ -378,25 +402,29 @@ const CanvasArea = () => {
           const rotateOffset = 20 / view.scale;
           const rotateRadius = 10 / view.scale;
 
-          const center = {
+          const isRotatable =
+            element.type === 'rectangle' || element.type === 'text';
+
+          // Both text and rectangle rotate around the center of bounds
+          const rotationCenter = {
             x: (bound.minX + bound.maxX) / 2,
             y: (bound.minY + bound.maxY) / 2
           };
 
           // 🔹 raw (unrotated) rotation handle position
           const rawRotatePoint = {
-            x: center.x,
+            x: rotationCenter.x,
             y: bound.minY - padding - rotateOffset
           };
 
-          // 🔹 rotate handle if element is rotated
+          // 🔹 rotate handle if element is rotated (supports rectangle and text)
           const finalRotatePoint =
-            element.type === 'rectangle' && element.rotate
+            isRotatable && element.rotate
               ? rotatePoint(
                   rawRotatePoint.x,
                   rawRotatePoint.y,
-                  center.x,
-                  center.y,
+                  rotationCenter.x,
+                  rotationCenter.y,
                   element.rotate
                 )
               : rawRotatePoint;
@@ -410,10 +438,10 @@ const CanvasArea = () => {
             setIsFirstRotateMove(true);
             setRotationState({
               index: selectedElementIndex,
-              center,
+              center: rotationCenter,
               startAngle: Math.atan2(
-                worldPos.y - center.y,
-                worldPos.x - center.x
+                worldPos.y - rotationCenter.y,
+                worldPos.x - rotationCenter.x
               ),
               initialRotation: element.rotate ?? 0
             });
@@ -794,6 +822,37 @@ const CanvasArea = () => {
     }
   };
 
+  const handleTextKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleTextSubmit();
+    } else if (e.key === 'Escape') {
+      handleTextSubmit();
+    }
+  };
+
+  const handleTextSubmit = () => {
+    if (textInputPosition && textInputValue.trim()) {
+      dispatch(
+        addElements({
+          element: {
+            type: 'text',
+            x: textInputPosition.x,
+            y: textInputPosition.y,
+            text: textInputValue,
+            fontSize: 16,
+            fontFamily: 'sans-serif',
+            color: '#FFFFFF',
+            rotate: 0
+          }
+        })
+      );
+    }
+    setIsTextInputVisible(false);
+    setTextInputPosition(null);
+    setTextInputValue('');
+  };
+
   const handleContextMenu = (e: React.MouseEvent) => {
     e.preventDefault();
   };
@@ -840,6 +899,22 @@ const CanvasArea = () => {
           !hoveredHandle && cursorOnElement && 'cursor-move'
         )}
       />
+
+      {isTextInputVisible && textInputPosition && (
+        <input
+          type='text'
+          value={textInputValue}
+          ref={textInputRef}
+          onChange={(e) => setTextInputValue(e.target.value)}
+          onKeyDown={handleTextKeyDown}
+          className='absolute border border-blue-500 bg-transparent px-1 text-white outline-none'
+          style={{
+            left: textInputPosition.x * view.scale + view.offsetX,
+            top: textInputPosition.y * view.scale + view.offsetY,
+            fontSize: 16 * view.scale
+          }}
+        />
+      )}
 
       <MainToolBar />
       <BottomToolBar />

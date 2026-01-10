@@ -7,7 +7,8 @@ import {
   drawLine,
   drawLinkedList,
   drawPath,
-  drawRectangle
+  drawRectangle,
+  drawText
 } from './draw';
 
 export const drawElements = (
@@ -50,6 +51,8 @@ export const drawElements = (
       drawBinaryTree(ctx, element.root, element.x, element.y, scale);
     } else if (element.type === 'linked-list') {
       drawLinkedList(ctx, element.x, element.y, element.values, scale);
+    } else if (element.type === 'text') {
+      drawText(ctx, element);
     }
   });
 };

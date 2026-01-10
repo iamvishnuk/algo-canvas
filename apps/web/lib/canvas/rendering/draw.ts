@@ -1,7 +1,7 @@
 import { ARRAY_CONSTANTS } from '@/lib/data-structures/array';
 import { LINKED_LIST_CONSTANTS } from '@/lib/data-structures/linked-list';
 import { getDepth, TREE_CONSTANTS } from '@/lib/data-structures/tree';
-import { DrawPoint, TreeNode } from '@workspace/types/canvas';
+import { DrawPoint, DrawText, TreeNode } from '@workspace/types/canvas';
 
 export const drawCircle = (
   ctx: CanvasRenderingContext2D,
@@ -330,4 +330,31 @@ export const drawLinkedList = (
       ctx.fillText('null', x + nodeWidth + 10, y + nodeHeight / 2);
     }
   });
+};
+
+export const drawText = (ctx: CanvasRenderingContext2D, element: DrawText) => {
+  ctx.save();
+
+  ctx.font = `${element.fontSize}px ${element.fontFamily}`;
+
+  // Use actual measured text width for accurate rotation center
+  const metrics = ctx.measureText(element.text);
+  const textWidth = metrics.width;
+  const textHeight = element.fontSize;
+
+  // Calculate center of text for rotation
+  const centerX = element.x + textWidth / 2;
+  const centerY = element.y + textHeight / 2;
+
+  if (element.rotate) {
+    // Rotate around center
+    ctx.translate(centerX, centerY);
+    ctx.rotate(element.rotate);
+    ctx.translate(-centerX, -centerY);
+  }
+
+  ctx.fillStyle = element.color;
+  ctx.textBaseline = 'top';
+  ctx.fillText(element.text, element.x, element.y);
+  ctx.restore();
 };
