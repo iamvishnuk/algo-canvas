@@ -8,6 +8,7 @@ import {
   Tool,
   ViewState
 } from '@workspace/types/canvas';
+import { select } from 'motion/react-m';
 
 export interface ICanvasState {
   view: ViewState;
@@ -33,6 +34,7 @@ export interface ICanvasState {
     past: DrawElements[][];
     future: DrawElements[][];
   };
+  clipBoard: DrawElements[];
 }
 
 const initialState: ICanvasState = {
@@ -62,7 +64,8 @@ const initialState: ICanvasState = {
   history: {
     past: [],
     future: []
-  }
+  },
+  clipBoard: []
 };
 
 const HISTORY_LIMIT = 50;
@@ -260,6 +263,90 @@ const canvasSlice = createSlice({
 
       state.selectedElementIndex = null;
       state.selectedElementsIndices = [];
+    },
+    addToClipBoard: (state) => {
+      const elementsToCopy: DrawElements[] = [];
+      if (state.selectedElementIndex !== null) {
+        const element = state.elements[state.selectedElementIndex];
+        if (element) {
+          elementsToCopy.push(structuredClone(current(element)));
+        }
+      } else if (state.selectedElementsIndices.length > 0) {
+        state.selectedElementsIndices.forEach((index) => {
+          const element = state.elements[index];
+          if (element) {
+            elementsToCopy.push(structuredClone(current(element)));
+          }
+        });
+      }
+
+      state.clipBoard = elementsToCopy;
+    },
+    pastElements: (
+      state,
+      action: PayloadAction<{ offsetX?: number; offsetY?: number }>
+    ) => {
+      const { offsetX = 20, offsetY = 20 } = action.payload;
+
+      if (state.clipBoard.length === 0) return;
+
+      const newIndices: number[] = [];
+
+      state.clipBoard.forEach((element) => {
+        const newElement = structuredClone(current(element));
+        newElement.x += offsetX;
+        newElement.y += offsetY;
+
+        state.elements.push(newElement);
+        newIndices.push(state.elements.length - 1);
+      });
+
+      // Select the newly pasted elements
+      if (newIndices.length === 1) {
+        state.selectedElementIndex = newIndices[0]!;
+        state.selectedElementsIndices = [];
+      } else {
+        state.selectedElementIndex = null;
+        state.selectedElementsIndices = newIndices;
+      }
+    },
+    duplicateElements: (state) => {
+      const elementsToDuplicate: DrawElements[] = [];
+
+      if (state.selectedElementIndex !== null) {
+        const element = state.elements[state.selectedElementIndex];
+        if (element)
+          elementsToDuplicate.push(structuredClone(current(element)));
+      } else if (state.selectedElementsIndices.length > 0) {
+        state.selectedElementsIndices.forEach((index) => {
+          const element = state.elements[index];
+          if (element)
+            elementsToDuplicate.push(structuredClone(current(element)));
+        });
+      }
+
+      if (elementsToDuplicate.length === 0) return;
+
+      const newIndices: number[] = [];
+      const offset = 20;
+
+      elementsToDuplicate.forEach((element) => {
+        const newElement = structuredClone(element);
+        newElement.x += offset;
+        newElement.y += offset;
+
+        state.elements.push(newElement);
+        newIndices.push(state.elements.length - 1);
+      });
+
+      // Select the duplicated elements
+      if (newIndices.length === 1) {
+        state.selectedElementIndex = newIndices[0]!;
+        state.selectedElementsIndices = [];
+      } else {
+        state.selectedElementIndex = null;
+        state.selectedElementsIndices = newIndices;
+      }
     }
   }
 });
@@ -282,7 +369,10 @@ export const {
   updateElementRotation,
   updateElementSize,
   undo,
-  redo
+  redo,
+  addToClipBoard,
+  pastElements,
+  duplicateElements
 } = canvasSlice.actions;
 
 export default canvasSlice.reducer;

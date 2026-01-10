@@ -5,7 +5,10 @@ import {
   removeElements,
   resetView,
   undo,
-  redo
+  redo,
+  addToClipBoard,
+  pastElements,
+  duplicateElements
 } from '@/features/canvas/canvasSlice';
 import { useAppDispatch } from '@/store/hooks';
 import { useEffect } from 'react';
@@ -116,6 +119,24 @@ export const useCanvasKeyboardShortcuts = () => {
       key: 'Delete',
       action: () => dispatch(removeElements()),
       description: 'Remove element'
+    },
+    {
+      key: 'c',
+      modifiers: { ctrl: true },
+      action: () => dispatch(addToClipBoard()),
+      description: 'Copy element'
+    },
+    {
+      key: 'v',
+      modifiers: { ctrl: true },
+      action: () => dispatch(pastElements({})),
+      description: 'Past Elements'
+    },
+    {
+      key: 'd',
+      modifiers: { ctrl: true },
+      action: () => dispatch(duplicateElements()),
+      description: 'Duplicate Elements'
     }
   ];
 
