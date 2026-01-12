@@ -1,4 +1,10 @@
-import { Inter, Poppins, Fira_Code } from 'next/font/google';
+import {
+  Inter,
+  Poppins,
+  Fira_Code,
+  Merriweather,
+  Caveat
+} from 'next/font/google';
 
 import '@workspace/ui/globals.css';
 import ReduxProvider from '@/store/ReduxProvider';
@@ -25,6 +31,18 @@ const firaCode = Fira_Code({
   weight: ['300', '400', '500', '600', '700']
 });
 
+const merriweather = Merriweather({
+  subsets: ['latin'],
+  variable: '--font-merriweather',
+  weight: ['300', '400', '700', '900']
+});
+
+const caveat = Caveat({
+  subsets: ['latin'],
+  variable: '--font-caveat',
+  weight: ['400', '500', '600', '700']
+});
+
 export default function RootLayout({
   children
 }: Readonly<{
@@ -36,7 +54,7 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body
-        className={`${inter.variable} ${poppins.variable} ${firaCode.variable} font-inter antialiased`}
+        className={`${inter.variable} ${poppins.variable} ${firaCode.variable} ${merriweather.variable} ${caveat.variable} font-inter antialiased`}
       >
         <ThemeProvider>
           <ReduxProvider>

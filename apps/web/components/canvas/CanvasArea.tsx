@@ -983,15 +983,17 @@ const CanvasArea = () => {
           }}
           onKeyDown={handleTextKeyDown}
           onBlur={handleTextSubmit}
-          className='absolute resize-none overflow-hidden border border-blue-500 bg-transparent px-1 text-white outline-none'
+          className='absolute resize-none overflow-hidden border border-blue-500 bg-transparent px-1 outline-none'
           rows={1}
           style={{
             left: textInputPosition.x * view.scale + view.offsetX,
             top: textInputPosition.y * view.scale + view.offsetY,
-            fontSize: 16 * view.scale,
+            fontSize: elementProperty.text.fontSize * view.scale,
+            fontFamily: elementProperty.text.fontFamily,
+            color: elementProperty.text.color,
             lineHeight: 1.2,
             minWidth: '50px',
-            minHeight: `${16 * view.scale * 1.2}px`
+            minHeight: `${elementProperty.text.fontSize * view.scale * 1.2}px`
           }}
         />
       )}

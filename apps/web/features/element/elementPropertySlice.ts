@@ -41,7 +41,7 @@ const initialState: IElementPropertyState = {
   },
   text: {
     fontSize: 16,
-    fontFamily: 'sans-serif',
+    fontFamily: 'Caveat',
     rotate: 0,
     color: '#7A3EFF'
   },

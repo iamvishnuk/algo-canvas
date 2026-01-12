@@ -100,6 +100,8 @@
   --font-inter: var(--font-inter);
   --font-poppins: var(--font-poppins);
   --font-fira-code: var(--font-fira-code);
+  --font-merriweather: var(--font-merriweather);
+  --font-caveat: var(--font-caveat);
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
   --color-popover: var(--popover);

@@ -41,6 +41,22 @@ const BACKGROUND_COLORS = [
   '#C4B5FD33'
 ];
 
+const FONT_FAMILIES = [
+  { value: 'Inter', label: 'Inter' },
+  { value: 'Poppins', label: 'Poppins' },
+  { value: 'Fira Code', label: 'Fira Code' },
+  { value: 'Merriweather', label: 'Merriweather' },
+  { value: 'Caveat', label: 'Caveat' }
+];
+
+const FONT_SIZES = [
+  { value: 16, label: 'S' },
+  { value: 20, label: 'M' },
+  { value: 28, label: 'L' },
+  { value: 36, label: 'XL' },
+  { value: 48, label: '2XL' }
+];
+
 const ElementPropertyPanel = () => {
   const dispatch = useAppDispatch();
   const elementProperty = useAppSelector((state) => state.elementProperty);
@@ -124,6 +140,7 @@ const ElementPropertyPanel = () => {
         return value;
       }
     }
+
     return defaultValue;
   };
 
@@ -241,12 +258,22 @@ const ElementPropertyPanel = () => {
       {canShow('fontFamily') && (
         <div className='space-y-2'>
           <p className='text-sm text-neutral-400'>Font Family</p>
-          <div className=''>
-            <select className='h-9 w-full rounded-md border px-2'>
-              <option>Font 1</option>
-              <option>Font 2</option>
-              <option>Font 3</option>
-              <option>Font 4</option>
+          <div>
+            <select
+              value={getPropertyValue('fontFamily', 'Caveat')}
+              onChange={(e) =>
+                handlePropertyChange('fontFamily', e.target.value)
+              }
+              className='bg-brand-bg h-9 w-full cursor-pointer rounded-md border px-2 text-sm text-white focus:border-purple-500 focus:outline-none'
+            >
+              {FONT_FAMILIES.map((font) => (
+                <option
+                  key={font.value}
+                  value={font.value}
+                >
+                  {font.label}
+                </option>
+              ))}
             </select>
           </div>
         </div>
@@ -256,21 +283,19 @@ const ElementPropertyPanel = () => {
         <div className='space-y-2'>
           <p className='text-sm text-neutral-400'>Font Size</p>
           <div className='flex gap-2'>
-            <div className='flex size-9 items-center justify-center rounded-md border text-xs shadow-md'>
-              S
-            </div>
-            <div className='flex size-9 items-center justify-center rounded-md border text-xs shadow-md'>
-              M
-            </div>
-            <div className='flex size-9 items-center justify-center rounded-md border text-xs shadow-md'>
-              L
-            </div>
-            <div className='flex size-9 items-center justify-center rounded-md border text-xs shadow-md'>
-              XL
-            </div>
-            <div className='flex size-9 items-center justify-center rounded-md border text-xs shadow-md'>
-              2XL
-            </div>
+            {FONT_SIZES.map((size) => (
+              <button
+                key={size.value}
+                onClick={() => handlePropertyChange('fontSize', size.value)}
+                className={`flex size-9 items-center justify-center rounded-md border text-xs shadow-md transition-colors ${
+                  getNumericPropertyValue('fontSize', 16) === size.value
+                    ? 'border-purple-500 bg-purple-500/20'
+                    : 'hover:bg-neutral-800'
+                }`}
+              >
+                {size.label}
+              </button>
+            ))}
           </div>
         </div>
       )}

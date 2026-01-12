@@ -160,8 +160,8 @@ export const BASE_ELEMENT_PROPERTY = {
     strokePattern: 'solid' as const
   },
   text: {
-    fontSize: 16,
-    fontFamily: 'sans-serif',
+    fontSize: 20,
+    fontFamily: 'var(--font-inter)',
     rotate: 0,
     color: '#7A3EFF'
   },
