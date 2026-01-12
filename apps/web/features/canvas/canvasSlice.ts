@@ -5,10 +5,10 @@ import {
   BackgroundType,
   DrawElements,
   DrawPoint,
+  PropertyKey,
   Tool,
   ViewState
 } from '@workspace/types/canvas';
-import { select } from 'motion/react-m';
 
 export interface ICanvasState {
   view: ViewState;
@@ -347,6 +347,23 @@ const canvasSlice = createSlice({
         state.selectedElementIndex = null;
         state.selectedElementsIndices = newIndices;
       }
+    },
+    updateElementProperty: (
+      state,
+      action: PayloadAction<{
+        propertyKey: PropertyKey;
+        value: string | number;
+        index: number;
+      }>
+    ) => {
+      const { propertyKey, value, index } = action.payload;
+      const element = state.elements[index];
+
+      if (!element) return;
+
+      saveToHistory(state);
+      // Use type assertion since PropertyKey is already constrained to valid property names
+      (element as Record<string, unknown>)[propertyKey] = value;
     }
   }
 });
@@ -372,7 +389,8 @@ export const {
   redo,
   addToClipBoard,
   pastElements,
-  duplicateElements
+  duplicateElements,
+  updateElementProperty
 } = canvasSlice.actions;
 
 export default canvasSlice.reducer;

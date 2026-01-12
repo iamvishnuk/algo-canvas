@@ -6,7 +6,14 @@ import React, {
   useCallback,
   Activity
 } from 'react';
-import { DrawArrow, DrawLine, DrawPoint, DrawRect } from '@workspace/types';
+import {
+  DrawArrow,
+  DrawCircle,
+  DrawLine,
+  DrawPath,
+  DrawPoint,
+  DrawRect
+} from '@workspace/types';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import BottomToolBar from './BottomToolBar';
 import {
@@ -49,6 +56,7 @@ import {
   getCombinedBounds,
   isPointInBounds
 } from '@/lib/canvas/utils';
+import ElementPropertyPanel from './ElementPropertyPanel';
 
 const CanvasArea = () => {
   const dispatch = useAppDispatch();
@@ -59,17 +67,20 @@ const CanvasArea = () => {
     selectedElementIndex,
     selectedElementsIndices
   } = useAppSelector((state) => state.canvas);
+  const elementProperty = useAppSelector((state) => state.elementProperty);
 
   useCanvasKeyboardShortcuts();
 
   const bgCanvasRef = useRef<HTMLCanvasElement>(null);
   const drawCanvasRef = useRef<HTMLCanvasElement>(null);
-  const textInputRef = useRef<HTMLInputElement>(null);
+  const textInputRef = useRef<HTMLTextAreaElement>(null);
 
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [isDrawing, setIsDrawing] = useState(false);
-  const [currentPath, setCurrentPath] = useState<DrawPoint[]>([]);
+  const [currentPath, setCurrentPath] = useState<Omit<DrawPath, 'type'> | null>(
+    null
+  );
   const [cursorOnElement, setCursorOnElement] = useState<boolean>(false);
 
   // Area Selecting states
@@ -81,12 +92,10 @@ const CanvasArea = () => {
   );
 
   const [circleStart, setCircleStart] = useState<DrawPoint | null>(null);
-  const [currentCircle, setCurrentCircle] = useState<{
-    radiusX: number;
-    radiusY: number;
-    centerX: number;
-    centerY: number;
-  } | null>(null);
+  const [currentCircle, setCurrentCircle] = useState<Omit<
+    DrawCircle,
+    'type'
+  > | null>(null);
 
   const [rectStart, setRectStart] = useState<DrawPoint | null>(null);
   const [currentRect, setCurrentRect] = useState<Omit<DrawRect, 'type'> | null>(
@@ -150,6 +159,18 @@ const CanvasArea = () => {
     null
   );
   const [textInputValue, setTextInputValue] = useState('');
+
+  // Refs to track text input state for saving when tool changes
+  const textInputValueRef = useRef(textInputValue);
+  const textInputPositionRef = useRef(textInputPosition);
+  const isTextInputVisibleRef = useRef(isTextInputVisible);
+
+  // Keep refs in sync with state
+  useEffect(() => {
+    textInputValueRef.current = textInputValue;
+    textInputPositionRef.current = textInputPosition;
+    isTextInputVisibleRef.current = isTextInputVisible;
+  }, [textInputValue, textInputPosition, isTextInputVisible]);
 
   const resizeCanvas = useCallback(() => {
     const bgCanvas = bgCanvasRef.current;
@@ -251,13 +272,34 @@ const CanvasArea = () => {
   ]);
 
   useEffect(() => {
+    // Save any existing text before clearing when tool changes
+    if (
+      isTextInputVisibleRef.current &&
+      textInputPositionRef.current &&
+      textInputValueRef.current.trim()
+    ) {
+      dispatch(
+        addElements({
+          element: {
+            type: 'text',
+            x: textInputPositionRef.current.x,
+            y: textInputPositionRef.current.y,
+            text: textInputValueRef.current,
+            ...elementProperty.text
+          }
+        })
+      );
+    }
+
     dispatch(addSelectedElementIndex(null));
     dispatch(addSelectedElementsIndices([]));
     setIsAreasSelecting(false);
     setAreaSelectionStart(null);
     setAreaSelectionEnd(null);
     setIsTextInputVisible(false);
-  }, [tool, dispatch]);
+    setTextInputPosition(null);
+    setTextInputValue('');
+  }, [tool, dispatch, elementProperty.text]);
 
   const handleMouseDown = (e: React.MouseEvent) => {
     const worldPos = screenToWorld(e.clientX, e.clientY, drawCanvasRef, view);
@@ -269,16 +311,22 @@ const CanvasArea = () => {
       });
     } else if (tool === 'draw') {
       setIsDrawing(true);
-      setCurrentPath([worldPos]);
+      setCurrentPath({
+        x: 0,
+        y: 0,
+        points: [worldPos],
+        ...elementProperty.draw
+      });
     } else if (tool === 'circle') {
       setIsDrawing(true);
       setCircleStart(worldPos);
 
       setCurrentCircle({
-        centerX: worldPos.x,
-        centerY: worldPos.y,
+        x: worldPos.x,
+        y: worldPos.y,
         radiusX: 0,
-        radiusY: 0
+        radiusY: 0,
+        ...elementProperty.circle
       });
     } else if (tool === 'rectangle') {
       setIsDrawing(true);
@@ -288,7 +336,7 @@ const CanvasArea = () => {
         y: worldPos.y,
         width: 0,
         height: 0,
-        rotate: 0
+        ...elementProperty.rectangle
       });
     } else if (tool === 'line') {
       setIsDrawing(true);
@@ -298,12 +346,26 @@ const CanvasArea = () => {
         y: worldPos.y,
         endX: worldPos.x,
         endY: worldPos.y,
-        rotate: 0
+        ...elementProperty.line
       });
     } else if (tool === 'arrow') {
       setIsDrawing(true);
       setArrowStart(worldPos);
     } else if (tool === 'text') {
+      // Save any existing text before starting a new one
+      if (isTextInputVisible && textInputPosition && textInputValue.trim()) {
+        dispatch(
+          addElements({
+            element: {
+              type: 'text',
+              x: textInputPosition.x,
+              y: textInputPosition.y,
+              text: textInputValue,
+              ...elementProperty.text
+            }
+          })
+        );
+      }
       setTextInputPosition(worldPos);
       setIsTextInputVisible(true);
       setTextInputValue('');
@@ -534,14 +596,27 @@ const CanvasArea = () => {
         updateOffSet({ x: e.clientX - dragStart.x, y: e.clientY - dragStart.y })
       );
     } else if (isDrawing && tool === 'draw') {
-      setCurrentPath((prev) => [...prev, worldPos]);
+      setCurrentPath((prev) => {
+        if (!prev) return prev;
+
+        return {
+          ...prev,
+          points: [...prev.points, worldPos]
+        };
+      });
     } else if (isDrawing && tool === 'circle' && circleStart) {
       const radiusX = Math.abs(worldPos.x - circleStart.x) / 2;
       const radiusY = Math.abs(worldPos.y - circleStart.y) / 2;
 
       const centerX = (circleStart.x + worldPos.x) / 2;
       const centerY = (circleStart.y + worldPos.y) / 2;
-      setCurrentCircle({ radiusX, radiusY, centerX, centerY });
+      setCurrentCircle({
+        x: centerX,
+        y: centerY,
+        radiusX,
+        radiusY,
+        ...elementProperty.circle
+      });
     } else if (isDrawing && tool === 'rectangle' && rectStart) {
       const width = worldPos.x - rectStart.x;
       const height = worldPos.y - rectStart.y;
@@ -550,7 +625,7 @@ const CanvasArea = () => {
         y: rectStart.y,
         width,
         height,
-        rotate: 0
+        ...elementProperty.rectangle
       });
     } else if (isDrawing && tool === 'line' && lineStart) {
       setCurrentLine({
@@ -558,7 +633,7 @@ const CanvasArea = () => {
         y: lineStart.y,
         endX: worldPos.x,
         endY: worldPos.y,
-        rotate: 0
+        ...elementProperty.line
       });
     } else if (tool === 'arrow' && arrowStart) {
       setCurrentArrow({
@@ -566,7 +641,7 @@ const CanvasArea = () => {
         y: arrowStart.y,
         endX: worldPos.x,
         endY: worldPos.y,
-        rotate: 0
+        ...elementProperty.arrow
       });
     } else if (tool === 'selection' && isAreaSelecting && areaSelectionStart) {
       setAreaSelectionEnd(worldPos);
@@ -682,11 +757,11 @@ const CanvasArea = () => {
       setDraggingElementIndex(null);
       return;
     }
-    if (isDrawing && tool === 'draw' && currentPath.length > 1) {
-      const anchorX = currentPath[0]!.x;
-      const anchorY = currentPath[0]!.y;
+    if (isDrawing && tool === 'draw' && currentPath) {
+      const anchorX = currentPath.points[0]!.x;
+      const anchorY = currentPath.points[0]!.y;
 
-      const relativePoints = currentPath.map((p) => ({
+      const relativePoints = currentPath.points.map((p) => ({
         x: p.x - anchorX,
         y: p.y - anchorY
       }));
@@ -698,24 +773,22 @@ const CanvasArea = () => {
             x: anchorX,
             y: anchorY,
             points: relativePoints,
-            color: '#7A3EFF',
-            rotate: 0
+            ...elementProperty.draw
           }
         })
       );
 
-      setCurrentPath([]);
+      setCurrentPath(null);
     } else if (isDrawing && tool === 'circle' && currentCircle) {
       dispatch(
         addElements({
           element: {
             type: 'circle',
-            x: currentCircle.centerX,
-            y: currentCircle.centerY,
+            x: currentCircle.x,
+            y: currentCircle.y,
             radiusX: currentCircle.radiusX,
             radiusY: currentCircle.radiusY,
-            color: '#7A3EFF',
-            rotate: 0
+            ...elementProperty.circle
           }
         })
       );
@@ -730,7 +803,7 @@ const CanvasArea = () => {
             y: currentRect.y,
             width: currentRect.width,
             height: currentRect.height,
-            rotate: 0
+            ...elementProperty.rectangle
           }
         })
       );
@@ -745,7 +818,7 @@ const CanvasArea = () => {
             y: currentLine.y,
             endX: currentLine.endX,
             endY: currentLine.endY,
-            rotate: 0
+            ...elementProperty.line
           }
         })
       );
@@ -760,7 +833,7 @@ const CanvasArea = () => {
             y: currentArrow.y,
             endX: currentArrow.endX,
             endY: currentArrow.endY,
-            rotate: 0
+            ...elementProperty.arrow
           }
         })
       );
@@ -775,15 +848,15 @@ const CanvasArea = () => {
 
       const selectionArea = { minX, minY, maxX, maxY };
 
-      const selectedIndecies: number[] = [];
+      const selectedIndices: number[] = [];
 
       elements.forEach((element, index) => {
         if (isElementInSelectionArea(element, selectionArea)) {
-          selectedIndecies.push(index);
+          selectedIndices.push(index);
         }
       });
 
-      dispatch(addSelectedElementsIndices(selectedIndecies));
+      dispatch(addSelectedElementsIndices(selectedIndices));
       setIsAreasSelecting(false);
       setAreaSelectionStart(null);
       setAreaSelectionEnd(null);
@@ -823,12 +896,11 @@ const CanvasArea = () => {
   };
 
   const handleTextKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === 'Escape') {
       e.preventDefault();
       handleTextSubmit();
-    } else if (e.key === 'Escape') {
-      handleTextSubmit();
     }
+    // Enter key now adds newlines (default textarea behavior)
   };
 
   const handleTextSubmit = () => {
@@ -840,10 +912,7 @@ const CanvasArea = () => {
             x: textInputPosition.x,
             y: textInputPosition.y,
             text: textInputValue,
-            fontSize: 16,
-            fontFamily: 'sans-serif',
-            color: '#FFFFFF',
-            rotate: 0
+            ...elementProperty.text
           }
         })
       );
@@ -901,17 +970,28 @@ const CanvasArea = () => {
       />
 
       {isTextInputVisible && textInputPosition && (
-        <input
-          type='text'
+        <textarea
           value={textInputValue}
           ref={textInputRef}
-          onChange={(e) => setTextInputValue(e.target.value)}
+          onChange={(e) => {
+            setTextInputValue(e.target.value);
+            // Auto-resize: reset height then set to scrollHeight
+            e.target.style.height = 'auto';
+            e.target.style.width = 'auto';
+            e.target.style.height = `${e.target.scrollHeight}px`;
+            e.target.style.width = `${e.target.scrollWidth + 4}px`;
+          }}
           onKeyDown={handleTextKeyDown}
-          className='absolute border border-blue-500 bg-transparent px-1 text-white outline-none'
+          onBlur={handleTextSubmit}
+          className='absolute resize-none overflow-hidden border border-blue-500 bg-transparent px-1 text-white outline-none'
+          rows={1}
           style={{
             left: textInputPosition.x * view.scale + view.offsetX,
             top: textInputPosition.y * view.scale + view.offsetY,
-            fontSize: 16 * view.scale
+            fontSize: 16 * view.scale,
+            lineHeight: 1.2,
+            minWidth: '50px',
+            minHeight: `${16 * view.scale * 1.2}px`
           }}
         />
       )}
@@ -924,6 +1004,7 @@ const CanvasArea = () => {
       <ArrayDialog />
       <TreeDialog />
       <LinkedListDialog />
+      <ElementPropertyPanel />
     </div>
   );
 };

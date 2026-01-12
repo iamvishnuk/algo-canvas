@@ -124,17 +124,32 @@ export const getElementBounds = (element: DrawElements) => {
       )
     };
   } else if (element.type === 'text') {
-    // Use accurate text measurement for proper selection box alignment
-    const textWidth = measureTextWidth(
-      element.text,
-      element.fontSize,
-      element.fontFamily
-    );
-    const textHeight = element.fontSize;
+    // Split text into lines for multiline support
+    const lines = element.text.split('\n');
+    const lineHeight = element.fontSize * 1.2;
+
+    // Find the maximum width across all lines
+    let maxWidth = 0;
+    for (const line of lines) {
+      const lineWidth = measureTextWidth(
+        line,
+        element.fontSize,
+        element.fontFamily
+      );
+      if (lineWidth > maxWidth) {
+        maxWidth = lineWidth;
+      }
+    }
+
+    // Height = (n-1) line gaps + last line's font height
+    const textHeight =
+      lines.length === 1
+        ? element.fontSize
+        : (lines.length - 1) * lineHeight + element.fontSize;
     return {
       minX: element.x,
       minY: element.y,
-      maxX: element.x + textWidth,
+      maxX: element.x + maxWidth,
       maxY: element.y + textHeight
     };
   }

@@ -1,50 +1,46 @@
 import {
   DrawArrow,
+  DrawCircle,
   DrawLine,
+  DrawPath,
   DrawPoint,
   DrawRect
 } from '@workspace/types/canvas';
-import { drawArrow, drawCircle, drawLine, drawRectangle } from './draw';
+import {
+  drawArrow,
+  drawCircle,
+  drawLine,
+  drawPath,
+  drawRectangle
+} from './draw';
 
 export const drawElementsPreview = (
   ctx: CanvasRenderingContext2D,
   scale: number,
-  currentPath: DrawPoint[],
-  currentCircle: {
-    radiusX: number;
-    radiusY: number;
-    centerX: number;
-    centerY: number;
-  } | null,
+  currentPath: Omit<DrawPath, 'type'> | null,
+  currentCircle: Omit<DrawCircle, 'type'> | null,
   currentRect: Omit<DrawRect, 'type'> | null,
   currentLine: Omit<DrawLine, 'type'> | null,
   currentArrow: Omit<DrawArrow, 'type'> | null
 ) => {
   // Draw current path being drawn
-  if (currentPath.length > 0) {
-    ctx.strokeStyle = '#7A3EFF';
-    ctx.lineWidth = 2 / scale;
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-
-    ctx.beginPath();
-    ctx.moveTo(currentPath[0]!.x, currentPath[0]!.y);
-
-    for (let i = 1; i < currentPath.length; i++) {
-      ctx.lineTo(currentPath[i]!.x, currentPath[i]!.y);
-    }
-    ctx.stroke();
+  if (currentPath) {
+    drawPath(ctx, currentPath as DrawPath, scale);
   }
 
   // Draw current circle being drawn
   if (currentCircle) {
     drawCircle(
       ctx,
-      currentCircle.centerX,
-      currentCircle.centerY,
+      currentCircle.x,
+      currentCircle.y,
       currentCircle.radiusX,
       currentCircle.radiusY,
-      scale
+      scale,
+      currentCircle.rotate,
+      currentCircle.strokeStyle,
+      currentCircle.lineWidth,
+      currentCircle.fillStyle
     );
   }
 
@@ -55,7 +51,11 @@ export const drawElementsPreview = (
       currentRect.y,
       currentRect.width,
       currentRect.height,
-      scale
+      scale,
+      currentRect.rotate,
+      currentRect.strokeStyle,
+      currentRect.lineWidth,
+      currentRect.fillStyle
     );
   }
 
@@ -66,7 +66,9 @@ export const drawElementsPreview = (
       currentLine.y,
       currentLine.endX,
       currentLine.endY,
-      scale
+      scale,
+      currentLine.strokeStyle,
+      currentLine.lineWidth
     );
   }
 
@@ -77,7 +79,10 @@ export const drawElementsPreview = (
       currentArrow.y,
       currentArrow.endX,
       currentArrow.endY,
-      scale
+      scale,
+      currentArrow.strokeStyle,
+      currentArrow.lineWidth,
+      currentArrow.fillStyle
     );
   }
 };

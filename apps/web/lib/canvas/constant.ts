@@ -1,4 +1,4 @@
-import { Tool } from '@workspace/types/canvas';
+import { PropertyKey, Tool } from '@workspace/types/canvas';
 import {
   Brackets,
   CaseSensitive,
@@ -137,3 +137,55 @@ export const DSA_ELEMENTS: IDSAElements[] = [
     icon: Network
   }
 ];
+
+export const BASE_ELEMENT_PROPERTY = {
+  line: {
+    rotate: 0,
+    strokeStyle: '#7A3EFF',
+    lineWidth: 2
+  },
+  rectangle: {
+    rotate: 0,
+    strokeStyle: '#7A3EFF',
+    lineWidth: 2,
+    fillStyle: 'transparent'
+  },
+  circle: {
+    rotate: 0,
+    strokeStyle: '#7A3EFF',
+    lineWidth: 2,
+    fillStyle: 'transparent'
+  },
+  text: {
+    fontSize: 16,
+    fontFamily: 'sans-serif',
+    rotate: 0,
+    color: '#7A3EFF'
+  },
+  arrow: {
+    rotate: 0,
+    strokeStyle: '#7A3EFF',
+    lineWidth: 2,
+    fillStyle: 'transparent'
+  },
+  draw: {
+    rotate: 0,
+    lineWidth: 2,
+    strokeStyle: '#7A3EFF',
+    lineCap: 'round' as CanvasLineCap,
+    lineJoin: 'round' as CanvasLineJoin
+  }
+};
+
+export const TOOL_PROPERTY_MAP: Record<Tool, PropertyKey[]> = {
+  line: ['strokeStyle', 'lineWidth'],
+  rectangle: ['strokeStyle', 'fillStyle', 'lineWidth'],
+  circle: ['strokeStyle', 'fillStyle', 'lineWidth'],
+  arrow: ['strokeStyle', 'fillStyle', 'lineWidth'],
+  draw: ['strokeStyle', 'lineWidth'],
+  text: ['color', 'fontFamily', 'fontSize'],
+  selection: [],
+  insert: [],
+  move: [],
+  settings: []
+};

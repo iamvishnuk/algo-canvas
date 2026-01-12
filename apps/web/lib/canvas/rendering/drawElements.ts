@@ -20,7 +20,7 @@ export const drawElements = (
     if (element.type === 'draw') {
       if (element.points.length < 2) return;
 
-      drawPath(ctx, element.points, element.x, element.y, scale);
+      drawPath(ctx, element, scale);
     } else if (element.type === 'circle') {
       drawCircle(
         ctx,
@@ -29,7 +29,10 @@ export const drawElements = (
         element.radiusX,
         element.radiusY,
         scale,
-        element.rotate
+        element.rotate,
+        element.strokeStyle,
+        element.lineWidth,
+        element.fillStyle
       );
     } else if (element.type === 'rectangle') {
       drawRectangle(
@@ -39,12 +42,34 @@ export const drawElements = (
         element.width,
         element.height,
         scale,
-        element.rotate
+        element.rotate,
+        element.strokeStyle,
+        element.lineWidth,
+        element.fillStyle
       );
     } else if (element.type === 'line') {
-      drawLine(ctx, element.x, element.y, element.endX, element.endY, scale);
+      drawLine(
+        ctx,
+        element.x,
+        element.y,
+        element.endX,
+        element.endY,
+        scale,
+        element.strokeStyle,
+        element.lineWidth
+      );
     } else if (element.type === 'arrow') {
-      drawArrow(ctx, element.x, element.y, element.endX, element.endY, scale);
+      drawArrow(
+        ctx,
+        element.x,
+        element.y,
+        element.endX,
+        element.endY,
+        scale,
+        element.strokeStyle,
+        element.lineWidth,
+        element.fillStyle
+      );
     } else if (element.type === 'array') {
       drawArray(ctx, element.x, element.y, element.value, scale);
     } else if (element.type === 'binary-tree') {

@@ -1,7 +1,7 @@
 import { ARRAY_CONSTANTS } from '@/lib/data-structures/array';
 import { LINKED_LIST_CONSTANTS } from '@/lib/data-structures/linked-list';
 import { getDepth, TREE_CONSTANTS } from '@/lib/data-structures/tree';
-import { DrawPoint, DrawText, TreeNode } from '@workspace/types/canvas';
+import { DrawPath, DrawText, TreeNode } from '@workspace/types/canvas';
 
 export const drawCircle = (
   ctx: CanvasRenderingContext2D,
@@ -10,10 +10,13 @@ export const drawCircle = (
   radiusX: number,
   radiusY: number,
   scale: number,
-  rotation: number = 0
+  rotation: number = 0,
+  strokeStyle: string = '#7A3EFF',
+  lineWidth: number = 2,
+  fillStyle: string = 'transparent'
 ) => {
-  ctx.strokeStyle = '#7A3EFF';
-  ctx.lineWidth = 2 / scale;
+  ctx.strokeStyle = strokeStyle;
+  ctx.lineWidth = lineWidth / scale;
 
   ctx.beginPath();
   ctx.ellipse(
@@ -25,6 +28,10 @@ export const drawCircle = (
     0,
     Math.PI * 2
   );
+  if (fillStyle && fillStyle !== 'transparent') {
+    ctx.fillStyle = fillStyle;
+    ctx.fill();
+  }
   ctx.stroke();
 };
 
@@ -34,10 +41,13 @@ export const drawArrow = (
   startY: number,
   endX: number,
   endY: number,
-  scale: number
+  scale: number,
+  strokeStyle: string = '#7A3EFF',
+  lineWidth: number = 2,
+  fillStyle: string = '#7A3EFF'
 ) => {
-  ctx.strokeStyle = '#7A3EFF';
-  ctx.lineWidth = 2 / scale;
+  ctx.strokeStyle = strokeStyle;
+  ctx.lineWidth = lineWidth / scale;
 
   const angle = Math.atan2(endY - startY, endX - startX);
 
@@ -59,7 +69,7 @@ export const drawArrow = (
     endY - 10 * Math.sin(angle + Math.PI / 6)
   );
   ctx.closePath();
-  ctx.fillStyle = '#7A3EFF';
+  ctx.fillStyle = fillStyle;
   ctx.fill();
 };
 
@@ -70,7 +80,10 @@ export const drawRectangle = (
   width: number,
   height: number,
   scale: number,
-  rotation: number = 0
+  rotation: number = 0,
+  strokeStyle: string = '#7A3EFF',
+  lineWidth: number = 2,
+  fillStyle: string = 'transparent'
 ) => {
   const cx = x + width / 2;
   const cy = y + height / 2;
@@ -80,9 +93,13 @@ export const drawRectangle = (
   ctx.translate(cx, cy);
   ctx.rotate(rotation);
 
-  ctx.strokeStyle = '#7A3EFF';
-  ctx.lineWidth = 2 / scale;
+  ctx.strokeStyle = strokeStyle;
+  ctx.lineWidth = lineWidth / scale;
 
+  if (fillStyle && fillStyle !== 'transparent') {
+    ctx.fillStyle = fillStyle;
+    ctx.fillRect(-width / 2, -height / 2, width, height);
+  }
   ctx.strokeRect(-width / 2, -height / 2, width, height);
 
   ctx.restore();
@@ -90,17 +107,16 @@ export const drawRectangle = (
 
 export const drawPath = (
   ctx: CanvasRenderingContext2D,
-  points: DrawPoint[],
-  x: number,
-  y: number,
+  element: DrawPath,
   scale: number
 ) => {
+  const { points, x, y, strokeStyle, lineCap, lineJoin, lineWidth } = element;
   if (points.length === 0) return;
 
-  ctx.strokeStyle = '#7A3EFF';
-  ctx.lineWidth = 2 / scale;
-  ctx.lineCap = 'round';
-  ctx.lineJoin = 'round';
+  ctx.strokeStyle = strokeStyle;
+  ctx.lineWidth = lineWidth / scale;
+  ctx.lineCap = lineCap;
+  ctx.lineJoin = lineJoin;
 
   ctx.beginPath();
   ctx.moveTo(x + points[0]!.x, y + points[0]!.y);
@@ -118,10 +134,12 @@ export const drawLine = (
   startY: number,
   endX: number,
   endY: number,
-  scale: number
+  scale: number,
+  strokeStyle: string = '#7A3EFF',
+  lineWidth: number = 2
 ) => {
-  ctx.strokeStyle = '#7A3EFF';
-  ctx.lineWidth = 2 / scale;
+  ctx.strokeStyle = strokeStyle;
+  ctx.lineWidth = lineWidth / scale;
 
   ctx.beginPath();
   ctx.moveTo(startX, startY);
@@ -336,14 +354,23 @@ export const drawText = (ctx: CanvasRenderingContext2D, element: DrawText) => {
   ctx.save();
 
   ctx.font = `${element.fontSize}px ${element.fontFamily}`;
+  const lineHeight = element.fontSize * 1.2;
 
-  // Use actual measured text width for accurate rotation center
-  const metrics = ctx.measureText(element.text);
-  const textWidth = metrics.width;
-  const textHeight = element.fontSize;
+  // Split text into lines for multiline support
+  const lines = element.text.split('\n');
 
-  // Calculate center of text for rotation
-  const centerX = element.x + textWidth / 2;
+  // Calculate max width across all lines for rotation center
+  let maxWidth = 0;
+  for (const line of lines) {
+    const metrics = ctx.measureText(line);
+    if (metrics.width > maxWidth) {
+      maxWidth = metrics.width;
+    }
+  }
+  const textHeight = lines.length * lineHeight;
+
+  // Calculate center of text block for rotation
+  const centerX = element.x + maxWidth / 2;
   const centerY = element.y + textHeight / 2;
 
   if (element.rotate) {
@@ -355,6 +382,11 @@ export const drawText = (ctx: CanvasRenderingContext2D, element: DrawText) => {
 
   ctx.fillStyle = element.color;
   ctx.textBaseline = 'top';
-  ctx.fillText(element.text, element.x, element.y);
+
+  // Render each line
+  lines.forEach((line, index) => {
+    ctx.fillText(line, element.x, element.y + index * lineHeight);
+  });
+
   ctx.restore();
 };

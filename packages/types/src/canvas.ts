@@ -9,51 +9,73 @@ export type DrawPoint = {
   y: number;
 };
 
-export type DrawPath = {
+// Base interface for all element properties
+export interface BaseElementProperty {
+  rotate: number;
+}
+
+// Interface for elements that can be stroked
+export interface StrokeableProperty extends BaseElementProperty {
+  strokeStyle: string;
+  lineWidth: number;
+}
+
+// Interface for elements that can be filled
+export interface FillableProperty {
+  fillStyle: string;
+}
+
+export type PathProperty = StrokeableProperty & {
+  lineCap: CanvasLineCap;
+  lineJoin: CanvasLineJoin;
+};
+
+export interface DrawPath extends PathProperty {
   type: 'draw';
   x: number;
   y: number;
   points: DrawPoint[];
-  color: string;
-  rotate: number;
-};
+}
 
-export type DrawCircle = {
+export type CircleProperty = StrokeableProperty & FillableProperty;
+
+export interface DrawCircle extends CircleProperty {
   type: 'circle';
   x: number;
   y: number;
   radiusX: number;
   radiusY: number;
-  color: string;
-  rotate: number;
-};
+}
 
-export type DrawRect = {
+export type RectProperty = StrokeableProperty & FillableProperty;
+
+export interface DrawRect extends RectProperty {
   type: 'rectangle';
   x: number;
   y: number;
   width: number;
   height: number;
-  rotate: number;
-};
+}
 
-export type DrawLine = {
+export type LineProperty = StrokeableProperty;
+
+export interface DrawLine extends LineProperty {
   type: 'line';
   x: number;
   y: number;
   endX: number;
   endY: number;
-  rotate: number;
-};
+}
 
-export type DrawArrow = {
+export type ArrowProperty = StrokeableProperty & FillableProperty;
+
+export interface DrawArrow extends ArrowProperty {
   type: 'arrow';
   x: number;
   y: number;
   endX: number;
   endY: number;
-  rotate: number;
-};
+}
 
 export type DrawArray = {
   type: 'array';
@@ -86,16 +108,29 @@ export type DrawLinkedList = {
   rotate: number;
 };
 
-export type DrawText = {
-  type: 'text';
-  x: number;
-  y: number;
-  text: string;
+export type TextProperty = {
   fontSize: number;
   fontFamily: string;
   color: string;
   rotate: number;
 };
+
+export interface DrawText extends TextProperty {
+  type: 'text';
+  x: number;
+  y: number;
+  text: string;
+}
+export type PropertyKey =
+  | 'strokeStyle'
+  | 'fillStyle'
+  | 'lineWidth'
+  | 'color'
+  | 'fontFamily'
+  | 'fontSize'
+  | 'rotate'
+  | 'lineCap'
+  | 'lineJoin';
 
 export type DrawElements =
   | DrawPath
