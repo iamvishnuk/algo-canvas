@@ -32,7 +32,8 @@ export const drawElements = (
         element.rotate,
         element.strokeStyle,
         element.lineWidth,
-        element.fillStyle
+        element.fillStyle,
+        element.strokePattern
       );
     } else if (element.type === 'rectangle') {
       drawRectangle(
@@ -45,7 +46,8 @@ export const drawElements = (
         element.rotate,
         element.strokeStyle,
         element.lineWidth,
-        element.fillStyle
+        element.fillStyle,
+        element.strokePattern
       );
     } else if (element.type === 'line') {
       drawLine(
@@ -56,7 +58,8 @@ export const drawElements = (
         element.endY,
         scale,
         element.strokeStyle,
-        element.lineWidth
+        element.lineWidth,
+        element.strokePattern
       );
     } else if (element.type === 'arrow') {
       drawArrow(
@@ -68,7 +71,8 @@ export const drawElements = (
         scale,
         element.strokeStyle,
         element.lineWidth,
-        element.fillStyle
+        element.fillStyle,
+        element.strokePattern
       );
     } else if (element.type === 'array') {
       drawArray(ctx, element.x, element.y, element.value, scale);

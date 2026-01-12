@@ -2,12 +2,26 @@ import { Ellipsis, Minus } from 'lucide-react';
 import ColorPicker from './ColorPicker';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { TOOL_PROPERTY_MAP } from '@/lib/canvas/constant';
-import { PropertyKey, Tool } from '@workspace/types/canvas';
+import { PropertyKey, StrokePattern, Tool } from '@workspace/types/canvas';
 import { updateElementProperty } from '@/features/canvas/canvasSlice';
 import {
   updateElementDefaultProperty,
   type IElementPropertyState
 } from '@/features/element/elementPropertySlice';
+
+const STROKE_PATTERNS: {
+  value: StrokePattern;
+  label: string;
+  icon: React.ReactNode;
+}[] = [
+  { value: 'solid', label: 'Solid', icon: <Minus strokeWidth={2} /> },
+  {
+    value: 'dashed',
+    label: 'Dashed',
+    icon: <span className='text-[10px]'>---</span>
+  },
+  { value: 'dotted', label: 'Dotted', icon: <Ellipsis strokeWidth={2} /> }
+];
 
 const STROKE_COLORS = [
   '#7A3EFF',
@@ -200,19 +214,26 @@ const ElementPropertyPanel = () => {
         </div>
       )}
 
-      {canShow('strokeStyle') && (
+      {canShow('strokePattern') && (
         <div className='space-y-2'>
           <p className='text-sm text-neutral-400'>Stroke Style</p>
           <div className='flex gap-2'>
-            <div className='flex size-9 items-center justify-center rounded-md border text-xs shadow-md'>
-              <Minus strokeWidth={1} />
-            </div>
-            <div className='flex size-9 items-center justify-center rounded-md border text-xs shadow-md'>
-              ---
-            </div>
-            <div className='flex size-9 items-center justify-center rounded-md border text-xs shadow-md'>
-              <Ellipsis strokeWidth={1} />
-            </div>
+            {STROKE_PATTERNS.map((pattern) => (
+              <button
+                key={pattern.value}
+                onClick={() =>
+                  handlePropertyChange('strokePattern', pattern.value)
+                }
+                className={`flex size-9 items-center justify-center rounded-md border text-xs shadow-md transition-colors ${
+                  getPropertyValue('strokePattern', 'solid') === pattern.value
+                    ? 'border-purple-500 bg-purple-500/20'
+                    : 'hover:bg-neutral-800'
+                }`}
+                title={pattern.label}
+              >
+                {pattern.icon}
+              </button>
+            ))}
           </div>
         </div>
       )}

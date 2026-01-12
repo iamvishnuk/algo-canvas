@@ -40,7 +40,8 @@ export const drawElementsPreview = (
       currentCircle.rotate,
       currentCircle.strokeStyle,
       currentCircle.lineWidth,
-      currentCircle.fillStyle
+      currentCircle.fillStyle,
+      currentCircle.strokePattern
     );
   }
 
@@ -55,7 +56,8 @@ export const drawElementsPreview = (
       currentRect.rotate,
       currentRect.strokeStyle,
       currentRect.lineWidth,
-      currentRect.fillStyle
+      currentRect.fillStyle,
+      currentRect.strokePattern
     );
   }
 
@@ -68,7 +70,8 @@ export const drawElementsPreview = (
       currentLine.endY,
       scale,
       currentLine.strokeStyle,
-      currentLine.lineWidth
+      currentLine.lineWidth,
+      currentLine.strokePattern
     );
   }
 
@@ -82,7 +85,8 @@ export const drawElementsPreview = (
       scale,
       currentArrow.strokeStyle,
       currentArrow.lineWidth,
-      currentArrow.fillStyle
+      currentArrow.fillStyle,
+      currentArrow.strokePattern
     );
   }
 };

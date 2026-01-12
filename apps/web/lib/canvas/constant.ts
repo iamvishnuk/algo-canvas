@@ -142,19 +142,22 @@ export const BASE_ELEMENT_PROPERTY = {
   line: {
     rotate: 0,
     strokeStyle: '#7A3EFF',
-    lineWidth: 2
+    lineWidth: 2,
+    strokePattern: 'solid' as const
   },
   rectangle: {
     rotate: 0,
     strokeStyle: '#7A3EFF',
     lineWidth: 2,
-    fillStyle: 'transparent'
+    fillStyle: 'transparent',
+    strokePattern: 'solid' as const
   },
   circle: {
     rotate: 0,
     strokeStyle: '#7A3EFF',
     lineWidth: 2,
-    fillStyle: 'transparent'
+    fillStyle: 'transparent',
+    strokePattern: 'solid' as const
   },
   text: {
     fontSize: 16,
@@ -166,23 +169,25 @@ export const BASE_ELEMENT_PROPERTY = {
     rotate: 0,
     strokeStyle: '#7A3EFF',
     lineWidth: 2,
-    fillStyle: 'transparent'
+    fillStyle: 'transparent',
+    strokePattern: 'solid' as const
   },
   draw: {
     rotate: 0,
     lineWidth: 2,
     strokeStyle: '#7A3EFF',
     lineCap: 'round' as CanvasLineCap,
-    lineJoin: 'round' as CanvasLineJoin
+    lineJoin: 'round' as CanvasLineJoin,
+    strokePattern: 'solid' as const
   }
 };
 
 export const TOOL_PROPERTY_MAP: Record<Tool, PropertyKey[]> = {
-  line: ['strokeStyle', 'lineWidth'],
-  rectangle: ['strokeStyle', 'fillStyle', 'lineWidth'],
-  circle: ['strokeStyle', 'fillStyle', 'lineWidth'],
-  arrow: ['strokeStyle', 'fillStyle', 'lineWidth'],
-  draw: ['strokeStyle', 'lineWidth'],
+  line: ['strokeStyle', 'lineWidth', 'strokePattern'],
+  rectangle: ['strokeStyle', 'fillStyle', 'lineWidth', 'strokePattern'],
+  circle: ['strokeStyle', 'fillStyle', 'lineWidth', 'strokePattern'],
+  arrow: ['strokeStyle', 'fillStyle', 'lineWidth', 'strokePattern'],
+  draw: ['strokeStyle', 'lineWidth', 'strokePattern'],
   text: ['color', 'fontFamily', 'fontSize'],
   selection: [],
   insert: [],

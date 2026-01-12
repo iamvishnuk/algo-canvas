@@ -4,6 +4,8 @@ export type ViewState = {
   offsetY: number;
 };
 
+export type StrokePattern = 'solid' | 'dashed' | 'dotted';
+
 export type DrawPoint = {
   x: number;
   y: number;
@@ -18,6 +20,7 @@ export interface BaseElementProperty {
 export interface StrokeableProperty extends BaseElementProperty {
   strokeStyle: string;
   lineWidth: number;
+  strokePattern: StrokePattern;
 }
 
 // Interface for elements that can be filled
@@ -125,6 +128,7 @@ export type PropertyKey =
   | 'strokeStyle'
   | 'fillStyle'
   | 'lineWidth'
+  | 'strokePattern'
   | 'color'
   | 'fontFamily'
   | 'fontSize'

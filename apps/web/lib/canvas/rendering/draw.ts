@@ -1,7 +1,32 @@
 import { ARRAY_CONSTANTS } from '@/lib/data-structures/array';
 import { LINKED_LIST_CONSTANTS } from '@/lib/data-structures/linked-list';
 import { getDepth, TREE_CONSTANTS } from '@/lib/data-structures/tree';
-import { DrawPath, DrawText, TreeNode } from '@workspace/types/canvas';
+import {
+  DrawPath,
+  DrawText,
+  StrokePattern,
+  TreeNode
+} from '@workspace/types/canvas';
+
+/**
+ * Get line dash array based on stroke pattern
+ */
+export const getLineDash = (
+  pattern: StrokePattern,
+  lineWidth: number,
+  scale: number
+): number[] => {
+  const scaledWidth = lineWidth / scale;
+  switch (pattern) {
+    case 'dashed':
+      return [scaledWidth * 4, scaledWidth * 2];
+    case 'dotted':
+      return [scaledWidth, scaledWidth * 2];
+    case 'solid':
+    default:
+      return [];
+  }
+};
 
 export const drawCircle = (
   ctx: CanvasRenderingContext2D,
@@ -13,10 +38,12 @@ export const drawCircle = (
   rotation: number = 0,
   strokeStyle: string = '#7A3EFF',
   lineWidth: number = 2,
-  fillStyle: string = 'transparent'
+  fillStyle: string = 'transparent',
+  strokePattern: StrokePattern = 'solid'
 ) => {
   ctx.strokeStyle = strokeStyle;
   ctx.lineWidth = lineWidth / scale;
+  ctx.setLineDash(getLineDash(strokePattern, lineWidth, scale));
 
   ctx.beginPath();
   ctx.ellipse(
@@ -33,6 +60,7 @@ export const drawCircle = (
     ctx.fill();
   }
   ctx.stroke();
+  ctx.setLineDash([]);
 };
 
 export const drawArrow = (
@@ -44,10 +72,12 @@ export const drawArrow = (
   scale: number,
   strokeStyle: string = '#7A3EFF',
   lineWidth: number = 2,
-  fillStyle: string = '#7A3EFF'
+  fillStyle: string = '#7A3EFF',
+  strokePattern: StrokePattern = 'solid'
 ) => {
   ctx.strokeStyle = strokeStyle;
   ctx.lineWidth = lineWidth / scale;
+  ctx.setLineDash(getLineDash(strokePattern, lineWidth, scale));
 
   const angle = Math.atan2(endY - startY, endX - startX);
 
@@ -56,8 +86,9 @@ export const drawArrow = (
   ctx.moveTo(startX, startY);
   ctx.lineTo(endX, endY);
   ctx.stroke();
+  ctx.setLineDash([]);
 
-  // Arrowhead
+  // Arrowhead (always solid)
   ctx.beginPath();
   ctx.moveTo(endX, endY);
   ctx.lineTo(
@@ -83,7 +114,8 @@ export const drawRectangle = (
   rotation: number = 0,
   strokeStyle: string = '#7A3EFF',
   lineWidth: number = 2,
-  fillStyle: string = 'transparent'
+  fillStyle: string = 'transparent',
+  strokePattern: StrokePattern = 'solid'
 ) => {
   const cx = x + width / 2;
   const cy = y + height / 2;
@@ -95,12 +127,14 @@ export const drawRectangle = (
 
   ctx.strokeStyle = strokeStyle;
   ctx.lineWidth = lineWidth / scale;
+  ctx.setLineDash(getLineDash(strokePattern, lineWidth, scale));
 
   if (fillStyle && fillStyle !== 'transparent') {
     ctx.fillStyle = fillStyle;
     ctx.fillRect(-width / 2, -height / 2, width, height);
   }
   ctx.strokeRect(-width / 2, -height / 2, width, height);
+  ctx.setLineDash([]);
 
   ctx.restore();
 };
@@ -110,13 +144,23 @@ export const drawPath = (
   element: DrawPath,
   scale: number
 ) => {
-  const { points, x, y, strokeStyle, lineCap, lineJoin, lineWidth } = element;
+  const {
+    points,
+    x,
+    y,
+    strokeStyle,
+    lineCap,
+    lineJoin,
+    lineWidth,
+    strokePattern = 'solid'
+  } = element;
   if (points.length === 0) return;
 
   ctx.strokeStyle = strokeStyle;
   ctx.lineWidth = lineWidth / scale;
   ctx.lineCap = lineCap;
   ctx.lineJoin = lineJoin;
+  ctx.setLineDash(getLineDash(strokePattern, lineWidth, scale));
 
   ctx.beginPath();
   ctx.moveTo(x + points[0]!.x, y + points[0]!.y);
@@ -126,6 +170,7 @@ export const drawPath = (
   }
 
   ctx.stroke();
+  ctx.setLineDash([]);
 };
 
 export const drawLine = (
@@ -136,16 +181,19 @@ export const drawLine = (
   endY: number,
   scale: number,
   strokeStyle: string = '#7A3EFF',
-  lineWidth: number = 2
+  lineWidth: number = 2,
+  strokePattern: StrokePattern = 'solid'
 ) => {
   ctx.strokeStyle = strokeStyle;
   ctx.lineWidth = lineWidth / scale;
+  ctx.setLineDash(getLineDash(strokePattern, lineWidth, scale));
 
   ctx.beginPath();
   ctx.moveTo(startX, startY);
   ctx.lineTo(endX, endY);
 
   ctx.stroke();
+  ctx.setLineDash([]);
 };
 
 export const drawArray = (

@@ -22,19 +22,22 @@ const initialState: IElementPropertyState = {
   line: {
     rotate: 0,
     strokeStyle: '#7A3EFF',
-    lineWidth: 2
+    lineWidth: 2,
+    strokePattern: 'solid'
   },
   rectangle: {
     rotate: 0,
     strokeStyle: '#7A3EFF',
     lineWidth: 2,
-    fillStyle: 'transparent'
+    fillStyle: 'transparent',
+    strokePattern: 'solid'
   },
   circle: {
     rotate: 0,
     strokeStyle: '#7A3EFF',
     lineWidth: 2,
-    fillStyle: 'transparent'
+    fillStyle: 'transparent',
+    strokePattern: 'solid'
   },
   text: {
     fontSize: 16,
@@ -46,14 +49,16 @@ const initialState: IElementPropertyState = {
     rotate: 0,
     strokeStyle: '#7A3EFF',
     lineWidth: 2,
-    fillStyle: 'transparent'
+    fillStyle: 'transparent',
+    strokePattern: 'solid'
   },
   draw: {
     rotate: 0,
     lineWidth: 2,
     strokeStyle: '#7A3EFF',
     lineCap: 'round' as CanvasLineCap,
-    lineJoin: 'round' as CanvasLineJoin
+    lineJoin: 'round' as CanvasLineJoin,
+    strokePattern: 'solid'
   }
 };
 
