@@ -150,3 +150,14 @@ export const ArraySchema = z.object({
       }
     )
 });
+
+export const EditArraySchema = z.object({
+  items: z
+    .array(
+      z.object({
+        index: z.number(),
+        value: z.string().min(1, 'value is required')
+      })
+    )
+    .min(1, { message: 'At least one Item is required' })
+});

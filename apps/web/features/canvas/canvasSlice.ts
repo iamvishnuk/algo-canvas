@@ -7,6 +7,7 @@ import {
   DrawPoint,
   PropertyKey,
   Tool,
+  TreeNode,
   ViewState
 } from '@workspace/types/canvas';
 
@@ -375,6 +376,21 @@ const canvasSlice = createSlice({
       saveToHistory(state);
       // Use type assertion since PropertyKey is already constrained to valid property names
       (element as Record<string, unknown>)[propertyKey] = value;
+    },
+    updateDataStructuresValues: (
+      state,
+      action: PayloadAction<{ value: string[] | TreeNode }>
+    ) => {
+      if (state.selectedElementIndex === null) return;
+
+      const element = state.elements[state.selectedElementIndex];
+      if (!element) return;
+
+      saveToHistory(state);
+
+      if (element.type === 'array') {
+        element.value = action.payload.value as string[];
+      }
     }
   }
 });
@@ -401,7 +417,8 @@ export const {
   addToClipBoard,
   pastElements,
   duplicateElements,
-  updateElementProperty
+  updateElementProperty,
+  updateDataStructuresValues
 } = canvasSlice.actions;
 
 export default canvasSlice.reducer;

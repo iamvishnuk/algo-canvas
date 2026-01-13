@@ -58,6 +58,7 @@ import {
 } from '@/lib/canvas/utils';
 import ElementPropertyPanel from './ElementPropertyPanel';
 import { updateElementDefaultProperty } from '@/features/element/elementPropertySlice';
+import ArrayEditor from './ArrayEditor';
 
 const CanvasArea = () => {
   const dispatch = useAppDispatch();
@@ -175,6 +176,8 @@ const CanvasArea = () => {
     isTextInputVisibleRef.current = isTextInputVisible;
     editingTextIndexRef.current = editingTextIndex;
   }, [textInputValue, textInputPosition, isTextInputVisible, editingTextIndex]);
+
+  console.log(elements);
 
   const resizeCanvas = useCallback(() => {
     const bgCanvas = bgCanvasRef.current;
@@ -1078,6 +1081,7 @@ const CanvasArea = () => {
       <TreeDialog />
       <LinkedListDialog />
       <ElementPropertyPanel />
+      <ArrayEditor />
     </div>
   );
 };
