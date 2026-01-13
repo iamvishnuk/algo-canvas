@@ -186,7 +186,7 @@ export const TOOL_PROPERTY_MAP: Record<Tool, PropertyKey[]> = {
   line: ['strokeStyle', 'lineWidth', 'strokePattern'],
   rectangle: ['strokeStyle', 'fillStyle', 'lineWidth', 'strokePattern'],
   circle: ['strokeStyle', 'fillStyle', 'lineWidth', 'strokePattern'],
-  arrow: ['strokeStyle', 'fillStyle', 'lineWidth', 'strokePattern'],
+  arrow: ['strokeStyle', 'lineWidth', 'strokePattern'],
   draw: ['strokeStyle', 'lineWidth', 'strokePattern'],
   text: ['color', 'fontFamily', 'fontSize'],
   selection: [],

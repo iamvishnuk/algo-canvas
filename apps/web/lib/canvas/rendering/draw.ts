@@ -75,32 +75,40 @@ export const drawArrow = (
   fillStyle: string = '#7A3EFF',
   strokePattern: StrokePattern = 'solid'
 ) => {
+  const angle = Math.atan2(endY - startY, endX - startX);
+
+  const arrowLength = Math.max(8, lineWidth * 3) / scale;
+  const arrowAngle = Math.PI / 6;
+
+  // 🔹 NEW: line end before arrowhead
+  const lineEndX = endX - arrowLength * Math.cos(angle);
+  const lineEndY = endY - arrowLength * Math.sin(angle);
+
+  // ---- Line ----
   ctx.strokeStyle = strokeStyle;
   ctx.lineWidth = lineWidth / scale;
   ctx.setLineDash(getLineDash(strokePattern, lineWidth, scale));
 
-  const angle = Math.atan2(endY - startY, endX - startX);
-
-  // Line
   ctx.beginPath();
   ctx.moveTo(startX, startY);
-  ctx.lineTo(endX, endY);
+  ctx.lineTo(lineEndX, lineEndY);
   ctx.stroke();
   ctx.setLineDash([]);
 
-  // Arrowhead (always solid)
+  // ---- Arrowhead ----
   ctx.beginPath();
   ctx.moveTo(endX, endY);
   ctx.lineTo(
-    endX - 10 * Math.cos(angle - Math.PI / 6),
-    endY - 10 * Math.sin(angle - Math.PI / 6)
+    endX - arrowLength * Math.cos(angle - arrowAngle),
+    endY - arrowLength * Math.sin(angle - arrowAngle)
   );
   ctx.lineTo(
-    endX - 10 * Math.cos(angle + Math.PI / 6),
-    endY - 10 * Math.sin(angle + Math.PI / 6)
+    endX - arrowLength * Math.cos(angle + arrowAngle),
+    endY - arrowLength * Math.sin(angle + arrowAngle)
   );
   ctx.closePath();
-  ctx.fillStyle = fillStyle;
+
+  ctx.fillStyle = strokeStyle;
   ctx.fill();
 };
 
