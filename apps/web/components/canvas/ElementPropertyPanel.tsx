@@ -288,7 +288,7 @@ const ElementPropertyPanel = () => {
                 key={size.value}
                 onClick={() => handlePropertyChange('fontSize', size.value)}
                 className={`flex size-9 items-center justify-center rounded-md border text-xs shadow-md transition-colors ${
-                  getNumericPropertyValue('fontSize', 16) === size.value
+                  getNumericPropertyValue('fontSize', 28) === size.value
                     ? 'border-purple-500 bg-purple-500/20'
                     : 'hover:bg-neutral-800'
                 }`}

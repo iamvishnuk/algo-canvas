@@ -57,6 +57,7 @@ import {
   isPointInBounds
 } from '@/lib/canvas/utils';
 import ElementPropertyPanel from './ElementPropertyPanel';
+import { updateElementDefaultProperty } from '@/features/element/elementPropertySlice';
 
 const CanvasArea = () => {
   const dispatch = useAppDispatch();
@@ -159,18 +160,21 @@ const CanvasArea = () => {
     null
   );
   const [textInputValue, setTextInputValue] = useState('');
+  const [editingTextIndex, setEditingTextIndex] = useState<number | null>(null);
 
   // Refs to track text input state for saving when tool changes
   const textInputValueRef = useRef(textInputValue);
   const textInputPositionRef = useRef(textInputPosition);
   const isTextInputVisibleRef = useRef(isTextInputVisible);
+  const editingTextIndexRef = useRef(editingTextIndex);
 
   // Keep refs in sync with state
   useEffect(() => {
     textInputValueRef.current = textInputValue;
     textInputPositionRef.current = textInputPosition;
     isTextInputVisibleRef.current = isTextInputVisible;
-  }, [textInputValue, textInputPosition, isTextInputVisible]);
+    editingTextIndexRef.current = editingTextIndex;
+  }, [textInputValue, textInputPosition, isTextInputVisible, editingTextIndex]);
 
   const resizeCanvas = useCallback(() => {
     const bgCanvas = bgCanvasRef.current;
@@ -226,7 +230,7 @@ const CanvasArea = () => {
     ctx.scale(scale, scale);
 
     // Draw all saved objects
-    drawElements(ctx, elements, scale);
+    drawElements(ctx, elements, scale, editingTextIndex);
 
     // Draw preview
     drawElementsPreview(
@@ -268,7 +272,8 @@ const CanvasArea = () => {
     areaSelectionStart,
     areaSelectionEnd,
     tool,
-    resizeKey
+    resizeKey,
+    editingTextIndex
   ]);
 
   useEffect(() => {
@@ -278,17 +283,30 @@ const CanvasArea = () => {
       textInputPositionRef.current &&
       textInputValueRef.current.trim()
     ) {
-      dispatch(
-        addElements({
-          element: {
-            type: 'text',
+      if (editingTextIndexRef.current !== null) {
+        // Update existing text element
+        dispatch(
+          updateElementPosition({
+            index: editingTextIndexRef.current,
             x: textInputPositionRef.current.x,
             y: textInputPositionRef.current.y,
-            text: textInputValueRef.current,
-            ...elementProperty.text
-          }
-        })
-      );
+            offset: { x: 0, y: 0 },
+            isStart: true
+          })
+        );
+      } else {
+        dispatch(
+          addElements({
+            element: {
+              type: 'text',
+              x: textInputPositionRef.current.x,
+              y: textInputPositionRef.current.y,
+              text: textInputValueRef.current,
+              ...elementProperty.text
+            }
+          })
+        );
+      }
     }
 
     dispatch(addSelectedElementIndex(null));
@@ -299,6 +317,7 @@ const CanvasArea = () => {
     setIsTextInputVisible(false);
     setTextInputPosition(null);
     setTextInputValue('');
+    setEditingTextIndex(null);
   }, [tool, dispatch, elementProperty.text]);
 
   const handleMouseDown = (e: React.MouseEvent) => {
@@ -895,6 +914,36 @@ const CanvasArea = () => {
     }
   };
 
+  const handleDoubleClick = (e: React.MouseEvent) => {
+    const worldPos = screenToWorld(e.clientX, e.clientY, drawCanvasRef, view);
+    const HIT_TOLERANCE = 6 / view.scale;
+
+    const elementIndex = findElementAtPosition(
+      worldPos,
+      elements,
+      HIT_TOLERANCE
+    );
+
+    if (elementIndex !== null) {
+      const element = elements[elementIndex];
+      if (element && element.type === 'text') {
+        // Start editing the text element
+        dispatch(
+          updateElementDefaultProperty({
+            key: 'fontSize',
+            value: element.fontSize,
+            element: 'text'
+          })
+        );
+        setEditingTextIndex(elementIndex);
+        setTextInputPosition({ x: element.x, y: element.y });
+        setTextInputValue(element.text);
+        setIsTextInputVisible(true);
+        dispatch(addSelectedElementIndex(null));
+      }
+    }
+  };
+
   const handleTextKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Escape') {
       e.preventDefault();
@@ -905,21 +954,42 @@ const CanvasArea = () => {
 
   const handleTextSubmit = () => {
     if (textInputPosition && textInputValue.trim()) {
-      dispatch(
-        addElements({
-          element: {
-            type: 'text',
-            x: textInputPosition.x,
-            y: textInputPosition.y,
-            text: textInputValue,
-            ...elementProperty.text
-          }
-        })
-      );
+      if (editingTextIndex !== null) {
+        // Update existing text element
+        const existingElement = elements[editingTextIndex];
+        if (existingElement && existingElement.type === 'text') {
+          dispatch(
+            addElements({
+              element: {
+                ...existingElement,
+                text: textInputValue
+              },
+              replaceIndex: editingTextIndex
+            })
+          );
+        }
+      } else {
+        // Create new text element
+        dispatch(
+          addElements({
+            element: {
+              type: 'text',
+              x: textInputPosition.x,
+              y: textInputPosition.y,
+              text: textInputValue,
+              ...elementProperty.text
+            }
+          })
+        );
+      }
+    } else if (editingTextIndex !== null && !textInputValue.trim()) {
+      // If editing and text is empty, we could optionally delete the element
+      // For now, just restore original (do nothing)
     }
     setIsTextInputVisible(false);
     setTextInputPosition(null);
     setTextInputValue('');
+    setEditingTextIndex(null);
   };
 
   const handleContextMenu = (e: React.MouseEvent) => {
@@ -961,6 +1031,7 @@ const CanvasArea = () => {
         onMouseLeave={handleMouseUp}
         onContextMenu={handleContextMenu}
         onClick={handleOnClick}
+        onDoubleClick={handleDoubleClick}
         className={cn(
           '!dark:text-white absolute top-0 left-0',
           CURSOR_MAP[tool],
@@ -983,7 +1054,7 @@ const CanvasArea = () => {
           }}
           onKeyDown={handleTextKeyDown}
           onBlur={handleTextSubmit}
-          className='absolute resize-none overflow-hidden border border-blue-500 bg-transparent px-1 outline-none'
+          className='absolute resize-none overflow-hidden border-none bg-transparent px-1 outline-none'
           rows={1}
           style={{
             left: textInputPosition.x * view.scale + view.offsetX,

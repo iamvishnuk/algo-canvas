@@ -40,7 +40,7 @@ const initialState: IElementPropertyState = {
     strokePattern: 'solid'
   },
   text: {
-    fontSize: 16,
+    fontSize: 28,
     fontFamily: 'Caveat',
     rotate: 0,
     color: '#7A3EFF'

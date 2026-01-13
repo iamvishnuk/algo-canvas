@@ -14,9 +14,14 @@ import {
 export const drawElements = (
   ctx: CanvasRenderingContext2D,
   elements: DrawElements[],
-  scale: number
+  scale: number,
+  skipIndex?: number | null
 ) => {
-  elements.forEach((element) => {
+  elements.forEach((element, index) => {
+    // Skip the element being edited
+    if (skipIndex !== undefined && skipIndex !== null && index === skipIndex) {
+      return;
+    }
     if (element.type === 'draw') {
       if (element.points.length < 2) return;
 

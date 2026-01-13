@@ -115,9 +115,20 @@ const canvasSlice = createSlice({
     changeTool: (state, action: PayloadAction<{ tool: Tool }>) => {
       state.tool = action.payload.tool;
     },
-    addElements: (state, action: PayloadAction<{ element: DrawElements }>) => {
+    addElements: (
+      state,
+      action: PayloadAction<{ element: DrawElements; replaceIndex?: number }>
+    ) => {
       saveToHistory(state);
-      state.elements = [...state.elements, action.payload.element];
+      if (action.payload.replaceIndex !== undefined) {
+        // Replace existing element at the specified index
+        state.elements = state.elements.map((el, idx) =>
+          idx === action.payload.replaceIndex ? action.payload.element : el
+        );
+      } else {
+        // Add new element
+        state.elements = [...state.elements, action.payload.element];
+      }
     },
     clearCanvas: (state) => {
       saveToHistory(state);
