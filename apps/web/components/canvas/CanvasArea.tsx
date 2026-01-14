@@ -18,8 +18,8 @@ import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import BottomToolBar from './BottomToolBar';
 import {
   addElements,
-  addSelectedElementIndex,
-  addSelectedElementsIndices,
+  addSelectedElementId,
+  addSelectedElementIds,
   handleZoom,
   setCanvasSize,
   updateElementPosition,
@@ -54,7 +54,8 @@ import LinkedListDialog from './LinkedListDialog';
 import {
   getElementBounds,
   getCombinedBounds,
-  isPointInBounds
+  isPointInBounds,
+  generateUUID
 } from '@/lib/canvas/utils';
 import ElementPropertyPanel from './ElementPropertyPanel';
 import { updateElementDefaultProperty } from '@/features/element/elementPropertySlice';
@@ -64,13 +65,8 @@ import TreeEditor from './TreeEditor';
 
 const CanvasArea = () => {
   const dispatch = useAppDispatch();
-  const {
-    view,
-    tool,
-    elements,
-    selectedElementIndex,
-    selectedElementsIndices
-  } = useAppSelector((state) => state.canvas);
+  const { view, tool, elements, selectedElementId, selectedElementIds } =
+    useAppSelector((state) => state.canvas);
   const elementProperty = useAppSelector((state) => state.elementProperty);
 
   useCanvasKeyboardShortcuts();
@@ -124,20 +120,20 @@ const CanvasArea = () => {
     x: 0,
     y: 0
   });
-  const [draggingElementIndex, setDraggingElementIndex] = useState<
-    number | null
-  >(null);
+  const [draggingElementId, setDraggingElementId] = useState<string | null>(
+    null
+  );
   const [isFirstDragMove, setIsFirstDragMove] = useState(false);
   // Multi-element drag state
   const [multiDragOffsets, setMultiDragOffsets] = useState<
-    Map<number, DrawPoint>
+    Map<string, DrawPoint>
   >(new Map());
   const [isDraggingMultiple, setIsDraggingMultiple] = useState(false);
 
   // Rotation State
   const [isRotating, setIsRotating] = useState(false);
   const [rotationState, setRotationState] = useState<{
-    index: number;
+    id: string;
     center: DrawPoint;
     startAngle: number;
     initialRotation: number;
@@ -147,7 +143,7 @@ const CanvasArea = () => {
   // Resize State
   const [isResizing, setIsResizing] = useState(false);
   const [resizeState, setResizeState] = useState<{
-    index: number;
+    id: string;
     handle: ResizeHandle;
     initialBounds: { minX: number; minY: number; maxX: number; maxY: number };
     anchorPoint: DrawPoint;
@@ -252,10 +248,10 @@ const CanvasArea = () => {
     if (tool === 'selection') {
       drawSelectionBox(
         ctx,
-        selectedElementIndex,
+        selectedElementId,
         elements,
         view,
-        selectedElementsIndices,
+        selectedElementIds,
         isAreaSelecting,
         areaSelectionStart,
         areaSelectionEnd
@@ -271,8 +267,8 @@ const CanvasArea = () => {
     currentRect,
     currentLine,
     currentArrow,
-    selectedElementIndex,
-    selectedElementsIndices,
+    selectedElementId,
+    selectedElementIds,
     isAreaSelecting,
     areaSelectionStart,
     areaSelectionEnd,
@@ -292,7 +288,6 @@ const CanvasArea = () => {
         // Update existing text element
         dispatch(
           updateElementPosition({
-            index: editingTextIndexRef.current,
             x: textInputPositionRef.current.x,
             y: textInputPositionRef.current.y,
             offset: { x: 0, y: 0 },
@@ -303,6 +298,7 @@ const CanvasArea = () => {
         dispatch(
           addElements({
             element: {
+              id: generateUUID(),
               type: 'text',
               x: textInputPositionRef.current.x,
               y: textInputPositionRef.current.y,
@@ -314,8 +310,8 @@ const CanvasArea = () => {
       }
     }
 
-    dispatch(addSelectedElementIndex(null));
-    dispatch(addSelectedElementsIndices([]));
+    dispatch(addSelectedElementId(null));
+    dispatch(addSelectedElementIds([]));
     setIsAreasSelecting(false);
     setAreaSelectionStart(null);
     setAreaSelectionEnd(null);
@@ -336,6 +332,7 @@ const CanvasArea = () => {
     } else if (tool === 'draw') {
       setIsDrawing(true);
       setCurrentPath({
+        id: generateUUID(),
         x: 0,
         y: 0,
         points: [worldPos],
@@ -346,6 +343,7 @@ const CanvasArea = () => {
       setCircleStart(worldPos);
 
       setCurrentCircle({
+        id: generateUUID(),
         x: worldPos.x,
         y: worldPos.y,
         radiusX: 0,
@@ -356,6 +354,7 @@ const CanvasArea = () => {
       setIsDrawing(true);
       setRectStart(worldPos);
       setCurrentRect({
+        id: generateUUID(),
         x: worldPos.x,
         y: worldPos.y,
         width: 0,
@@ -366,6 +365,7 @@ const CanvasArea = () => {
       setIsDrawing(true);
       setLineStart(worldPos);
       setCurrentLine({
+        id: generateUUID(),
         x: worldPos.x,
         y: worldPos.y,
         endX: worldPos.x,
@@ -381,6 +381,7 @@ const CanvasArea = () => {
         dispatch(
           addElements({
             element: {
+              id: generateUUID(),
               type: 'text',
               x: textInputPosition.x,
               y: textInputPosition.y,
@@ -399,19 +400,19 @@ const CanvasArea = () => {
       const SELECTION_PADDING = 10 / view.scale;
 
       // Check if clicking inside area-selection box (works for 1 or more elements)
-      if (selectedElementsIndices.length >= 1) {
+      if (selectedElementIds.length >= 1) {
         const combinedBounds = getCombinedBounds(
           elements,
-          selectedElementsIndices,
+          selectedElementIds,
           SELECTION_PADDING
         );
         if (combinedBounds && isPointInBounds(worldPos, combinedBounds)) {
           // Start dragging selected elements
-          const offsets = new Map<number, DrawPoint>();
-          selectedElementsIndices.forEach((idx) => {
-            const el = elements[idx];
+          const offsets = new Map<string, DrawPoint>();
+          selectedElementIds.forEach((id) => {
+            const el = elements.find((el) => el.id === id);
             if (el) {
-              offsets.set(idx, {
+              offsets.set(id, {
                 x: worldPos.x - el.x,
                 y: worldPos.y - el.y
               });
@@ -419,14 +420,14 @@ const CanvasArea = () => {
           });
 
           setMultiDragOffsets(offsets);
-          setIsDraggingMultiple(selectedElementsIndices.length > 1);
+          setIsDraggingMultiple(selectedElementIds.length > 1);
           setIsDraggingElements(true);
           setIsFirstDragMove(true);
 
           // For single element in area selection, also set the dragging index
-          if (selectedElementsIndices.length === 1) {
-            setDraggingElementIndex(selectedElementsIndices[0]!);
-            const el = elements[selectedElementsIndices[0]!];
+          if (selectedElementIds.length === 1) {
+            setDraggingElementId(selectedElementIds[0]!);
+            const el = elements.find((el) => el.id === selectedElementIds[0]!);
             if (el) {
               setDragElementOffset({
                 x: worldPos.x - el.x,
@@ -439,8 +440,8 @@ const CanvasArea = () => {
       }
 
       // Check if clicking inside single selected element's bounding box
-      if (selectedElementIndex !== null) {
-        const element = elements[selectedElementIndex]!;
+      if (selectedElementId !== null) {
+        const element = elements.find((el) => el.id === selectedElementId)!;
         const bound = getElementBounds(element);
         if (bound) {
           // Check for resize handle first
@@ -476,7 +477,7 @@ const CanvasArea = () => {
             setIsResizing(true);
             setIsFirstResizeMove(true);
             setResizeState({
-              index: selectedElementIndex,
+              id: selectedElementId,
               handle: resizeHandle,
               initialBounds: bound,
               anchorPoint: { x: anchorX, y: anchorY }
@@ -523,7 +524,7 @@ const CanvasArea = () => {
             setIsRotating(true);
             setIsFirstRotateMove(true);
             setRotationState({
-              index: selectedElementIndex,
+              id: selectedElementId,
               center: rotationCenter,
               startAngle: Math.atan2(
                 worldPos.y - rotationCenter.y,
@@ -544,7 +545,7 @@ const CanvasArea = () => {
           if (isPointInBounds(worldPos, selectionBounds)) {
             setIsDraggingElements(true);
             setIsFirstDragMove(true);
-            setDraggingElementIndex(selectedElementIndex);
+            setDraggingElementId(selectedElementId);
             setIsDraggingMultiple(false);
             setDragElementOffset({
               x: worldPos.x - element.x,
@@ -566,23 +567,23 @@ const CanvasArea = () => {
 
         setIsDraggingElements(true);
         setIsFirstDragMove(true);
-        setDraggingElementIndex(elementIndex);
+        setDraggingElementId(element.id);
         setIsDraggingMultiple(false);
         setDragElementOffset({
           x: worldPos.x - element.x,
           y: worldPos.y - element.y
         });
 
-        dispatch(addSelectedElementIndex(elementIndex));
-        dispatch(addSelectedElementsIndices([]));
+        dispatch(addSelectedElementId(element.id));
+        dispatch(addSelectedElementIds([]));
         return;
       }
 
       setIsAreasSelecting(true);
       setAreaSelectionStart(worldPos);
       setAreaSelectionEnd(worldPos);
-      dispatch(addSelectedElementIndex(null));
-      dispatch(addSelectedElementsIndices([]));
+      dispatch(addSelectedElementId(null));
+      dispatch(addSelectedElementIds([]));
     }
   };
 
@@ -591,8 +592,8 @@ const CanvasArea = () => {
     const HIT_TOLERANCE = 6 / view.scale;
 
     // Check for resize handle hover on selected element
-    if (selectedElementIndex !== null) {
-      const element = elements[selectedElementIndex];
+    if (selectedElementId !== null) {
+      const element = elements.find((el) => el.id === selectedElementId);
       if (element) {
         const resizeHandle = getResizeHandle(worldPos, element, view);
         setHoveredHandle(resizeHandle);
@@ -635,6 +636,7 @@ const CanvasArea = () => {
       const centerX = (circleStart.x + worldPos.x) / 2;
       const centerY = (circleStart.y + worldPos.y) / 2;
       setCurrentCircle({
+        id: currentCircle!.id,
         x: centerX,
         y: centerY,
         radiusX,
@@ -645,6 +647,7 @@ const CanvasArea = () => {
       const width = worldPos.x - rectStart.x;
       const height = worldPos.y - rectStart.y;
       setCurrentRect({
+        id: currentRect!.id,
         x: rectStart.x,
         y: rectStart.y,
         width,
@@ -653,6 +656,7 @@ const CanvasArea = () => {
       });
     } else if (isDrawing && tool === 'line' && lineStart) {
       setCurrentLine({
+        id: currentLine!.id,
         x: lineStart.x,
         y: lineStart.y,
         endX: worldPos.x,
@@ -661,6 +665,7 @@ const CanvasArea = () => {
       });
     } else if (tool === 'arrow' && arrowStart) {
       setCurrentArrow({
+        id: currentArrow ? currentArrow.id : generateUUID(),
         x: arrowStart.x,
         y: arrowStart.y,
         endX: worldPos.x,
@@ -670,14 +675,13 @@ const CanvasArea = () => {
     } else if (tool === 'selection' && isAreaSelecting && areaSelectionStart) {
       setAreaSelectionEnd(worldPos);
     } else if (tool === 'selection' && isDraggingElements) {
-      if (isDraggingMultiple && selectedElementsIndices.length > 1) {
+      if (isDraggingMultiple && selectedElementIds.length > 1) {
         // Drag multiple elements
-        selectedElementsIndices.forEach((idx) => {
-          const offset = multiDragOffsets.get(idx);
+        selectedElementIds.forEach((id) => {
+          const offset = multiDragOffsets.get(id);
           if (offset) {
             dispatch(
               updateElementPosition({
-                index: idx,
                 x: worldPos.x,
                 y: worldPos.y,
                 offset: offset,
@@ -689,10 +693,9 @@ const CanvasArea = () => {
         if (isFirstDragMove) {
           setIsFirstDragMove(false);
         }
-      } else if (draggingElementIndex !== null) {
+      } else if (draggingElementId !== null) {
         dispatch(
           updateElementPosition({
-            index: draggingElementIndex,
             x: worldPos.x,
             y: worldPos.y,
             offset: dragElementOffset,
@@ -704,7 +707,7 @@ const CanvasArea = () => {
         }
       }
     } else if (tool === 'selection' && isResizing && resizeState) {
-      const { index, handle, initialBounds } = resizeState;
+      const { handle, initialBounds } = resizeState;
       const MIN_SIZE = 10 / view.scale;
 
       // Calculate new bounds based on which handle is being dragged
@@ -734,7 +737,6 @@ const CanvasArea = () => {
 
       dispatch(
         updateElementSize({
-          index,
           newBounds: {
             minX: newMinX,
             minY: newMinY,
@@ -749,7 +751,7 @@ const CanvasArea = () => {
       }
       return;
     } else if (tool === 'selection' && isRotating && rotationState) {
-      const { index, center, startAngle, initialRotation } = rotationState;
+      const { center, startAngle, initialRotation } = rotationState;
 
       const angle = Math.atan2(worldPos.y - center.y, worldPos.x - center.x);
 
@@ -757,7 +759,6 @@ const CanvasArea = () => {
 
       dispatch(
         updateElementRotation({
-          elementIndex: index,
           rotation: initialRotation + delta,
           isStart: isFirstRotateMove
         })
@@ -778,7 +779,7 @@ const CanvasArea = () => {
       setIsDraggingElements(false);
       setIsDraggingMultiple(false);
       setMultiDragOffsets(new Map());
-      setDraggingElementIndex(null);
+      setDraggingElementId(null);
       return;
     }
     if (isDrawing && tool === 'draw' && currentPath) {
@@ -793,6 +794,7 @@ const CanvasArea = () => {
       dispatch(
         addElements({
           element: {
+            id: generateUUID(),
             type: 'draw',
             x: anchorX,
             y: anchorY,
@@ -807,6 +809,7 @@ const CanvasArea = () => {
       dispatch(
         addElements({
           element: {
+            id: generateUUID(),
             type: 'circle',
             x: currentCircle.x,
             y: currentCircle.y,
@@ -822,6 +825,7 @@ const CanvasArea = () => {
       dispatch(
         addElements({
           element: {
+            id: generateUUID(),
             type: 'rectangle',
             x: currentRect.x,
             y: currentRect.y,
@@ -837,6 +841,7 @@ const CanvasArea = () => {
       dispatch(
         addElements({
           element: {
+            id: generateUUID(),
             type: 'line',
             x: currentLine.x,
             y: currentLine.y,
@@ -852,6 +857,7 @@ const CanvasArea = () => {
       dispatch(
         addElements({
           element: {
+            id: generateUUID(),
             type: 'arrow',
             x: currentArrow.x,
             y: currentArrow.y,
@@ -872,15 +878,15 @@ const CanvasArea = () => {
 
       const selectionArea = { minX, minY, maxX, maxY };
 
-      const selectedIndices: number[] = [];
+      const selectedIds: string[] = [];
 
-      elements.forEach((element, index) => {
+      elements.forEach((element) => {
         if (isElementInSelectionArea(element, selectionArea)) {
-          selectedIndices.push(index);
+          selectedIds.push(element.id);
         }
       });
 
-      dispatch(addSelectedElementsIndices(selectedIndices));
+      dispatch(addSelectedElementIds(selectedIds));
       setIsAreasSelecting(false);
       setAreaSelectionStart(null);
       setAreaSelectionEnd(null);
@@ -911,11 +917,11 @@ const CanvasArea = () => {
     );
 
     if (elementIndex !== null) {
-      dispatch(addSelectedElementIndex(elementIndex));
-      dispatch(addSelectedElementsIndices([]));
+      dispatch(addSelectedElementId(elements[elementIndex]!.id));
+      dispatch(addSelectedElementIds([]));
     } else {
       // If no element was clicked, deselect
-      dispatch(addSelectedElementIndex(null));
+      dispatch(addSelectedElementId(null));
     }
   };
 
@@ -944,7 +950,7 @@ const CanvasArea = () => {
         setTextInputPosition({ x: element.x, y: element.y });
         setTextInputValue(element.text);
         setIsTextInputVisible(true);
-        dispatch(addSelectedElementIndex(null));
+        dispatch(addSelectedElementId(null));
       }
     }
   };
@@ -978,6 +984,7 @@ const CanvasArea = () => {
         dispatch(
           addElements({
             element: {
+              id: generateUUID(),
               type: 'text',
               x: textInputPosition.x,
               y: textInputPosition.y,

@@ -19,17 +19,17 @@ export const rotatePoint = (
 
 export const drawSelectionBox = (
   ctx: CanvasRenderingContext2D,
-  selectedElementIndex: number | null,
+  selectedElementId: string | null,
   elements: DrawElements[],
   view: ViewState,
-  selectedElementsIndices: number[],
+  selectedElementIds: string[],
   isAreaSelecting: boolean,
   areaSelectionStart: DrawPoint | null,
   areaSelectionEnd: DrawPoint | null
 ) => {
   // ================= SINGLE SELECTION =================
-  if (selectedElementIndex !== null) {
-    const element = elements[selectedElementIndex];
+  if (selectedElementId !== null) {
+    const element = elements.find((ele) => ele.id === selectedElementId);
     if (!element) return;
 
     const bounds = getElementBounds(element);
@@ -125,9 +125,9 @@ export const drawSelectionBox = (
   }
 
   // ================= MULTI SELECTION =================
-  if (selectedElementsIndices.length > 0) {
-    selectedElementsIndices.forEach((index) => {
-      const element = elements[index];
+  if (selectedElementIds.length > 0) {
+    selectedElementIds.forEach((id) => {
+      const element = elements.find((elem) => elem.id === id);
       if (!element) return;
 
       const bounds = getElementBounds(element);
@@ -152,8 +152,8 @@ export const drawSelectionBox = (
     let overallMaxX = -Infinity;
     let overallMaxY = -Infinity;
 
-    selectedElementsIndices.forEach((index) => {
-      const element = elements[index];
+    selectedElementIds.forEach((id) => {
+      const element = elements.find((elem) => elem.id === id);
       if (!element) return;
 
       const bounds = getElementBounds(element);
@@ -202,9 +202,10 @@ export const drawSelectionBox = (
       });
 
       // 🔹 ROTATION HANDLE (ONLY IF ALL ARE RECTANGLES)
-      const allRectangles = selectedElementsIndices.every(
-        (i) => elements[i]?.type === 'rectangle'
-      );
+      const allRectangles = selectedElementIds.every((id) => {
+        const element = elements.find((elem) => elem.id === id);
+        return element?.type === 'rectangle';
+      });
 
       if (allRectangles) {
         const rotateOffset = 20 / view.scale;

@@ -1,3 +1,4 @@
+import { v4 as uuidv4 } from 'uuid';
 import { DrawElements, DrawPoint } from '@algocanvas/types/canvas';
 import { ARRAY_CONSTANTS } from '../data-structures/array';
 import { LINKED_LIST_CONSTANTS } from '../data-structures/linked-list';
@@ -6,6 +7,10 @@ import { getDepth, TREE_CONSTANTS } from '../data-structures/tree';
 // Offscreen canvas for text measurement
 let measureCanvas: HTMLCanvasElement | null = null;
 let measureCtx: CanvasRenderingContext2D | null = null;
+
+export const generateUUID = (): string => {
+  return uuidv4();
+};
 
 const getMeasureContext = (): CanvasRenderingContext2D | null => {
   if (typeof document === 'undefined') return null;
@@ -168,18 +173,18 @@ export type ElementBounds = {
  */
 export const getCombinedBounds = (
   elements: DrawElements[],
-  indices: number[],
+  selectedElementIds: string[],
   padding: number = 0
 ): ElementBounds | null => {
-  if (indices.length === 0) return null;
+  if (selectedElementIds.length === 0) return null;
 
   let minX = Infinity;
   let minY = Infinity;
   let maxX = -Infinity;
   let maxY = -Infinity;
 
-  for (const idx of indices) {
-    const element = elements[idx];
+  for (const idx of selectedElementIds) {
+    const element = elements.find((el) => el.id === idx);
     if (!element) continue;
 
     const bounds = getElementBounds(element);

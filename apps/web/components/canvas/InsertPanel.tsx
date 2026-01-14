@@ -44,7 +44,7 @@ const InsertPanel = () => {
             <CommandItem
               key={elem.value}
               value={elem.value}
-              onSelect={(value) => {
+              onSelect={() => {
                 dispatch(toggleDialog({ value: elem.value }));
                 dispatch(changeTool({ tool: 'move' }));
               }}

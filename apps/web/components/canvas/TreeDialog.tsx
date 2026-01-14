@@ -21,6 +21,7 @@ import {
 import { Input } from '@algocanvas/ui/components/input';
 import { useForm, Controller } from 'react-hook-form';
 import z from 'zod';
+import { generateUUID } from '@/lib/canvas/utils';
 
 const TreeDialog = () => {
   const dispatch = useAppDispatch();
@@ -53,6 +54,8 @@ const TreeDialog = () => {
     dispatch(
       addElements({
         element: {
+          id: generateUUID(),
+          rotate: 0,
           type: 'binary-tree',
           x: centerX,
           y: topY,

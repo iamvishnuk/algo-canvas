@@ -18,12 +18,14 @@ import { useDispatch } from 'react-redux';
 const LinkedListEditor = () => {
   const dispatch = useDispatch();
 
-  const { selectedElementIndex, elements } = useAppSelector(
+  const { selectedElementId, elements } = useAppSelector(
     (state) => state.canvas
   );
 
   const selectedElement =
-    selectedElementIndex !== null ? elements[selectedElementIndex] : null;
+    selectedElementId !== null
+      ? elements.find((el) => el.id === selectedElementId)
+      : null;
   const elementType = selectedElement?.type;
 
   const [initialValues, setInitialValues] = useState<string[]>(

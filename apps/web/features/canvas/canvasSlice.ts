@@ -19,8 +19,8 @@ export interface ICanvasState {
     height: number;
   };
   elements: DrawElements[];
-  selectedElementIndex: number | null;
-  selectedElementsIndices: number[];
+  selectedElementId: string | null;
+  selectedElementIds: string[];
   drawingState: {
     isDrawing: boolean;
   };
@@ -50,8 +50,8 @@ const initialState: ICanvasState = {
   },
   tool: 'selection',
   elements: [],
-  selectedElementIndex: null,
-  selectedElementsIndices: [],
+  selectedElementId: null,
+  selectedElementIds: [],
   drawingState: {
     isDrawing: false
   },
@@ -165,49 +165,48 @@ const canvasSlice = createSlice({
         state.showLinkedListDialog = !state.showLinkedListDialog;
       }
     },
-    addSelectedElementIndex: (state, action: PayloadAction<number | null>) => {
-      state.selectedElementIndex = action.payload;
+    addSelectedElementId: (state, action: PayloadAction<string | null>) => {
+      state.selectedElementId = action.payload;
     },
-    addSelectedElementsIndices: (state, action: PayloadAction<number[]>) => {
-      state.selectedElementsIndices = action.payload;
+    addSelectedElementIds: (state, action: PayloadAction<string[]>) => {
+      state.selectedElementIds = action.payload;
     },
     removeElements: (state) => {
-      if (state.selectedElementIndex !== null) {
+      if (state.selectedElementId !== null) {
         saveToHistory(state);
         state.elements = state.elements.filter(
-          (_, index) => index !== state.selectedElementIndex
+          (el) => el.id !== state.selectedElementId
         );
-        state.selectedElementIndex = null;
+        state.selectedElementId = null;
       }
 
-      if (state.selectedElementsIndices.length > 0) {
+      if (state.selectedElementIds.length > 0) {
         saveToHistory(state);
         state.elements = state.elements.filter(
-          (_, index) => !state.selectedElementsIndices.includes(index)
+          (el) => !state.selectedElementIds.includes(el.id)
         );
-
-        state.selectedElementsIndices = [];
+        state.selectedElementIds = [];
       }
     },
     updateElementPosition: (
       state,
       action: PayloadAction<{
-        index: number;
         x: number;
         y: number;
         offset: DrawPoint;
         isStart?: boolean;
       }>
     ) => {
-      const { index, x, y, offset, isStart } = action.payload;
+      const { x, y, offset, isStart } = action.payload;
       if (isStart) {
         saveToHistory(state);
       }
-      const element = state.elements[index];
+      const element = state.elements.find(
+        (el) => el.id === state.selectedElementId
+      );
       if (!element) return;
 
       if (element.type === 'draw') {
-        // Only move the anchor
         element.x = x - offset.x;
         element.y = y - offset.y;
       } else if (element.type === 'line' || element.type === 'arrow') {
@@ -226,7 +225,6 @@ const canvasSlice = createSlice({
     updateElementRotation: (
       state,
       action: PayloadAction<{
-        elementIndex: number;
         rotation: number;
         isStart?: boolean;
       }>
@@ -234,7 +232,9 @@ const canvasSlice = createSlice({
       if (action.payload.isStart) {
         saveToHistory(state);
       }
-      const element = state.elements[action.payload.elementIndex];
+      const element = state.elements.find(
+        (el) => el.id === state.selectedElementId
+      );
       if (element) {
         element.rotate = action.payload.rotation;
       }
@@ -242,16 +242,17 @@ const canvasSlice = createSlice({
     updateElementSize: (
       state,
       action: PayloadAction<{
-        index: number;
         newBounds: { minX: number; minY: number; maxX: number; maxY: number };
         isStart?: boolean;
       }>
     ) => {
-      const { index, newBounds, isStart } = action.payload;
+      const { newBounds, isStart } = action.payload;
       if (isStart) {
         saveToHistory(state);
       }
-      const element = state.elements[index];
+      const element = state.elements.find(
+        (el) => el.id === state.selectedElementId
+      );
       if (!element) return;
 
       resizeElement(element, newBounds);
@@ -263,8 +264,8 @@ const canvasSlice = createSlice({
       state.history.future.push(structuredClone(current(state.elements)));
       state.elements = previous;
 
-      state.selectedElementIndex = null;
-      state.selectedElementsIndices = [];
+      state.selectedElementId = null;
+      state.selectedElementIds = [];
     },
     redo: (state) => {
       if (state.history.future.length === 0) return;
@@ -273,19 +274,21 @@ const canvasSlice = createSlice({
       state.history.past.push(structuredClone(current(state.elements)));
       state.elements = next;
 
-      state.selectedElementIndex = null;
-      state.selectedElementsIndices = [];
+      state.selectedElementId = null;
+      state.selectedElementIds = [];
     },
     addToClipBoard: (state) => {
       const elementsToCopy: DrawElements[] = [];
-      if (state.selectedElementIndex !== null) {
-        const element = state.elements[state.selectedElementIndex];
+      if (state.selectedElementId !== null) {
+        const element = state.elements.find(
+          (el) => el.id === state.selectedElementId
+        );
         if (element) {
           elementsToCopy.push(structuredClone(current(element)));
         }
-      } else if (state.selectedElementsIndices.length > 0) {
-        state.selectedElementsIndices.forEach((index) => {
-          const element = state.elements[index];
+      } else if (state.selectedElementIds.length > 0) {
+        state.selectedElementIds.forEach((id) => {
+          const element = state.elements.find((el) => el.id === id);
           if (element) {
             elementsToCopy.push(structuredClone(current(element)));
           }
@@ -302,36 +305,39 @@ const canvasSlice = createSlice({
 
       if (state.clipBoard.length === 0) return;
 
-      const newIndices: number[] = [];
+      const newIds: string[] = [];
 
       state.clipBoard.forEach((element) => {
         const newElement = structuredClone(current(element));
         newElement.x += offsetX;
         newElement.y += offsetY;
-
+        // Generate new UUID for pasted element
+        newElement.id = crypto.randomUUID();
         state.elements.push(newElement);
-        newIndices.push(state.elements.length - 1);
+        newIds.push(newElement.id);
       });
 
       // Select the newly pasted elements
-      if (newIndices.length === 1) {
-        state.selectedElementIndex = newIndices[0]!;
-        state.selectedElementsIndices = [];
+      if (newIds.length === 1) {
+        state.selectedElementId = newIds[0]!;
+        state.selectedElementIds = [];
       } else {
-        state.selectedElementIndex = null;
-        state.selectedElementsIndices = newIndices;
+        state.selectedElementId = null;
+        state.selectedElementIds = newIds;
       }
     },
     duplicateElements: (state) => {
       const elementsToDuplicate: DrawElements[] = [];
 
-      if (state.selectedElementIndex !== null) {
-        const element = state.elements[state.selectedElementIndex];
+      if (state.selectedElementId !== null) {
+        const element = state.elements.find(
+          (el) => el.id === state.selectedElementId
+        );
         if (element)
           elementsToDuplicate.push(structuredClone(current(element)));
-      } else if (state.selectedElementsIndices.length > 0) {
-        state.selectedElementsIndices.forEach((index) => {
-          const element = state.elements[index];
+      } else if (state.selectedElementIds.length > 0) {
+        state.selectedElementIds.forEach((id) => {
+          const element = state.elements.find((el) => el.id === id);
           if (element)
             elementsToDuplicate.push(structuredClone(current(element)));
         });
@@ -339,25 +345,26 @@ const canvasSlice = createSlice({
 
       if (elementsToDuplicate.length === 0) return;
 
-      const newIndices: number[] = [];
+      const newIds: string[] = [];
       const offset = 20;
 
       elementsToDuplicate.forEach((element) => {
         const newElement = structuredClone(element);
         newElement.x += offset;
         newElement.y += offset;
-
+        // Generate new UUID for duplicated element
+        newElement.id = crypto.randomUUID();
         state.elements.push(newElement);
-        newIndices.push(state.elements.length - 1);
+        newIds.push(newElement.id);
       });
 
       // Select the duplicated elements
-      if (newIndices.length === 1) {
-        state.selectedElementIndex = newIndices[0]!;
-        state.selectedElementsIndices = [];
+      if (newIds.length === 1) {
+        state.selectedElementId = newIds[0]!;
+        state.selectedElementIds = [];
       } else {
-        state.selectedElementIndex = null;
-        state.selectedElementsIndices = newIndices;
+        state.selectedElementId = null;
+        state.selectedElementIds = newIds;
       }
     },
     updateElementProperty: (
@@ -365,25 +372,26 @@ const canvasSlice = createSlice({
       action: PayloadAction<{
         propertyKey: PropertyKey;
         value: string | number;
-        index: number;
       }>
     ) => {
-      const { propertyKey, value, index } = action.payload;
-      const element = state.elements[index];
-
+      const { propertyKey, value } = action.payload;
+      const element = state.elements.find(
+        (el) => el.id === state.selectedElementId
+      );
       if (!element) return;
 
       saveToHistory(state);
-      // Use type assertion since PropertyKey is already constrained to valid property names
       (element as Record<string, unknown>)[propertyKey] = value;
     },
     updateDataStructuresValues: (
       state,
       action: PayloadAction<{ value: string[] | TreeNode }>
     ) => {
-      if (state.selectedElementIndex === null) return;
+      if (state.selectedElementId === null) return;
 
-      const element = state.elements[state.selectedElementIndex];
+      const element = state.elements.find(
+        (el) => el.id === state.selectedElementId
+      );
       if (!element) return;
 
       saveToHistory(state);
@@ -415,8 +423,8 @@ export const {
   changeBackgroundColor,
   changeBackgroundType,
   toggleDialog,
-  addSelectedElementsIndices,
-  addSelectedElementIndex,
+  addSelectedElementIds,
+  addSelectedElementId,
   removeElements,
   updateElementPosition,
   updateElementRotation,

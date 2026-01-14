@@ -19,6 +19,7 @@ import {
 import { Input } from '@algocanvas/ui/components/input';
 import { useForm, Controller } from 'react-hook-form';
 import z from 'zod';
+import { generateUUID } from '@/lib/canvas/utils';
 
 const ArrayDialog = () => {
   const dispatch = useAppDispatch();
@@ -46,10 +47,12 @@ const ArrayDialog = () => {
     dispatch(
       addElements({
         element: {
+          id: generateUUID(),
           type: 'array',
           x: centerX - (value.length * 50) / 2,
           y: topY,
-          value: values
+          value: values,
+          rotate: 0
         }
       })
     );

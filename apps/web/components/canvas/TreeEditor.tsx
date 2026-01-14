@@ -16,7 +16,6 @@ import {
   updateNodeValue
 } from '@/lib/data-structures/tree';
 import { setTimeout } from 'node:timers';
-import { time } from 'motion/react';
 
 function traverse(node: TreeNode | null, type: string, result: string[] = []) {
   if (!node) return;
@@ -30,12 +29,13 @@ function traverse(node: TreeNode | null, type: string, result: string[] = []) {
 const TreeEditor = () => {
   const dispatch = useAppDispatch();
 
-  const { selectedElementIndex, elements } = useAppSelector(
+  const { selectedElementId, elements } = useAppSelector(
     (state) => state.canvas
   );
   const selectedElement =
-    selectedElementIndex !== null ? elements[selectedElementIndex] : null;
-
+    selectedElementId !== null
+      ? elements.find((el) => el.id === selectedElementId)
+      : null;
   const elementType = selectedElement?.type;
 
   const [root, setRoot] = useState<TreeNode | null>(
@@ -88,25 +88,6 @@ const TreeEditor = () => {
     const newRoot = addChild(root, selectedNode, side, editValue);
     updateTree(newRoot);
   };
-
-  function removeHelper(
-    parent: TreeNode | null,
-    node: TreeNode | null
-  ): TreeNode | null {
-    if (!parent || !node) return parent;
-    if (parent.left === node) {
-      parent.left = null;
-      return parent;
-    }
-    if (parent.right === node) {
-      parent.right = null;
-      return parent;
-    }
-    return (
-      removeHelper(parent.left ?? null, node) ||
-      removeHelper(parent.right ?? null, node)
-    );
-  }
 
   const handleRemoveNode = () => {
     if (!selectedNode || !root) return;
@@ -238,9 +219,7 @@ const TreeEditor = () => {
               )}
             </div>
           ) : (
-            <span className='text-xs text-neutral-400 text-red-800'>
-              Select a node to edit
-            </span>
+            <span className='text-xs text-red-800'>Select a node to edit</span>
           )}
         </div>
         <Separator className='my-2' />

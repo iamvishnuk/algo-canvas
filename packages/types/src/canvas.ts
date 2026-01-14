@@ -1,3 +1,7 @@
+// Shared interface for unique element identification
+export interface IdentifiableElement {
+  id: string;
+}
 export type ViewState = {
   scale: number;
   offsetX: number;
@@ -38,6 +42,7 @@ export interface DrawPath extends PathProperty {
   x: number;
   y: number;
   points: DrawPoint[];
+  id: string;
 }
 
 export type CircleProperty = StrokeableProperty & FillableProperty;
@@ -48,6 +53,7 @@ export interface DrawCircle extends CircleProperty {
   y: number;
   radiusX: number;
   radiusY: number;
+  id: string;
 }
 
 export type RectProperty = StrokeableProperty & FillableProperty;
@@ -58,6 +64,7 @@ export interface DrawRect extends RectProperty {
   y: number;
   width: number;
   height: number;
+  id: string;
 }
 
 export type LineProperty = StrokeableProperty;
@@ -68,6 +75,7 @@ export interface DrawLine extends LineProperty {
   y: number;
   endX: number;
   endY: number;
+  id: string;
 }
 
 export type ArrowProperty = StrokeableProperty & FillableProperty;
@@ -78,6 +86,7 @@ export interface DrawArrow extends ArrowProperty {
   y: number;
   endX: number;
   endY: number;
+  id: string;
 }
 
 export type DrawArray = {
@@ -86,6 +95,7 @@ export type DrawArray = {
   y: number;
   value: string[];
   rotate: number;
+  id: string;
 };
 
 export type TreeNode = {
@@ -100,6 +110,7 @@ export type DrawBinaryTree = {
   y: number;
   root: TreeNode;
   rotate: number;
+  id: string;
 };
 
 export type DrawLinkedList = {
@@ -108,6 +119,7 @@ export type DrawLinkedList = {
   y: number;
   values: string[];
   rotate: number;
+  id: string;
 };
 
 export type TextProperty = {
@@ -122,6 +134,7 @@ export interface DrawText extends TextProperty {
   x: number;
   y: number;
   text: string;
+  id: string;
 }
 export type PropertyKey =
   | 'strokeStyle'

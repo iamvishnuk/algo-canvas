@@ -1,7 +1,7 @@
 import { Separator } from '@algocanvas/ui/components/separator';
 import { useState, useEffect } from 'react';
 import { Button } from '@algocanvas/ui/components/button';
-import { ArrowDown, ArrowUp, Check, Copy, MoveUp, Trash } from 'lucide-react';
+import { ArrowDown, ArrowUp, Check, Copy, Trash } from 'lucide-react';
 import {
   Tooltip,
   TooltipContent,
@@ -17,12 +17,14 @@ import {
 const ArrayEditor = () => {
   const dispatch = useAppDispatch();
 
-  const { elements, selectedElementIndex } = useAppSelector(
+  const { elements, selectedElementId } = useAppSelector(
     (state) => state.canvas
   );
 
   const selectedElement =
-    selectedElementIndex !== null ? elements[selectedElementIndex] : null;
+    selectedElementId !== null
+      ? elements.find((el) => el.id === selectedElementId)
+      : null;
 
   const elementType = selectedElement?.type;
 

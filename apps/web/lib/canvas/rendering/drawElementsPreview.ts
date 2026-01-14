@@ -3,7 +3,6 @@ import {
   DrawCircle,
   DrawLine,
   DrawPath,
-  DrawPoint,
   DrawRect
 } from '@algocanvas/types/canvas';
 import {

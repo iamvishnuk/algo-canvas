@@ -60,12 +60,14 @@ const FONT_SIZES = [
 const ElementPropertyPanel = () => {
   const dispatch = useAppDispatch();
   const elementProperty = useAppSelector((state) => state.elementProperty);
-  const { tool, elements, selectedElementIndex } = useAppSelector(
+  const { tool, elements, selectedElementId } = useAppSelector(
     (state) => state.canvas
   );
 
   const selectedElement =
-    selectedElementIndex !== null ? elements[selectedElementIndex] : null;
+    selectedElementId !== null
+      ? elements.find((el) => el.id === selectedElementId)
+      : null;
 
   const activeType = selectedElement?.type ?? tool;
 
@@ -149,12 +151,11 @@ const ElementPropertyPanel = () => {
     propertyKey: PropertyKey,
     value: string | number
   ) => {
-    if (selectedElementIndex !== null) {
+    if (selectedElementId !== null) {
       dispatch(
         updateElementProperty({
           propertyKey,
-          value,
-          index: selectedElementIndex
+          value
         })
       );
     } else {

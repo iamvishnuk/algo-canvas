@@ -19,6 +19,7 @@ import {
 import { Input } from '@algocanvas/ui/components/input';
 import { useForm, Controller } from 'react-hook-form';
 import z from 'zod';
+import { generateUUID } from '@/lib/canvas/utils';
 
 const LinkedListDialog = () => {
   const dispatch = useAppDispatch();
@@ -47,6 +48,8 @@ const LinkedListDialog = () => {
     dispatch(
       addElements({
         element: {
+          id: generateUUID(),
+          rotate: 0,
           type: 'linked-list',
           x: centerX,
           y: topY,
