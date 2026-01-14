@@ -59,6 +59,7 @@ import {
 import ElementPropertyPanel from './ElementPropertyPanel';
 import { updateElementDefaultProperty } from '@/features/element/elementPropertySlice';
 import ArrayEditor from './ArrayEditor';
+import LinkedListEditor from './LinkedListEditor';
 
 const CanvasArea = () => {
   const dispatch = useAppDispatch();
@@ -1082,6 +1083,7 @@ const CanvasArea = () => {
       <LinkedListDialog />
       <ElementPropertyPanel />
       <ArrayEditor />
+      <LinkedListEditor />
     </div>
   );
 };

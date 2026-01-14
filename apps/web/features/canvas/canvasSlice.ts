@@ -390,6 +390,11 @@ const canvasSlice = createSlice({
 
       if (element.type === 'array') {
         element.value = action.payload.value as string[];
+        return;
+      }
+
+      if (element.type === 'linked-list') {
+        element.values = action.payload.value as string[];
       }
     }
   }

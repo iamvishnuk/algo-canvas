@@ -1,47 +1,49 @@
-import { Separator } from '@workspace/ui/components/separator';
-import { useState, useEffect } from 'react';
-import { Button } from '@workspace/ui/components/button';
-import { ArrowDown, ArrowUp, Check, Copy, MoveUp, Trash } from 'lucide-react';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger
-} from '@workspace/ui/components/tooltip';
-import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import {
   duplicateElements,
   removeElements,
   updateDataStructuresValues
 } from '@/features/canvas/canvasSlice';
+import { useAppSelector } from '@/store/hooks';
+import { Button } from '@workspace/ui/components/button';
+import { Separator } from '@workspace/ui/components/separator';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger
+} from '@workspace/ui/components/tooltip';
+import { Check, Copy, Trash } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { useDispatch } from 'react-redux';
 
-const ArrayEditor = () => {
-  const dispatch = useAppDispatch();
+const LinkedListEditor = () => {
+  const dispatch = useDispatch();
 
-  const { elements, selectedElementIndex } = useAppSelector(
+  const { selectedElementIndex, elements } = useAppSelector(
     (state) => state.canvas
   );
 
   const selectedElement =
     selectedElementIndex !== null ? elements[selectedElementIndex] : null;
-
   const elementType = selectedElement?.type;
 
   const [initialValues, setInitialValues] = useState<string[]>(
-    selectedElement?.type === 'array' ? selectedElement.value : []
+    selectedElement?.type === 'linked-list' ? selectedElement.values : []
   );
+  const [newValue, setNewValue] = useState('');
+  const [insertValue, setInsertVlue] = useState<{
+    index: string;
+    value: string;
+  }>({ index: '', value: '' });
+  const [editingValue, setEditingValue] = useState('');
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
 
-  // Sync local state with selected element's value when it changes
   useEffect(() => {
-    if (selectedElement?.type === 'array') {
-      setInitialValues(selectedElement.value);
+    if (selectedElement?.type === 'linked-list') {
+      setInitialValues(selectedElement.values);
     } else {
       setInitialValues([]);
     }
   }, [selectedElement]);
-
-  const [newValue, setNewValue] = useState('');
-  const [editingValue, setEditingValue] = useState('');
-  const [editingIndex, setEditingIndex] = useState<number | null>(null);
 
   const append = (value: string) => {
     if (value.trim() === '') return;
@@ -89,32 +91,30 @@ const ArrayEditor = () => {
     setEditingValue('');
   };
 
-  const handleSort = (isAsc: boolean) => {
-    const areNumbers = initialValues.every((val) => !isNaN(Number(val)));
-    let sortedValues: string[] = [];
+  const handleInsertAt = () => {
+    const index = Number(insertValue.index);
 
-    if (areNumbers) {
-      if (isAsc) {
-        sortedValues = [...initialValues].sort((a, b) => Number(a) - Number(b));
-      } else {
-        sortedValues = [...initialValues].sort((a, b) => Number(b) - Number(a));
-      }
-    } else {
-      sortedValues = [...initialValues].sort();
+    if (Number.isNaN(index) || index <= 0) {
+      setInsertVlue({ index: '', value: '' });
+      return;
     }
 
-    setInitialValues(sortedValues);
-    dispatch(updateDataStructuresValues({ value: sortedValues }));
+    const newValue = [...initialValues];
+    newValue.splice(index - 1, 0, insertValue.value);
+
+    setInitialValues(newValue);
+    dispatch(updateDataStructuresValues({ value: newValue }));
+    setInsertVlue({ index: '', value: '' });
   };
 
-  if (elementType !== 'array') {
-    return null;
-  }
+  if (elementType !== 'linked-list') return null;
 
   return (
     <div className='bg-brand-bg absolute top-4 right-4 flex max-h-[calc(100vh-50px)] max-w-[300px] min-w-[300px] flex-col space-y-5 rounded-md border p-4 shadow-md'>
-      <div className=''>
-        <h3 className='text-brand-primary text-xl font-semibold'>Array</h3>
+      <div>
+        <h3 className='text-brand-primary text-xl font-semibold'>
+          Linked List
+        </h3>
         <Separator className='my-2' />
         <div>
           <p className='text-sm text-neutral-400'>Values</p>
@@ -126,10 +126,11 @@ const ArrayEditor = () => {
               >
                 <div className='flex gap-2'>
                   <div className='flex h-full w-[40px] items-center justify-center rounded-md border text-xs'>
-                    {index}
+                    {index + 1}
                   </div>
                   <input
                     className='h-full w-[130px] rounded-md border px-2'
+                    placeholder='value'
                     value={editingIndex === index ? editingValue : value}
                     onChange={(e) => {
                       if (editingIndex !== index) {
@@ -145,8 +146,8 @@ const ArrayEditor = () => {
                   <Button
                     size={'icon'}
                     className='bg-brand-primary hover:bg-brand-primary/90 text-white hover:cursor-pointer'
-                    onClick={() => saveEdit(index)}
                     disabled={index !== editingIndex}
+                    onClick={() => saveEdit(index)}
                   >
                     <Check />
                   </Button>
@@ -171,8 +172,9 @@ const ArrayEditor = () => {
               <div className='col-span-2'>
                 <input
                   value={newValue}
+                  placeholder='value'
                   onChange={(e) => setNewValue(e.target.value)}
-                  className='h-full w-full rounded-md border px-2 focus:outline-none'
+                  className='h-full w-full rounded-md border px-2 placeholder:text-sm focus:outline-none'
                 />
               </div>
               <Button
@@ -190,25 +192,33 @@ const ArrayEditor = () => {
             </div>
             <Separator className='my-2' />
             <div className='grid grid-cols-3 gap-2'>
+              <input
+                className='h-full w-full rounded-md border px-2 placeholder:text-sm focus:outline-none'
+                value={insertValue.index}
+                placeholder='position'
+                onChange={(e) => {
+                  setInsertVlue((prev) => ({
+                    ...prev,
+                    index: e.target.value
+                  }));
+                }}
+              />
+              <input
+                className='h-full w-full rounded-md border px-2 placeholder:text-sm focus:outline-none'
+                value={insertValue.value}
+                placeholder='value'
+                onChange={(e) => {
+                  setInsertVlue((prev) => ({
+                    ...prev,
+                    value: e.target.value
+                  }));
+                }}
+              />
               <Button
                 className='bg-brand-primary hover:bg-brand-primary/90 text-xs text-white hover:cursor-pointer'
-                onClick={() => handleSort(true)}
+                onClick={() => handleInsertAt()}
               >
-                Sort
-                <ArrowUp
-                  size={10}
-                  className='-ml-2'
-                />
-              </Button>
-              <Button
-                className='bg-brand-primary hover:bg-brand-primary/90 text-xs text-white hover:cursor-pointer'
-                onClick={() => handleSort(false)}
-              >
-                Sort
-                <ArrowDown
-                  size={10}
-                  className='-ml-2'
-                />
+                Insert At
               </Button>
             </div>
           </div>
@@ -254,4 +264,4 @@ const ArrayEditor = () => {
   );
 };
 
-export default ArrayEditor;
+export default LinkedListEditor;
