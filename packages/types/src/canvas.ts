@@ -90,9 +90,8 @@ export type DrawArray = {
 
 export type TreeNode = {
   value: string;
-  left?: TreeNode;
-  right?: TreeNode;
-  rotate: number;
+  left: TreeNode | null;
+  right: TreeNode | null;
 };
 
 export type DrawBinaryTree = {

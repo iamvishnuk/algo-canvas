@@ -396,6 +396,10 @@ const canvasSlice = createSlice({
       if (element.type === 'linked-list') {
         element.values = action.payload.value as string[];
       }
+
+      if (element.type === 'binary-tree') {
+        element.root = action.payload.value as TreeNode;
+      }
     }
   }
 });
