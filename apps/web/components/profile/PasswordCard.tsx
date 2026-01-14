@@ -1,18 +1,18 @@
 import { UpdatePasswordSchema } from '@/validators';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Button } from '@workspace/ui/components/button';
+import { Button } from '@algocanvas/ui/components/button';
 import {
   Field,
   FieldError,
   FieldGroup,
   FieldLabel
-} from '@workspace/ui/components/field';
+} from '@algocanvas/ui/components/field';
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupButton,
   InputGroupInput
-} from '@workspace/ui/components/input-group';
+} from '@algocanvas/ui/components/input-group';
 import { Eye, EyeOff } from 'lucide-react';
 import { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';

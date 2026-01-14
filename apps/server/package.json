@@ -35,8 +35,8 @@
   },
   "dependencies": {
     "@types/bcrypt": "^6.0.0",
-    "@workspace/eslint-config": "workspace:*",
-    "@workspace/typescript-config": "workspace:*",
+    "@algocanvas/eslint-config": "workspace:*",
+    "@algocanvas/typescript-config": "workspace:*",
     "bcrypt": "^6.0.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",

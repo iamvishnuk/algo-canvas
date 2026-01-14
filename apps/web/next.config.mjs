@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  transpilePackages: ['@workspace/ui', 'sonner'],
+  transpilePackages: ['@algocanvas/ui', 'sonner'],
   images: {
     domains: ['github.com']
   }

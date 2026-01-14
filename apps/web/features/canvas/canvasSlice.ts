@@ -9,7 +9,7 @@ import {
   Tool,
   TreeNode,
   ViewState
-} from '@workspace/types/canvas';
+} from '@algocanvas/types/canvas';
 
 export interface ICanvasState {
   view: ViewState;

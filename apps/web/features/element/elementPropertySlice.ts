@@ -7,7 +7,7 @@ import {
   PropertyKey,
   RectProperty,
   TextProperty
-} from '@workspace/types/canvas';
+} from '@algocanvas/types/canvas';
 
 export interface IElementPropertyState {
   line: LineProperty;

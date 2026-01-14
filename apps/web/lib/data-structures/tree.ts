@@ -1,4 +1,4 @@
-import { TreeNode } from '@workspace/types/canvas';
+import { TreeNode } from '@algocanvas/types/canvas';
 
 export const TREE_CONSTANTS = {
   nodeRadius: 25,

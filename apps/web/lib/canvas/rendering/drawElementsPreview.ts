@@ -5,7 +5,7 @@ import {
   DrawPath,
   DrawPoint,
   DrawRect
-} from '@workspace/types/canvas';
+} from '@algocanvas/types/canvas';
 import {
   drawArrow,
   drawCircle,

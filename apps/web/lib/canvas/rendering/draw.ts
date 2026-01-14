@@ -6,7 +6,7 @@ import {
   DrawText,
   StrokePattern,
   TreeNode
-} from '@workspace/types/canvas';
+} from '@algocanvas/types/canvas';
 
 /**
  * Get line dash array based on stroke pattern

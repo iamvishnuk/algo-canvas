@@ -11,15 +11,15 @@
   },
   "lint-staged": {
     "apps/web/**/*.{ts,tsx}": [
-      "pnpm --filter @workspace/web exec eslint --fix",
+      "pnpm --filter @algocanvas/web exec eslint --fix",
       "prettier --write"
     ],
     "apps/server/**/*.{ts,tsx}": [
-      "pnpm --filter @workspace/server exec eslint --fix",
+      "pnpm --filter @algocanvas/server exec eslint --fix",
       "prettier --write"
     ],
     "packages/ui/**/*.{ts,tsx}": [
-      "pnpm --filter @workspace/ui exec eslint --fix",
+      "pnpm --filter @algocanvas/ui exec eslint --fix",
       "prettier --write"
     ],
     "*.{json,md,yml}": [
@@ -30,8 +30,8 @@
     "@commitlint/cli": "^20.3.1",
     "@commitlint/config-conventional": "^20.3.1",
     "@commitlint/types": "^20.3.1",
-    "@workspace/eslint-config": "workspace:*",
-    "@workspace/typescript-config": "workspace:*",
+    "@algocanvas/eslint-config": "workspace:*",
+    "@algocanvas/typescript-config": "workspace:*",
     "husky": "^9.1.7",
     "lint-staged": "^16.2.7",
     "prettier": "^3.7.4",

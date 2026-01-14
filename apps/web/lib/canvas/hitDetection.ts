@@ -1,4 +1,4 @@
-import { DrawElements, DrawPoint, ViewState } from '@workspace/types/canvas';
+import { DrawElements, DrawPoint, ViewState } from '@algocanvas/types/canvas';
 import {
   distanceFromPointToLineSegment,
   isCursorOnArray,

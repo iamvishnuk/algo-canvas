@@ -3,22 +3,22 @@ import { buildTreeFromArray } from '@/lib/data-structures/tree';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { ArraySchema } from '@/validators';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Button } from '@workspace/ui/components/button';
+import { Button } from '@algocanvas/ui/components/button';
 import {
   Dialog,
   DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle
-} from '@workspace/ui/components/dialog';
+} from '@algocanvas/ui/components/dialog';
 import {
   Field,
   FieldDescription,
   FieldError,
   FieldGroup,
   FieldLabel
-} from '@workspace/ui/components/field';
-import { Input } from '@workspace/ui/components/input';
+} from '@algocanvas/ui/components/field';
+import { Input } from '@algocanvas/ui/components/input';
 import { useForm, Controller } from 'react-hook-form';
 import z from 'zod';
 

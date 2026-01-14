@@ -1,4 +1,4 @@
-import { ViewState } from '@workspace/types/canvas';
+import { ViewState } from '@algocanvas/types/canvas';
 import { RefObject } from 'react';
 
 export const drawGrid = (

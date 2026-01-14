@@ -1,5 +1,5 @@
 import { useAuthContext } from '@/providers/AuthProvider';
-import { Separator } from '@workspace/ui/components/separator';
+import { Separator } from '@algocanvas/ui/components/separator';
 import Image from 'next/image';
 
 const ProfileCard = () => {

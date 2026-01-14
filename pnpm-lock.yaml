@@ -17,10 +17,10 @@ importers:
       '@commitlint/types':
         specifier: ^20.3.1
         version: 20.3.1
-      '@workspace/eslint-config':
+      '@algocanvas/eslint-config':
         specifier: workspace:*
         version: link:packages/eslint-config
-      '@workspace/typescript-config':
+      '@algocanvas/typescript-config':
         specifier: workspace:*
         version: link:packages/typescript-config
       husky:
@@ -47,10 +47,10 @@ importers:
       '@types/bcrypt':
         specifier: ^6.0.0
         version: 6.0.0
-      '@workspace/eslint-config':
+      '@algocanvas/eslint-config':
         specifier: workspace:*
         version: link:../../packages/eslint-config
-      '@workspace/typescript-config':
+      '@algocanvas/typescript-config':
         specifier: workspace:*
         version: link:../../packages/typescript-config
       bcrypt:
@@ -171,7 +171,7 @@ importers:
       '@tanstack/react-query':
         specifier: ^5.90.15
         version: 5.90.15(react@19.2.1)
-      '@workspace/ui':
+      '@algocanvas/ui':
         specifier: workspace:*
         version: link:../../packages/ui
       axios:
@@ -232,13 +232,13 @@ importers:
       '@types/react-dom':
         specifier: ^19.2.3
         version: 19.2.3(@types/react@19.2.7)
-      '@workspace/eslint-config':
+      '@algocanvas/eslint-config':
         specifier: workspace:^
         version: link:../../packages/eslint-config
-      '@workspace/types':
+      '@algocanvas/types':
         specifier: workspace:*
         version: link:../../packages/types
-      '@workspace/typescript-config':
+      '@algocanvas/typescript-config':
         specifier: workspace:*
         version: link:../../packages/typescript-config
       eslint:
@@ -366,10 +366,10 @@ importers:
       '@types/react-dom':
         specifier: ^19.1.7
         version: 19.1.7(@types/react@19.1.9)
-      '@workspace/eslint-config':
+      '@algocanvas/eslint-config':
         specifier: workspace:*
         version: link:../eslint-config
-      '@workspace/typescript-config':
+      '@algocanvas/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config
       eslint:

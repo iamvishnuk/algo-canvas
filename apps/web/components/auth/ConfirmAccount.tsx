@@ -1,7 +1,7 @@
 'use client';
 import { confirmAcccountMutationFn } from '@/lib/apis/auth';
 import { useMutation } from '@tanstack/react-query';
-import { Button } from '@workspace/ui/components/button';
+import { Button } from '@algocanvas/ui/components/button';
 import {
   Card,
   CardContent,
@@ -9,7 +9,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle
-} from '@workspace/ui/components/card';
+} from '@algocanvas/ui/components/card';
 import { Loader } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { MouseEvent } from 'react';

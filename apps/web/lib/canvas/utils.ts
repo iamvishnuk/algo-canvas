@@ -1,4 +1,4 @@
-import { DrawElements, DrawPoint } from '@workspace/types/canvas';
+import { DrawElements, DrawPoint } from '@algocanvas/types/canvas';
 import { ARRAY_CONSTANTS } from '../data-structures/array';
 import { LINKED_LIST_CONSTANTS } from '../data-structures/linked-list';
 import { getDepth, TREE_CONSTANTS } from '../data-structures/tree';

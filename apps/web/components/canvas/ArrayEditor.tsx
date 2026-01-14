@@ -1,12 +1,12 @@
-import { Separator } from '@workspace/ui/components/separator';
+import { Separator } from '@algocanvas/ui/components/separator';
 import { useState, useEffect } from 'react';
-import { Button } from '@workspace/ui/components/button';
+import { Button } from '@algocanvas/ui/components/button';
 import { ArrowDown, ArrowUp, Check, Copy, MoveUp, Trash } from 'lucide-react';
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger
-} from '@workspace/ui/components/tooltip';
+} from '@algocanvas/ui/components/tooltip';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import {
   duplicateElements,

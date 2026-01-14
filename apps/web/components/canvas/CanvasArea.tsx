@@ -13,7 +13,7 @@ import {
   DrawPath,
   DrawPoint,
   DrawRect
-} from '@workspace/types';
+} from '@algocanvas/types';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import BottomToolBar from './BottomToolBar';
 import {
@@ -30,7 +30,7 @@ import {
 import { useCanvasKeyboardShortcuts } from '@/hooks/useCanvasKeyboardShortcuts';
 import MainToolBar from './MainToolBar';
 
-import { cn } from '@workspace/ui/lib/utils';
+import { cn } from '@algocanvas/ui/lib/utils';
 import CanvasBackground from './CanvasBackground';
 import { screenToWorld } from '@/lib/canvas/coordinates';
 import { isElementInSelectionArea } from '@/lib/canvas/geometry';
@@ -60,6 +60,7 @@ import ElementPropertyPanel from './ElementPropertyPanel';
 import { updateElementDefaultProperty } from '@/features/element/elementPropertySlice';
 import ArrayEditor from './ArrayEditor';
 import LinkedListEditor from './LinkedListEditor';
+import TreeEditor from './TreeEditor';
 
 const CanvasArea = () => {
   const dispatch = useAppDispatch();
@@ -1084,6 +1085,7 @@ const CanvasArea = () => {
       <ElementPropertyPanel />
       <ArrayEditor />
       <LinkedListEditor />
+      <TreeEditor />
     </div>
   );
 };

@@ -4,13 +4,13 @@ import {
   updateDataStructuresValues
 } from '@/features/canvas/canvasSlice';
 import { useAppSelector } from '@/store/hooks';
-import { Button } from '@workspace/ui/components/button';
-import { Separator } from '@workspace/ui/components/separator';
+import { Button } from '@algocanvas/ui/components/button';
+import { Separator } from '@algocanvas/ui/components/separator';
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger
-} from '@workspace/ui/components/tooltip';
+} from '@algocanvas/ui/components/tooltip';
 import { Check, Copy, Trash } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';

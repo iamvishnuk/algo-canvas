@@ -1,13 +1,13 @@
 import { changeTool } from '@/features/canvas/canvasSlice';
 import { MAIN_TOOLS } from '@/lib/canvas/constant';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import { Button } from '@workspace/ui/components/button';
+import { Button } from '@algocanvas/ui/components/button';
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger
-} from '@workspace/ui/components/tooltip';
-import { cn } from '@workspace/ui/lib/utils';
+} from '@algocanvas/ui/components/tooltip';
+import { cn } from '@algocanvas/ui/lib/utils';
 import { Plus, Settings } from 'lucide-react';
 
 const MainToolBar = () => {

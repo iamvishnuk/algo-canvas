@@ -7,7 +7,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle
-} from '@workspace/ui/components/card';
+} from '@algocanvas/ui/components/card';
 import { Controller, useForm } from 'react-hook-form';
 import z from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -17,17 +17,17 @@ import {
   FieldError,
   FieldGroup,
   FieldLabel
-} from '@workspace/ui/components/field';
-import { Input } from '@workspace/ui/components/input';
+} from '@algocanvas/ui/components/field';
+import { Input } from '@algocanvas/ui/components/input';
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupButton,
   InputGroupInput
-} from '@workspace/ui/components/input-group';
+} from '@algocanvas/ui/components/input-group';
 import { useState } from 'react';
 import { Eye, EyeOff, Loader } from 'lucide-react';
-import { Button } from '@workspace/ui/components/button';
+import { Button } from '@algocanvas/ui/components/button';
 import { GoogleLogoIcon } from '@phosphor-icons/react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';

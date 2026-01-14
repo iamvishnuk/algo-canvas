@@ -3,7 +3,7 @@ import {
   DrawPoint,
   DrawRect,
   TreeNode
-} from '@workspace/types/canvas';
+} from '@algocanvas/types/canvas';
 import { getElementBounds } from './utils';
 import { ARRAY_CONSTANTS } from '../data-structures/array';
 import { LINKED_LIST_CONSTANTS } from '../data-structures/linked-list';

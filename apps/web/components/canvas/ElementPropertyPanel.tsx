@@ -2,7 +2,7 @@ import { Ellipsis, Minus } from 'lucide-react';
 import ColorPicker from './ColorPicker';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { TOOL_PROPERTY_MAP } from '@/lib/canvas/constant';
-import { PropertyKey, StrokePattern, Tool } from '@workspace/types/canvas';
+import { PropertyKey, StrokePattern, Tool } from '@algocanvas/types/canvas';
 import { updateElementProperty } from '@/features/canvas/canvasSlice';
 import {
   updateElementDefaultProperty,

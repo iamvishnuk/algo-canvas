@@ -1,6 +1,6 @@
 // Convert mouse (screen) coordinates to canvas world coordinates
 
-import { ViewState } from '@workspace/types/canvas';
+import { ViewState } from '@algocanvas/types/canvas';
 import { RefObject } from 'react';
 
 // so drawing works correctly with pan (offset) and zoom (scale)

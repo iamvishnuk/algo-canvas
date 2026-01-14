@@ -1,4 +1,4 @@
-import { PropertyKey, Tool } from '@workspace/types/canvas';
+import { PropertyKey, Tool } from '@algocanvas/types/canvas';
 import {
   Brackets,
   CaseSensitive,

@@ -1,4 +1,4 @@
-import { cn } from '@workspace/ui/lib/utils';
+import { cn } from '@algocanvas/ui/lib/utils';
 import { ReactNode } from 'react';
 
 type Props = {

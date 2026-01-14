@@ -1,4 +1,4 @@
-import { DrawElements } from '@workspace/types/canvas';
+import { DrawElements } from '@algocanvas/types/canvas';
 import {
   drawArray,
   drawArrow,

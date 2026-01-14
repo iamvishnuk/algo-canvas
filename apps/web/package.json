@@ -16,7 +16,7 @@
     "@phosphor-icons/react": "^2.1.10",
     "@reduxjs/toolkit": "^2.11.2",
     "@tanstack/react-query": "^5.90.15",
-    "@workspace/ui": "workspace:*",
+    "@algocanvas/ui": "workspace:*",
     "axios": "^1.13.2",
     "date-fns": "^4.1.0",
     "input-otp": "^1.4.2",
@@ -38,9 +38,9 @@
     "@types/node": "^20.19.25",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
-    "@workspace/eslint-config": "workspace:^",
-    "@workspace/types": "workspace:*",
-    "@workspace/typescript-config": "workspace:*",
+    "@algocanvas/eslint-config": "workspace:^",
+    "@algocanvas/types": "workspace:*",
+    "@algocanvas/typescript-config": "workspace:*",
     "eslint": "^9.39.1",
     "typescript": "^5.9.3"
   }

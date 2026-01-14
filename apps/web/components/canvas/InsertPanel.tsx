@@ -9,7 +9,7 @@ import {
   CommandGroup,
   CommandEmpty,
   CommandItem
-} from '@workspace/ui/components/command';
+} from '@algocanvas/ui/components/command';
 import { User, CreditCard, Settings } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 

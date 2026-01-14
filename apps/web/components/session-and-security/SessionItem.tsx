@@ -1,5 +1,5 @@
 import { parseUserAgent } from '@/utils/parse-user-agent';
-import { Button } from '@workspace/ui/components/button';
+import { Button } from '@algocanvas/ui/components/button';
 import { Trash2 } from 'lucide-react';
 
 type SessionItemProps = {

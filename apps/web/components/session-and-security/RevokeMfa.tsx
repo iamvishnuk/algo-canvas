@@ -1,6 +1,6 @@
 import { revokeMfaMutationFn } from '@/lib/apis/auth';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Button } from '@workspace/ui/components/button';
+import { Button } from '@algocanvas/ui/components/button';
 import { Loader } from 'lucide-react';
 import { useCallback } from 'react';
 import { toast } from 'sonner';

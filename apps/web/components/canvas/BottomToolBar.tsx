@@ -6,12 +6,12 @@ import {
   redo
 } from '@/features/canvas/canvasSlice';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import { Button } from '@workspace/ui/components/button';
+import { Button } from '@algocanvas/ui/components/button';
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger
-} from '@workspace/ui/components/tooltip';
+} from '@algocanvas/ui/components/tooltip';
 import { Minus, Plus, Redo2, Trash, Undo2 } from 'lucide-react';
 
 const BottomToolBar = () => {

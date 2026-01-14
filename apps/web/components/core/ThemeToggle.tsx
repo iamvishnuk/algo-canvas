@@ -1,5 +1,5 @@
 'use client';
-import { cn } from '@workspace/ui/lib/utils';
+import { cn } from '@algocanvas/ui/lib/utils';
 import { Monitor, Moon, Sun } from 'lucide-react';
 import { useTheme } from 'next-themes';
 

@@ -1,24 +1,24 @@
 import { useAuthContext } from '@/providers/AuthProvider';
 import { UpdateEmailSchema, VerifyCodeSchema } from '@/validators';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Button } from '@workspace/ui/components/button';
+import { Button } from '@algocanvas/ui/components/button';
 import {
   Field,
   FieldError,
   FieldGroup,
   FieldLabel
-} from '@workspace/ui/components/field';
-import { Input } from '@workspace/ui/components/input';
+} from '@algocanvas/ui/components/field';
+import { Input } from '@algocanvas/ui/components/input';
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupInput
-} from '@workspace/ui/components/input-group';
+} from '@algocanvas/ui/components/input-group';
 import {
   InputOTP,
   InputOTPGroup,
   InputOTPSlot
-} from '@workspace/ui/components/input-otp';
+} from '@algocanvas/ui/components/input-otp';
 import { REGEXP_ONLY_DIGITS } from 'input-otp';
 import { MailIcon } from 'lucide-react';
 import { useState } from 'react';

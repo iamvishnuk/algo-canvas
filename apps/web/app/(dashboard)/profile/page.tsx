@@ -3,7 +3,7 @@
 import PasswordCard from '@/components/profile/PasswordCard';
 import ProfileCard from '@/components/profile/ProfileCard';
 import UpdateEmail from '@/components/profile/UpdateEmail';
-import { Button } from '@workspace/ui/components/button';
+import { Button } from '@algocanvas/ui/components/button';
 import { ArrowRight, Lock, Mail, User } from 'lucide-react';
 import { useState, Activity } from 'react';
 

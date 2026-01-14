@@ -6,7 +6,7 @@ import {
   Caveat
 } from 'next/font/google';
 
-import '@workspace/ui/globals.css';
+import '@algocanvas/ui/globals.css';
 import ReduxProvider from '@/store/ReduxProvider';
 import QueryProvider from '@/providers/QueryProvider';
 import ThemeProvider from '@/providers/ThemeProvider';

@@ -1,6 +1,6 @@
-import { Button } from '@workspace/ui/components/button';
-import { Separator } from '@workspace/ui/components/separator';
-import { SidebarTrigger } from '@workspace/ui/components/sidebar';
+import { Button } from '@algocanvas/ui/components/button';
+import { Separator } from '@algocanvas/ui/components/separator';
+import { SidebarTrigger } from '@algocanvas/ui/components/sidebar';
 
 export function SiteHeader() {
   return (

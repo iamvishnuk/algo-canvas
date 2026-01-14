@@ -4,7 +4,7 @@ import { verifyMfaAndLoginMutationFn } from '@/lib/apis/auth';
 import { MfaVerifySchema } from '@/validators';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
-import { Button } from '@workspace/ui/components/button';
+import { Button } from '@algocanvas/ui/components/button';
 import {
   Card,
   CardContent,
@@ -12,13 +12,13 @@ import {
   CardFooter,
   CardHeader,
   CardTitle
-} from '@workspace/ui/components/card';
-import { Field, FieldGroup, FieldLabel } from '@workspace/ui/components/field';
+} from '@algocanvas/ui/components/card';
+import { Field, FieldGroup, FieldLabel } from '@algocanvas/ui/components/field';
 import {
   InputOTP,
   InputOTPGroup,
   InputOTPSlot
-} from '@workspace/ui/components/input-otp';
+} from '@algocanvas/ui/components/input-otp';
 import { REGEXP_ONLY_DIGITS } from 'input-otp';
 import { Loader } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';

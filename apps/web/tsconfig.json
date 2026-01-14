@@ -1,11 +1,11 @@
 {
-  "extends": "@workspace/typescript-config/nextjs.json",
+  "extends": "@algocanvas/typescript-config/nextjs.json",
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
       "@/*": ["./*"],
-      "@workspace/ui/*": ["../../packages/ui/src/*"],
-      "@workspace/types/*": ["../../packages/types/src/*"]
+      "@algocanvas/ui/*": ["../../packages/ui/src/*"],
+      "@algocanvas/types/*": ["../../packages/types/src/*"]
     },
     "plugins": [
       {

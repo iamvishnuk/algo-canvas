@@ -4,7 +4,7 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   useSidebar
-} from '@workspace/ui/components/sidebar';
+} from '@algocanvas/ui/components/sidebar';
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -13,12 +13,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuGroup,
   DropdownMenuItem
-} from '@workspace/ui/components/dropdown-menu';
+} from '@algocanvas/ui/components/dropdown-menu';
 import {
   AvatarImage,
   Avatar,
   AvatarFallback
-} from '@workspace/ui/components/avatar';
+} from '@algocanvas/ui/components/avatar';
 import {
   BadgeCheck,
   Bell,

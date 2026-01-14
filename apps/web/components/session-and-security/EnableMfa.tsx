@@ -9,22 +9,22 @@ import {
   DialogHeader,
   DialogTitle,
   DialogContent
-} from '@workspace/ui/components/dialog';
-import { Button } from '@workspace/ui/components/button';
+} from '@algocanvas/ui/components/dialog';
+import { Button } from '@algocanvas/ui/components/button';
 import Link from 'next/link';
 import { setUpMfaMutationFn, verifyMafMutationFn } from '@/lib/apis/auth';
-import { Skeleton } from '@workspace/ui/components/skeleton';
+import { Skeleton } from '@algocanvas/ui/components/skeleton';
 import { Check, Copy, Loader } from 'lucide-react';
 import z from 'zod';
 import { MfaVerifySchema } from '@/validators';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Field, FieldGroup, FieldLabel } from '@workspace/ui/components/field';
+import { Field, FieldGroup, FieldLabel } from '@algocanvas/ui/components/field';
 import {
   InputOTP,
   InputOTPGroup,
   InputOTPSlot
-} from '@workspace/ui/components/input-otp';
+} from '@algocanvas/ui/components/input-otp';
 import { toast } from 'sonner';
 import RevokeMfa from './RevokeMfa';
 

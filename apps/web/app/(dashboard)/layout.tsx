@@ -3,7 +3,7 @@ import { SiteHeader } from '@/components/dashboard/SiteHeader';
 import {
   SidebarInset,
   SidebarProvider
-} from '@workspace/ui/components/sidebar';
+} from '@algocanvas/ui/components/sidebar';
 import { ReactNode } from 'react';
 
 type DashBoardProps = {
