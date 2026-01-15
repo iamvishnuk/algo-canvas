@@ -1,5 +1,4 @@
 import { BadRequestError } from '../../../../shared/error/Error';
-import { compareHashValue } from '../../../../shared/utils/Bcrypt';
 import { ISessionRepository } from '../../../session/domain/repositories/ISessionRepository';
 import { IUserRepository } from '../../../users/domain/repositories/IUserRepository';
 import { UserMapper } from '../../../users/infrastructure/mappers/UserMapper';
@@ -8,37 +7,19 @@ import {
   TokenService
 } from '../services/TokenService';
 
-export class LoginUserUseCase {
+export class GoogleAuthUseCase {
   constructor(
     private userRepository: IUserRepository,
     private sessionRepository: ISessionRepository
   ) {}
 
-  async execute(email: string, password: string, userAgent: string) {
-    const user = await this.userRepository.findByEmail(email);
+  async execute(userId: string, userAgent: string) {
+    const user = await this.userRepository.findById(userId);
 
     if (!user) {
-      throw new BadRequestError('Invalid email or password');
+      throw new BadRequestError('User not found');
     }
 
-    if (!user.password) {
-      throw new BadRequestError('Invalid email or password');
-    }
-
-    if (user.provider && user.provider !== 'local') {
-      throw new BadRequestError(`Please login using ${user.provider} provider`);
-    }
-
-    const isPasswordMatch = await compareHashValue(password, user.password);
-    if (!isPasswordMatch) {
-      throw new BadRequestError('Incorrect password');
-    }
-
-    if (!user.isEmailVerified) {
-      throw new BadRequestError('Email is not verified');
-    }
-
-    // If user has 2FA enabled, return early without tokens
     if (user?.userPreferences.enable2FA) {
       return {
         user: UserMapper.toPublic(user),
@@ -54,7 +35,7 @@ export class LoginUserUseCase {
       userAgent
     });
 
-    // generate access token
+    // generate accesstoken
     const accessToken = TokenService.signJwtToken({
       userId: user.id,
       sessionId: session.id

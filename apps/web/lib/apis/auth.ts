@@ -7,13 +7,13 @@ import {
 } from '@/types/interface';
 import API from '@/utils/axios-client';
 
-export const registerUserMutaionFn = (data: RegisterDTO) =>
+export const registerUserMutationFn = (data: RegisterDTO) =>
   API.post('/auth/register', data);
 
-export const confirmAcccountMutationFn = (data: { code: string }) =>
+export const confirmAccountMutationFn = (data: { code: string }) =>
   API.post('/auth/verify/email', data);
 
-export const loginUserMutaionFn = (
+export const loginUserMutationFn = (
   data: LoginDTO
 ): Promise<APIResponse<LoginResponse>> => API.post('/auth/login', data);
 

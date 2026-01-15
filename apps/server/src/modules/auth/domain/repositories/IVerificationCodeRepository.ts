@@ -1,6 +1,6 @@
 import { VerificationCode } from '../entities/VerificationCodeEntity';
 
-export interface IVerificaionCodeRepository {
+export interface IVerificationCodeRepository {
   create(
     data: Pick<VerificationCode, 'userId' | 'expiresAt' | 'type' | 'code'>
   ): Promise<VerificationCode>;

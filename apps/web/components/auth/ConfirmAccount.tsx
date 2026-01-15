@@ -1,5 +1,5 @@
 'use client';
-import { confirmAcccountMutationFn } from '@/lib/apis/auth';
+import { confirmAccountMutationFn } from '@/lib/apis/auth';
 import { useMutation } from '@tanstack/react-query';
 import { Button } from '@algocanvas/ui/components/button';
 import {
@@ -22,7 +22,7 @@ const ConfirmAccount = () => {
   const code = params.get('code');
 
   const { mutate, isPending } = useMutation({
-    mutationFn: confirmAcccountMutationFn
+    mutationFn: confirmAccountMutationFn
   });
 
   const handleSubmit = (e: MouseEvent<HTMLButtonElement>): void => {

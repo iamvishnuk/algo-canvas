@@ -19,7 +19,7 @@ export class UserRepository implements IUserRepository {
     return userDoc ? UserMapper.toDomain(userDoc) : null;
   }
 
-  async findByIdAndUpdaate(
+  async findByIdAndUpdate(
     id: string,
     data: Partial<User>
   ): Promise<User | null> {
@@ -28,6 +28,11 @@ export class UserRepository implements IUserRepository {
       UserMapper.toPersistence(data),
       { new: true }
     );
+    return userDoc ? UserMapper.toDomain(userDoc) : null;
+  }
+
+  async findByGoogleId(googleId: string): Promise<User | null> {
+    const userDoc = await UserModel.findOne({ googleId });
     return userDoc ? UserMapper.toDomain(userDoc) : null;
   }
 }

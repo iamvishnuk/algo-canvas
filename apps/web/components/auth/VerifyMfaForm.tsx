@@ -13,7 +13,7 @@ import {
   CardHeader,
   CardTitle
 } from '@algocanvas/ui/components/card';
-import { Field, FieldGroup, FieldLabel } from '@algocanvas/ui/components/field';
+import { Field, FieldGroup } from '@algocanvas/ui/components/field';
 import {
   InputOTP,
   InputOTPGroup,

@@ -5,6 +5,10 @@ import { registerUserSchema } from '../validators/RegisterUserValidator';
 import { emailVerificationCodeSchema } from '../validators/EmailVerificationCodeValidator';
 import { loginUserSchema } from '../validators/LoginUserValidator';
 import { authenticateJWT } from '../../../../shared/middleware/PassportMiddleware';
+import {
+  authenticateGoogle,
+  authenticateGoogleCallback
+} from '../../../../shared/middleware/GoogleStrategy';
 import { verifyMfaSetupSchema } from '../validators/VerifyMfaSetupValidator';
 import { mfaLoginSchema } from '../validators/MfaLoginValidator';
 
@@ -43,3 +47,11 @@ authRoutes.post(
 );
 
 export default authRoutes;
+
+// Google OAuth routes
+authRoutes.get('/google', authenticateGoogle);
+authRoutes.get(
+  '/google/callback',
+  authenticateGoogleCallback,
+  authController.googleOAuthCallback
+);

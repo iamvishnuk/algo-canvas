@@ -47,5 +47,12 @@ export const EnvConfig = {
   REDIS_PORT: process.env.REDIS_PORT || 6379,
   REDIS_PASSWORD: process.env.REDIS_PASSWORD || '',
   REDIS_DB: process.env.REDIS_DB || 0,
-  REDIS_TTL: process.env.REDIS_TTL || 3600
+  REDIS_TTL: process.env.REDIS_TTL || 3600,
+
+  // Google OAuth credentials
+  GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID || '',
+  GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET || '',
+  GOOGLE_CALLBACK_URL:
+    process.env.GOOGLE_CALLBACK_URL ||
+    'http://localhost:8000/api/v1/auth/google/callback'
 };

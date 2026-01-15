@@ -26,7 +26,7 @@ export class RevokeMfaUseCase {
       };
     }
 
-    const updatedUser = await this.userRepository.findByIdAndUpdaate(user.id, {
+    const updatedUser = await this.userRepository.findByIdAndUpdate(user.id, {
       userPreferences: {
         ...user.userPreferences,
         twoFactorSecret: undefined,

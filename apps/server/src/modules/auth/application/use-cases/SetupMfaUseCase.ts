@@ -1,6 +1,5 @@
 import qrcode from 'qrcode';
 import speakeasy from 'speakeasy';
-import { User } from '../../../users/domain/entities/UserEntity';
 import { IUserRepository } from '../../../users/domain/repositories/IUserRepository';
 import { NotFoundError } from '../../../../shared/error/Error';
 
@@ -33,7 +32,7 @@ export class SetupMfaUseCase {
       const secret = speakeasy.generateSecret({ name: 'Algo Canvas' });
       secretKey = secret.base32;
       // Save the secret key to user preferences
-      await this.userRepository.findByIdAndUpdaate(user.id, {
+      await this.userRepository.findByIdAndUpdate(user.id, {
         userPreferences: { ...user.userPreferences, twoFactorSecret: secretKey }
       });
     }

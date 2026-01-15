@@ -2,12 +2,12 @@ import { BadRequestError } from '../../../../shared/error/Error';
 import { User } from '../../../users/domain/entities/UserEntity';
 import { IUserRepository } from '../../../users/domain/repositories/IUserRepository';
 import { VerificationType } from '../../domain/entities/VerificationCodeEntity';
-import { IVerificaionCodeRepository } from '../../domain/repositories/IVerificationCodeRepository';
+import { IVerificationCodeRepository } from '../../domain/repositories/IVerificationCodeRepository';
 
 export class VerifyEmailUseCase {
   constructor(
     private userRepository: IUserRepository,
-    private verificationCodeRepository: IVerificaionCodeRepository
+    private verificationCodeRepository: IVerificationCodeRepository
   ) {}
 
   async execute(code: string): Promise<User> {
@@ -21,7 +21,7 @@ export class VerifyEmailUseCase {
       throw new BadRequestError('Invalid or expired verification code');
     }
 
-    const updatedUser = await this.userRepository.findByIdAndUpdaate(
+    const updatedUser = await this.userRepository.findByIdAndUpdate(
       validCode.userId,
       { isEmailVerified: true }
     );

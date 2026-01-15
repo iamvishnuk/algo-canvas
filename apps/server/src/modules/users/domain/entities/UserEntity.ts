@@ -4,8 +4,10 @@ export interface IUser {
   id: string;
   name: string;
   email: string;
-  password: string;
+  password?: string;
   isEmailVerified: boolean;
+  googleId?: string;
+  provider?: 'google' | 'local';
   userPreferences: UserPreferences;
   updatedAt?: Date;
   createdAt?: Date;
@@ -20,7 +22,9 @@ export class User implements IUser {
     public userPreferences: UserPreferences,
     public createdAt: Date,
     public updatedAt: Date,
-    public password: string
+    public password?: string,
+    public googleId?: string,
+    public provider?: 'google' | 'local'
   ) {}
 
   // ✅ Factory method
@@ -28,7 +32,9 @@ export class User implements IUser {
     id?: string;
     name: string;
     email: string;
-    password: string;
+    password?: string;
+    googleId?: string;
+    provider?: 'google' | 'local';
     isEmailVerified?: boolean;
     userPreferences?: UserPreferences;
     createdAt?: Date;
@@ -42,7 +48,9 @@ export class User implements IUser {
       data.userPreferences ?? UserPreferences.create(),
       data.createdAt ?? new Date(),
       data.updatedAt ?? new Date(),
-      data.password
+      data.password,
+      data.googleId,
+      data.provider
     );
   }
 

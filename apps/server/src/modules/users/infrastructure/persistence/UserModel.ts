@@ -1,5 +1,4 @@
 import mongoose, { Document, Schema } from 'mongoose';
-import { hashValue } from '../../../../shared/utils/Bcrypt';
 
 export interface IUserPreferencesDocument {
   enable2FA?: boolean;
@@ -10,8 +9,11 @@ export interface IUserPreferencesDocument {
 export interface IUserDocument extends Document {
   name: string;
   email: string;
-  password: string;
+  password?: string;
   isEmailVerified: boolean;
+  googleId?: string;
+  provider?: 'google' | 'local';
+  avatar?: string;
   userPreferences: IUserPreferencesDocument;
   createdAt: Date;
   updatedAt: Date;
@@ -27,8 +29,11 @@ const UserSchema = new Schema<IUserDocument>(
   {
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true, index: true },
-    password: { type: String, required: true },
+    password: { type: String, required: false },
+    googleId: { type: String, required: false, unique: true },
     isEmailVerified: { type: Boolean, default: false },
+    provider: { type: String, enum: ['google', 'local'], default: 'local' },
+    avatar: { type: String, required: false },
     userPreferences: {
       type: userPreferencesSchema,
       default: {}
@@ -48,10 +53,5 @@ const UserSchema = new Schema<IUserDocument>(
     }
   }
 );
-
-UserSchema.pre('save', async function () {
-  if (!this.isModified('password')) return;
-  this.password = await hashValue(this.password);
-});
 
 export const UserModel = mongoose.model<IUserDocument>('User', UserSchema);

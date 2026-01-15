@@ -8,15 +8,16 @@ export class UserMapper {
       id: userDoc._id.toString(),
       email: userDoc.email,
       name: userDoc.name,
-      password: userDoc.password,
       isEmailVerified: userDoc.isEmailVerified,
+      googleId: userDoc.googleId,
       userPreferences: UserPreferences.create({
         enable2FA: userDoc.userPreferences.enable2FA,
         emailNotification: userDoc.userPreferences.emailNotification,
         twoFactorSecret: userDoc.userPreferences.twoFactorSecret
       }),
       createdAt: userDoc.createdAt,
-      updatedAt: userDoc.updatedAt
+      updatedAt: userDoc.updatedAt,
+      password: userDoc?.password
     });
   }
 
@@ -30,7 +31,9 @@ export class UserMapper {
         emailNotification: user.userPreferences?.emailNotification,
         enable2FA: user.userPreferences?.enable2FA,
         twoFactorSecret: user.userPreferences?.twoFactorSecret
-      }
+      },
+      googleId: user.googleId,
+      provider: user.provider
     };
   }
 

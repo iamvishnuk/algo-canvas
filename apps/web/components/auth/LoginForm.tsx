@@ -28,12 +28,12 @@ import {
 import { useState } from 'react';
 import { Eye, EyeOff, Loader } from 'lucide-react';
 import { Button } from '@algocanvas/ui/components/button';
-import { GoogleLogoIcon } from '@phosphor-icons/react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
-import { loginUserMutaionFn } from '@/lib/apis/auth';
+import { loginUserMutationFn } from '@/lib/apis/auth';
 import { toast } from 'sonner';
+import GoogleLogin from './GoogleLogin';
 
 function LoginForm() {
   const router = useRouter();
@@ -49,7 +49,7 @@ function LoginForm() {
   });
 
   const { mutate, isPending } = useMutation({
-    mutationFn: loginUserMutaionFn
+    mutationFn: loginUserMutationFn
   });
 
   const onSubmit = (data: z.infer<typeof loginSchema>) => {
@@ -147,13 +147,7 @@ function LoginForm() {
               {isPending && <Loader className='animate-spin' />}
               Login
             </Button>
-            <Button
-              variant='outline'
-              disabled={isPending}
-            >
-              <GoogleLogoIcon />
-              Login With Google
-            </Button>
+            <GoogleLogin />
             <FieldDescription className='text-center'>
               Don&apos;t have an account? <Link href='sign-up'>Sign up</Link>
             </FieldDescription>

@@ -39,7 +39,7 @@ export class VerifyMfaSetupUseCase {
       throw new BadRequestError('Invalid MFA code, please try again');
     }
 
-    await this.userRepository.findByIdAndUpdaate(user.id, {
+    await this.userRepository.findByIdAndUpdate(user.id, {
       userPreferences: { ...user.userPreferences, enable2FA: true }
     });
 

@@ -60,11 +60,7 @@ export class ResponseHandler {
     return res.status(statusCode).json({
       status: 'success',
       message,
-      data,
-      tokens: {
-        accessToken,
-        refreshToken
-      }
+      data
     });
   }
 
@@ -81,5 +77,37 @@ export class ResponseHandler {
       status: 'success',
       message
     });
+  }
+
+  static redirect(res: Response, url: string): void {
+    res.redirect(url);
+  }
+
+  static redirectWithTokens(
+    res: Response,
+    url: string,
+    accessToken: string | undefined,
+    refreshToken: string | undefined
+  ): void {
+    if (accessToken) {
+      res.cookie('accessToken', accessToken, {
+        httpOnly: true,
+        secure: EnvConfig.NODE_ENV === 'production' ? true : false,
+        sameSite: EnvConfig.NODE_ENV === 'production' ? 'strict' : 'lax',
+        expires: calculateExpirationDate(EnvConfig.JWT_EXPIRES_IN)
+      });
+    }
+
+    if (refreshToken) {
+      res.cookie('refreshToken', refreshToken, {
+        httpOnly: true,
+        secure: EnvConfig.NODE_ENV === 'production' ? true : false,
+        sameSite: EnvConfig.NODE_ENV === 'production' ? 'strict' : 'lax',
+        expires: calculateExpirationDate(EnvConfig.JWT_REFRESH_EXPIRES_IN),
+        path: `${EnvConfig.API_PREFIX}/auth/refresh`
+      });
+    }
+
+    res.redirect(url);
   }
 }

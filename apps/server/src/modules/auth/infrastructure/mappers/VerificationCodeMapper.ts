@@ -6,7 +6,7 @@ import {
 import { IVerificationCodeDocument } from '../persistence/VerificationCodeModel';
 
 export class VerificationCodeMapper {
-  static toDomin(
+  static toDomain(
     verificationCodeDoc: IVerificationCodeDocument
   ): VerificationCode {
     return VerificationCode.create({

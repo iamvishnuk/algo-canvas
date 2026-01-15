@@ -5,6 +5,9 @@
     "preorder",
     "inorder",
     "postorder",
-    "levelorder"
+    "levelorder",
+    "HTTPSTATUS",
+    "qrcode",
+    "otpauthURL"
   ]  
 }

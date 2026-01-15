@@ -1,9 +1,9 @@
 import { VerificationCode } from '../../domain/entities/VerificationCodeEntity';
-import { IVerificaionCodeRepository } from '../../domain/repositories/IVerificationCodeRepository';
+import { IVerificationCodeRepository } from '../../domain/repositories/IVerificationCodeRepository';
 import { VerificationCodeMapper } from '../mappers/VerificationCodeMapper';
 import { VerificationCodeModel } from './VerificationCodeModel';
 
-export class VerificationCodeRepository implements IVerificaionCodeRepository {
+export class VerificationCodeRepository implements IVerificationCodeRepository {
   async create(
     data: Pick<VerificationCode, 'userId' | 'expiresAt' | 'type' | 'code'>
   ): Promise<VerificationCode> {
@@ -11,7 +11,7 @@ export class VerificationCodeRepository implements IVerificaionCodeRepository {
       VerificationCodeMapper.toPersistence(data)
     );
 
-    return VerificationCodeMapper.toDomin(verificationCode);
+    return VerificationCodeMapper.toDomain(verificationCode);
   }
 
   async delete(code: string): Promise<VerificationCode | null> {
@@ -20,7 +20,7 @@ export class VerificationCodeRepository implements IVerificaionCodeRepository {
     });
 
     return verificationCode
-      ? VerificationCodeMapper.toDomin(verificationCode)
+      ? VerificationCodeMapper.toDomain(verificationCode)
       : null;
   }
 
@@ -28,7 +28,7 @@ export class VerificationCodeRepository implements IVerificaionCodeRepository {
     const verificationCode = await VerificationCodeModel.findOne({ code });
 
     return verificationCode
-      ? VerificationCodeMapper.toDomin(verificationCode)
+      ? VerificationCodeMapper.toDomain(verificationCode)
       : null;
   }
 
@@ -43,7 +43,7 @@ export class VerificationCodeRepository implements IVerificaionCodeRepository {
     });
 
     return verificationCode
-      ? VerificationCodeMapper.toDomin(verificationCode)
+      ? VerificationCodeMapper.toDomain(verificationCode)
       : null;
   }
 }

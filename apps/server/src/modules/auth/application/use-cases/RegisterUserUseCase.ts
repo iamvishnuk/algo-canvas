@@ -4,18 +4,19 @@ import {
   InternalServerError
 } from '../../../../shared/error/Error';
 import { emailService } from '../../../../shared/services/EmailService';
+import { hashValue } from '../../../../shared/utils/Bcrypt';
 import { anHourFromNow } from '../../../../shared/utils/DateTime';
 import { generateUniqueCode } from '../../../../shared/utils/uuid';
 import { User } from '../../../users/domain/entities/UserEntity';
 import { IUserRepository } from '../../../users/domain/repositories/IUserRepository';
 import { UserMapper } from '../../../users/infrastructure/mappers/UserMapper';
 import { VerificationType } from '../../domain/entities/VerificationCodeEntity';
-import { IVerificaionCodeRepository } from '../../domain/repositories/IVerificationCodeRepository';
+import { IVerificationCodeRepository } from '../../domain/repositories/IVerificationCodeRepository';
 
 export class RegisterUserUseCase {
   constructor(
     private userRepository: IUserRepository,
-    private verificationCodeRepository: IVerificaionCodeRepository
+    private verificationCodeRepository: IVerificationCodeRepository
   ) {}
 
   async execute(
@@ -27,7 +28,12 @@ export class RegisterUserUseCase {
       throw new ConflictError('User with this email already exist');
     }
 
-    const newUser = await this.userRepository.create(userData);
+    const createUserData = {
+      ...userData,
+      password: await hashValue(userData.password!)
+    };
+
+    const newUser = await this.userRepository.create(createUserData);
 
     if (!newUser) {
       throw new InternalServerError(

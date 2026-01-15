@@ -5,7 +5,7 @@ import { ResponseHandler } from '../../../../shared/utils/ResponseHandler';
 import { IUserRepository } from '../../../users/domain/repositories/IUserRepository';
 import { RegisterUserUseCase } from '../../application/use-cases/RegisterUserUseCase';
 import { UserRepository } from '../../../users/infrastructure/persistence/UserRepository';
-import { IVerificaionCodeRepository } from '../../domain/repositories/IVerificationCodeRepository';
+import { IVerificationCodeRepository } from '../../domain/repositories/IVerificationCodeRepository';
 import { VerificationCodeRepository } from '../../infrastructure/persistence/VerificationCodeRepository';
 import { VerifyEmailUseCase } from '../../application/use-cases/VerifyEmailUseCase';
 import { TEmailVerificationCodeBody } from '../validators/EmailVerificationCodeValidator';
@@ -22,10 +22,12 @@ import { TVerifyMfaSetupBody } from '../validators/VerifyMfaSetupValidator';
 import { RevokeMfaUseCase } from '../../application/use-cases/RevokeMfaUseCase';
 import { MfaLoginUseCase } from '../../application/use-cases/MfaLoginUseCase';
 import { IMfaLoginBody } from '../validators/MfaLoginValidator';
+import { EnvConfig } from '../../../../shared/config/EnvConfig';
+import { GoogleAuthUseCase } from '../../application/use-cases/GoogleAuthUseCase';
 
 export class AuthController {
   private readonly userRepository: IUserRepository;
-  private readonly verificationCodeRepository: IVerificaionCodeRepository;
+  private readonly verificationCodeRepository: IVerificationCodeRepository;
   private readonly sessionRepository: ISessionRepository;
 
   constructor() {
@@ -49,7 +51,7 @@ export class AuthController {
         res,
         user,
         HTTPSTATUS.CREATED,
-        'User Registered successsfully'
+        'User Registered successfully'
       );
     }
   );
@@ -58,12 +60,12 @@ export class AuthController {
     async (req: Request<{}, {}, TEmailVerificationCodeBody>, res: Response) => {
       const code = req.body.code;
 
-      const verifiyEmailUseCase = new VerifyEmailUseCase(
+      const verifyEmailUseCase = new VerifyEmailUseCase(
         this.userRepository,
         this.verificationCodeRepository
       );
 
-      const user = await verifiyEmailUseCase.execute(code);
+      const user = await verifyEmailUseCase.execute(code);
 
       ResponseHandler.success(
         res,
@@ -197,6 +199,37 @@ export class AuthController {
         refreshToken,
         HTTPSTATUS.OK,
         'User Logged in successfully'
+      );
+    }
+  );
+
+  public googleOAuthCallback = asyncHandler(
+    async (req: Request, res: Response) => {
+      // req.user is set by passport after successful Google OAuth
+      const userId = req.user?.id!;
+
+      const googleAuthUseCase = new GoogleAuthUseCase(
+        this.userRepository,
+        this.sessionRepository
+      );
+
+      const userAgent = req.headers['user-agent'] || 'Google-OAuth';
+
+      const { mfaRequired, accessToken, refreshToken, user } =
+        await googleAuthUseCase.execute(userId, userAgent);
+
+      if (mfaRequired) {
+        return ResponseHandler.redirect(
+          res,
+          `${EnvConfig.APP_ORIGIN}/verify-mfa?email=${user.email}`
+        );
+      }
+
+      ResponseHandler.redirectWithTokens(
+        res,
+        EnvConfig.APP_ORIGIN,
+        accessToken,
+        refreshToken
       );
     }
   );

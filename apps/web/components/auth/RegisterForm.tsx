@@ -28,16 +28,16 @@ import {
 } from '@algocanvas/ui/components/input-group';
 import { ArrowRight, Eye, EyeOff, Loader, MailCheckIcon } from 'lucide-react';
 import { Button } from '@algocanvas/ui/components/button';
-import { GoogleLogoIcon } from '@phosphor-icons/react';
 import Link from 'next/link';
 import { useMutation } from '@tanstack/react-query';
-import { registerUserMutaionFn } from '@/lib/apis/auth';
+import { registerUserMutationFn } from '@/lib/apis/auth';
 import { toast } from 'sonner';
+import GoogleLogin from './GoogleLogin';
 
 const RegisterForm = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [isSubmited, setIsSubmited] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
 
   const form = useForm<z.infer<typeof registerSchema>>({
     resolver: zodResolver(registerSchema),
@@ -50,7 +50,7 @@ const RegisterForm = () => {
   });
 
   const { mutate, isPending } = useMutation({
-    mutationFn: registerUserMutaionFn
+    mutationFn: registerUserMutationFn
   });
 
   const onSubmit = (data: z.infer<typeof registerSchema>) => {
@@ -61,7 +61,7 @@ const RegisterForm = () => {
         toast.success('Registration successful 🎉', {
           description: "We,'ve send a verification link to your email"
         });
-        setIsSubmited(true);
+        setIsSubmitted(true);
       },
       onError: (error) => {
         toast.error('Error', { description: error.message });
@@ -71,7 +71,7 @@ const RegisterForm = () => {
 
   return (
     <div className='flex flex-col gap-6'>
-      {!isSubmited ? (
+      {!isSubmitted ? (
         <Card className='bg-brand-surface'>
           <CardHeader>
             <CardTitle>Login to your account</CardTitle>
@@ -197,15 +197,7 @@ const RegisterForm = () => {
                 {isPending && <Loader className='animate-spin' />}
                 Create Account
               </Button>
-              <Button
-                variant='outline'
-                onClick={() => {
-                  toast.success('Comming Soon!');
-                }}
-              >
-                <GoogleLogoIcon />
-                Login With Google
-              </Button>
+              <GoogleLogin />
               <FieldDescription className='text-center'>
                 Already have an account? <Link href='/sign-in'>Sign in</Link>
               </FieldDescription>
