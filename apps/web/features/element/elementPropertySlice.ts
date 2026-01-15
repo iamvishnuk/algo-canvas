@@ -1,21 +1,19 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import {
-  ArrowProperty,
-  CircleProperty,
-  LineProperty,
-  PathProperty,
-  PropertyKey,
-  RectProperty,
-  TextProperty
+  StrokeableProps,
+  FillableProps,
+  PathProps,
+  TextProps,
+  PropertyKey
 } from '@algocanvas/types/canvas';
 
 export interface IElementPropertyState {
-  line: LineProperty;
-  rectangle: RectProperty;
-  circle: CircleProperty;
-  arrow: ArrowProperty;
-  draw: PathProperty;
-  text: TextProperty;
+  line: StrokeableProps;
+  rectangle: StrokeableProps & FillableProps;
+  circle: StrokeableProps & FillableProps;
+  arrow: StrokeableProps & FillableProps;
+  draw: PathProps;
+  text: TextProps;
 }
 
 const initialState: IElementPropertyState = {

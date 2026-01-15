@@ -3,8 +3,8 @@ import { resizeElement } from '@/lib/canvas/utils';
 import { createSlice, current, type PayloadAction } from '@reduxjs/toolkit';
 import {
   BackgroundType,
-  DrawElements,
-  DrawPoint,
+  CanvasElement,
+  Point,
   PropertyKey,
   Tool,
   TreeNode,
@@ -18,7 +18,7 @@ export interface ICanvasState {
     width: number;
     height: number;
   };
-  elements: DrawElements[];
+  elements: CanvasElement[];
   selectedElementId: string | null;
   selectedElementIds: string[];
   drawingState: {
@@ -32,10 +32,10 @@ export interface ICanvasState {
   showTreeDialog: boolean;
   showLinkedListDialog: boolean;
   history: {
-    past: DrawElements[][];
-    future: DrawElements[][];
+    past: CanvasElement[][];
+    future: CanvasElement[][];
   };
-  clipBoard: DrawElements[];
+  clipBoard: CanvasElement[];
 }
 
 const initialState: ICanvasState = {
@@ -118,7 +118,7 @@ const canvasSlice = createSlice({
     },
     addElements: (
       state,
-      action: PayloadAction<{ element: DrawElements; replaceIndex?: number }>
+      action: PayloadAction<{ element: CanvasElement; replaceIndex?: number }>
     ) => {
       saveToHistory(state);
       if (action.payload.replaceIndex !== undefined) {
@@ -193,7 +193,7 @@ const canvasSlice = createSlice({
       action: PayloadAction<{
         x: number;
         y: number;
-        offset: DrawPoint;
+        offset: Point;
         isStart?: boolean;
       }>
     ) => {
@@ -278,7 +278,7 @@ const canvasSlice = createSlice({
       state.selectedElementIds = [];
     },
     addToClipBoard: (state) => {
-      const elementsToCopy: DrawElements[] = [];
+      const elementsToCopy: CanvasElement[] = [];
       if (state.selectedElementId !== null) {
         const element = state.elements.find(
           (el) => el.id === state.selectedElementId
@@ -327,7 +327,7 @@ const canvasSlice = createSlice({
       }
     },
     duplicateElements: (state) => {
-      const elementsToDuplicate: DrawElements[] = [];
+      const elementsToDuplicate: CanvasElement[] = [];
 
       if (state.selectedElementId !== null) {
         const element = state.elements.find(

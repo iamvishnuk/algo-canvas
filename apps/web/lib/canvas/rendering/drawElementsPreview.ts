@@ -1,9 +1,9 @@
 import {
-  DrawArrow,
-  DrawCircle,
-  DrawLine,
-  DrawPath,
-  DrawRect
+  ArrowElement,
+  CircleElement,
+  LineElement,
+  PathElement,
+  RectElement
 } from '@algocanvas/types/canvas';
 import {
   drawArrow,
@@ -16,15 +16,15 @@ import {
 export const drawElementsPreview = (
   ctx: CanvasRenderingContext2D,
   scale: number,
-  currentPath: Omit<DrawPath, 'type'> | null,
-  currentCircle: Omit<DrawCircle, 'type'> | null,
-  currentRect: Omit<DrawRect, 'type'> | null,
-  currentLine: Omit<DrawLine, 'type'> | null,
-  currentArrow: Omit<DrawArrow, 'type'> | null
+  currentPath: Omit<PathElement, 'type'> | null,
+  currentCircle: Omit<CircleElement, 'type'> | null,
+  currentRect: Omit<RectElement, 'type'> | null,
+  currentLine: Omit<LineElement, 'type'> | null,
+  currentArrow: Omit<ArrowElement, 'type'> | null
 ) => {
   // Draw current path being drawn
   if (currentPath) {
-    drawPath(ctx, currentPath as DrawPath, scale);
+    drawPath(ctx, currentPath as PathElement, scale);
   }
 
   // Draw current circle being drawn

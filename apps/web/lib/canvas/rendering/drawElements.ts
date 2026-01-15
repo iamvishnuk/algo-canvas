@@ -1,4 +1,4 @@
-import { DrawElements } from '@algocanvas/types/canvas';
+import { CanvasElement } from '@algocanvas/types/canvas';
 import {
   drawArray,
   drawArrow,
@@ -13,7 +13,7 @@ import {
 
 export const drawElements = (
   ctx: CanvasRenderingContext2D,
-  elements: DrawElements[],
+  elements: CanvasElement[],
   scale: number,
   skipIndex?: number | null
 ) => {

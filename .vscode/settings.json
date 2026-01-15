@@ -8,6 +8,7 @@
     "levelorder",
     "HTTPSTATUS",
     "qrcode",
-    "otpauthURL"
+    "otpauthURL",
+    "StrokeableProps"
   ]  
 }

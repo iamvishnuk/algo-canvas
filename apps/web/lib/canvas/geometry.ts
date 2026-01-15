@@ -1,7 +1,7 @@
 import {
-  DrawElements,
-  DrawPoint,
-  DrawRect,
+  CanvasElement,
+  Point,
+  RectElement,
   TreeNode
 } from '@algocanvas/types/canvas';
 import { getElementBounds } from './utils';
@@ -10,9 +10,9 @@ import { LINKED_LIST_CONSTANTS } from '../data-structures/linked-list';
 import { getDepth, TREE_CONSTANTS } from '../data-structures/tree';
 
 export const distanceFromPointToLineSegment = (
-  point: DrawPoint,
-  lineStart: DrawPoint,
-  lineEnd: DrawPoint
+  point: Point,
+  lineStart: Point,
+  lineEnd: Point
 ): number => {
   const lineDx = lineEnd.x - lineStart.x;
   const lineDy = lineEnd.y - lineStart.y;
@@ -39,8 +39,8 @@ export const distanceFromPointToLineSegment = (
 };
 
 export const isPointNearPath = (
-  point: DrawPoint,
-  points: DrawPoint[],
+  point: Point,
+  points: Point[],
   tolerance: number,
   offsetX: number,
   offsetY: number
@@ -62,8 +62,8 @@ export const isPointNearPath = (
 };
 
 export const isPointNearRectangle = (
-  point: DrawPoint,
-  rect: DrawRect,
+  point: Point,
+  rect: RectElement,
   tolerance: number
 ): boolean => {
   const angle = rect.rotate ?? 0;
@@ -106,7 +106,7 @@ export const isPointNearRectangle = (
 };
 
 export const isCursorOnArray = (
-  point: DrawPoint,
+  point: Point,
   x: number,
   y: number,
   length: number,
@@ -120,7 +120,7 @@ export const isCursorOnArray = (
   const top = y;
   const bottom = y + height;
 
-  const edges: [DrawPoint, DrawPoint][] = [
+  const edges: [Point, Point][] = [
     [
       { x: left, y: top },
       { x: right, y: top }
@@ -151,7 +151,7 @@ export const isCursorOnArray = (
 };
 
 export const isCursorOnLinkedList = (
-  point: DrawPoint,
+  point: Point,
   x: number,
   y: number,
   length: number
@@ -174,7 +174,7 @@ export const isCursorOnLinkedList = (
 };
 
 export const cursorOnTree = (
-  point: DrawPoint,
+  point: Point,
   x: number,
   y: number,
   root: TreeNode,
@@ -256,7 +256,7 @@ export const cursorOnTree = (
 };
 
 export const isCursorOnTree = (
-  point: DrawPoint,
+  point: Point,
   x: number,
   y: number,
   root: TreeNode,
@@ -272,7 +272,7 @@ export const isCursorOnTree = (
 };
 
 export const isElementInSelectionArea = (
-  element: DrawElements,
+  element: CanvasElement,
   selectionArea: { minX: number; minY: number; maxX: number; maxY: number }
 ) => {
   const bounds = getElementBounds(element);

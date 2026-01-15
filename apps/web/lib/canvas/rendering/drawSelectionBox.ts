@@ -1,4 +1,4 @@
-import { DrawElements, DrawPoint, ViewState } from '@algocanvas/types/canvas';
+import { CanvasElement, Point, ViewState } from '@algocanvas/types/canvas';
 import { getElementBounds } from '../utils';
 
 export const rotatePoint = (
@@ -20,12 +20,12 @@ export const rotatePoint = (
 export const drawSelectionBox = (
   ctx: CanvasRenderingContext2D,
   selectedElementId: string | null,
-  elements: DrawElements[],
+  elements: CanvasElement[],
   view: ViewState,
   selectedElementIds: string[],
   isAreaSelecting: boolean,
-  areaSelectionStart: DrawPoint | null,
-  areaSelectionEnd: DrawPoint | null
+  areaSelectionStart: Point | null,
+  areaSelectionEnd: Point | null
 ) => {
   // ================= SINGLE SELECTION =================
   if (selectedElementId !== null) {

@@ -7,12 +7,12 @@ import React, {
   Activity
 } from 'react';
 import {
-  DrawArrow,
-  DrawCircle,
-  DrawLine,
-  DrawPath,
-  DrawPoint,
-  DrawRect
+  ArrowElement,
+  CircleElement,
+  LineElement,
+  PathElement,
+  Point,
+  RectElement
 } from '@algocanvas/types';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import BottomToolBar from './BottomToolBar';
@@ -78,45 +78,47 @@ const CanvasArea = () => {
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [isDrawing, setIsDrawing] = useState(false);
-  const [currentPath, setCurrentPath] = useState<Omit<DrawPath, 'type'> | null>(
-    null
-  );
+  const [currentPath, setCurrentPath] = useState<Omit<
+    PathElement,
+    'type'
+  > | null>(null);
   const [cursorOnElement, setCursorOnElement] = useState<boolean>(false);
 
   // Area Selecting states
   const [isAreaSelecting, setIsAreasSelecting] = useState<boolean>(false);
-  const [areaSelectionStart, setAreaSelectionStart] =
-    useState<DrawPoint | null>(null);
-  const [areaSelectionEnd, setAreaSelectionEnd] = useState<DrawPoint | null>(
+  const [areaSelectionStart, setAreaSelectionStart] = useState<Point | null>(
     null
   );
+  const [areaSelectionEnd, setAreaSelectionEnd] = useState<Point | null>(null);
 
-  const [circleStart, setCircleStart] = useState<DrawPoint | null>(null);
+  const [circleStart, setCircleStart] = useState<Point | null>(null);
   const [currentCircle, setCurrentCircle] = useState<Omit<
-    DrawCircle,
+    CircleElement,
     'type'
   > | null>(null);
 
-  const [rectStart, setRectStart] = useState<DrawPoint | null>(null);
-  const [currentRect, setCurrentRect] = useState<Omit<DrawRect, 'type'> | null>(
-    null
-  );
+  const [rectStart, setRectStart] = useState<Point | null>(null);
+  const [currentRect, setCurrentRect] = useState<Omit<
+    RectElement,
+    'type'
+  > | null>(null);
 
-  const [lineStart, setLineStart] = useState<DrawPoint | null>(null);
-  const [currentLine, setCurrentLine] = useState<Omit<DrawLine, 'type'> | null>(
-    null
-  );
+  const [lineStart, setLineStart] = useState<Point | null>(null);
+  const [currentLine, setCurrentLine] = useState<Omit<
+    LineElement,
+    'type'
+  > | null>(null);
 
   // Drawing Arrows
-  const [arrowStart, setArrowStart] = useState<DrawPoint | null>(null);
+  const [arrowStart, setArrowStart] = useState<Point | null>(null);
   const [currentArrow, setCurrentArrow] = useState<Omit<
-    DrawArrow,
+    ArrowElement,
     'type'
   > | null>(null);
 
   // Dragging Elements
   const [isDraggingElements, setIsDraggingElements] = useState(false);
-  const [dragElementOffset, setDragElementOffset] = useState<DrawPoint>({
+  const [dragElementOffset, setDragElementOffset] = useState<Point>({
     x: 0,
     y: 0
   });
@@ -125,16 +127,16 @@ const CanvasArea = () => {
   );
   const [isFirstDragMove, setIsFirstDragMove] = useState(false);
   // Multi-element drag state
-  const [multiDragOffsets, setMultiDragOffsets] = useState<
-    Map<string, DrawPoint>
-  >(new Map());
+  const [multiDragOffsets, setMultiDragOffsets] = useState<Map<string, Point>>(
+    new Map()
+  );
   const [isDraggingMultiple, setIsDraggingMultiple] = useState(false);
 
   // Rotation State
   const [isRotating, setIsRotating] = useState(false);
   const [rotationState, setRotationState] = useState<{
     id: string;
-    center: DrawPoint;
+    center: Point;
     startAngle: number;
     initialRotation: number;
   } | null>(null);
@@ -146,7 +148,7 @@ const CanvasArea = () => {
     id: string;
     handle: ResizeHandle;
     initialBounds: { minX: number; minY: number; maxX: number; maxY: number };
-    anchorPoint: DrawPoint;
+    anchorPoint: Point;
   } | null>(null);
   const [hoveredHandle, setHoveredHandle] = useState<ResizeHandle>(null);
   const [isFirstResizeMove, setIsFirstResizeMove] = useState(false);
@@ -155,7 +157,7 @@ const CanvasArea = () => {
   const [resizeKey, setResizeKey] = useState(0);
 
   const [isTextInputVisible, setIsTextInputVisible] = useState(false);
-  const [textInputPosition, setTextInputPosition] = useState<DrawPoint | null>(
+  const [textInputPosition, setTextInputPosition] = useState<Point | null>(
     null
   );
   const [textInputValue, setTextInputValue] = useState('');
@@ -408,7 +410,7 @@ const CanvasArea = () => {
         );
         if (combinedBounds && isPointInBounds(worldPos, combinedBounds)) {
           // Start dragging selected elements
-          const offsets = new Map<string, DrawPoint>();
+          const offsets = new Map<string, Point>();
           selectedElementIds.forEach((id) => {
             const el = elements.find((el) => el.id === id);
             if (el) {

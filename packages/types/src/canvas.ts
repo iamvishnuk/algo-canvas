@@ -1,7 +1,11 @@
-// Shared interface for unique element identification
-export interface IdentifiableElement {
+/* =========================
+   Core Shared Types
+========================= */
+
+export interface Identifiable {
   id: string;
 }
+
 export type ViewState = {
   scale: number;
   offsetX: number;
@@ -10,93 +14,98 @@ export type ViewState = {
 
 export type StrokePattern = 'solid' | 'dashed' | 'dotted';
 
-export type DrawPoint = {
+export type Point = {
   x: number;
   y: number;
 };
 
-// Base interface for all element properties
-export interface BaseElementProperty {
+/* =========================
+   Base Element Properties
+========================= */
+
+export interface BaseElementProps {
   rotate: number;
 }
 
-// Interface for elements that can be stroked
-export interface StrokeableProperty extends BaseElementProperty {
+export interface StrokeableProps extends BaseElementProps {
   strokeStyle: string;
   lineWidth: number;
   strokePattern: StrokePattern;
 }
 
-// Interface for elements that can be filled
-export interface FillableProperty {
+export interface FillableProps {
   fillStyle: string;
 }
 
-export type PathProperty = StrokeableProperty & {
+export type PathProps = StrokeableProps & {
   lineCap: CanvasLineCap;
   lineJoin: CanvasLineJoin;
 };
 
-export interface DrawPath extends PathProperty {
+export interface TextProps {
+  fontSize: number;
+  fontFamily: string;
+  color: string;
+  rotate: number;
+}
+
+/* =========================
+   Canvas Elements
+========================= */
+
+export interface PathElement extends PathProps, Identifiable {
   type: 'draw';
   x: number;
   y: number;
-  points: DrawPoint[];
-  id: string;
+  points: Point[];
 }
 
-export type CircleProperty = StrokeableProperty & FillableProperty;
-
-export interface DrawCircle extends CircleProperty {
+export interface CircleElement
+  extends StrokeableProps, FillableProps, Identifiable {
   type: 'circle';
   x: number;
   y: number;
   radiusX: number;
   radiusY: number;
-  id: string;
 }
 
-export type RectProperty = StrokeableProperty & FillableProperty;
-
-export interface DrawRect extends RectProperty {
+export interface RectElement
+  extends StrokeableProps, FillableProps, Identifiable {
   type: 'rectangle';
   x: number;
   y: number;
   width: number;
   height: number;
-  id: string;
 }
 
-export type LineProperty = StrokeableProperty;
-
-export interface DrawLine extends LineProperty {
+export interface LineElement extends StrokeableProps, Identifiable {
   type: 'line';
   x: number;
   y: number;
   endX: number;
   endY: number;
-  id: string;
 }
 
-export type ArrowProperty = StrokeableProperty & FillableProperty;
-
-export interface DrawArrow extends ArrowProperty {
+export interface ArrowElement
+  extends StrokeableProps, FillableProps, Identifiable {
   type: 'arrow';
   x: number;
   y: number;
   endX: number;
   endY: number;
-  id: string;
 }
 
-export type DrawArray = {
+export interface ArrayElement extends Identifiable {
   type: 'array';
   x: number;
   y: number;
   value: string[];
   rotate: number;
-  id: string;
-};
+}
+
+/* =========================
+   Tree / List Structures
+========================= */
 
 export type TreeNode = {
   value: string;
@@ -104,38 +113,48 @@ export type TreeNode = {
   right: TreeNode | null;
 };
 
-export type DrawBinaryTree = {
+export interface BinaryTreeElement extends Identifiable {
   type: 'binary-tree';
   x: number;
   y: number;
   root: TreeNode;
   rotate: number;
-  id: string;
-};
+}
 
-export type DrawLinkedList = {
+export interface LinkedListElement extends Identifiable {
   type: 'linked-list';
   x: number;
   y: number;
   values: string[];
   rotate: number;
-  id: string;
-};
+}
 
-export type TextProperty = {
-  fontSize: number;
-  fontFamily: string;
-  color: string;
-  rotate: number;
-};
-
-export interface DrawText extends TextProperty {
+export interface TextElement extends TextProps, Identifiable {
   type: 'text';
   x: number;
   y: number;
   text: string;
-  id: string;
 }
+
+/* =========================
+   Union Type (IMPORTANT)
+========================= */
+
+export type CanvasElement =
+  | PathElement
+  | CircleElement
+  | RectElement
+  | LineElement
+  | ArrowElement
+  | ArrayElement
+  | BinaryTreeElement
+  | LinkedListElement
+  | TextElement;
+
+/* =========================
+   Editor / UI Types
+========================= */
+
 export type PropertyKey =
   | 'strokeStyle'
   | 'fillStyle'
@@ -147,17 +166,6 @@ export type PropertyKey =
   | 'rotate'
   | 'lineCap'
   | 'lineJoin';
-
-export type DrawElements =
-  | DrawPath
-  | DrawCircle
-  | DrawRect
-  | DrawLine
-  | DrawArrow
-  | DrawArray
-  | DrawBinaryTree
-  | DrawLinkedList
-  | DrawText;
 
 export type Tool =
   | 'move'

@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { DrawElements, DrawPoint } from '@algocanvas/types/canvas';
+import { CanvasElement, Point } from '@algocanvas/types/canvas';
 import { ARRAY_CONSTANTS } from '../data-structures/array';
 import { LINKED_LIST_CONSTANTS } from '../data-structures/linked-list';
 import { getDepth, TREE_CONSTANTS } from '../data-structures/tree';
@@ -35,7 +35,7 @@ export const measureTextWidth = (
   return text.length * fontSize * 0.5;
 };
 
-export const getElementBounds = (element: DrawElements) => {
+export const getElementBounds = (element: CanvasElement) => {
   if (element.type === 'draw') {
     const xs = element.points.map((p) => element.x + p.x);
     const ys = element.points.map((p) => element.y + p.y);
@@ -172,7 +172,7 @@ export type ElementBounds = {
  * Get combined bounds of multiple elements
  */
 export const getCombinedBounds = (
-  elements: DrawElements[],
+  elements: CanvasElement[],
   selectedElementIds: string[],
   padding: number = 0
 ): ElementBounds | null => {
@@ -210,7 +210,7 @@ export const getCombinedBounds = (
  * Check if a point is inside bounds
  */
 export const isPointInBounds = (
-  point: DrawPoint,
+  point: Point,
   bounds: ElementBounds
 ): boolean => {
   return (
@@ -226,7 +226,7 @@ export const isPointInBounds = (
  * Mutates the element in place
  */
 export const resizeElement = (
-  element: DrawElements,
+  element: CanvasElement,
   newBounds: ElementBounds
 ): void => {
   const { minX, minY, maxX, maxY } = newBounds;
@@ -322,5 +322,35 @@ export const resizeElement = (
       element.x = minX;
       element.y = minY;
       break;
+  }
+};
+
+export const getElementProperty = <K extends PropertyKey>(
+  element: CanvasElement,
+  key: K
+): string | number | undefined => {
+  switch (key) {
+    case 'strokeStyle':
+      return 'strokeStyle' in element ? element.strokeStyle : undefined;
+    case 'fillStyle':
+      return 'fillStyle' in element ? element.fillStyle : undefined;
+    case 'lineWidth':
+      return 'lineWidth' in element ? element.lineWidth : undefined;
+    case 'strokePattern':
+      return 'strokePattern' in element ? element.strokePattern : undefined;
+    case 'color':
+      return 'color' in element ? element.color : undefined;
+    case 'fontFamily':
+      return 'fontFamily' in element ? element.fontFamily : undefined;
+    case 'fontSize':
+      return 'fontSize' in element ? element.fontSize : undefined;
+    case 'rotate':
+      return 'rotate' in element ? element.rotate : undefined;
+    case 'lineCap':
+      return 'lineCap' in element ? element.lineCap : undefined;
+    case 'lineJoin':
+      return 'lineJoin' in element ? element.lineJoin : undefined;
+    default:
+      return undefined;
   }
 };

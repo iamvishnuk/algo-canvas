@@ -8,6 +8,7 @@ import {
   updateElementDefaultProperty,
   type IElementPropertyState
 } from '@/features/element/elementPropertySlice';
+import { getElementProperty } from '@/lib/canvas/utils';
 
 const STROKE_PATTERNS: {
   value: StrokePattern;
@@ -108,20 +109,20 @@ const ElementPropertyPanel = () => {
 
   // Helper to safely get property value - prefer selected element's value, fallback to defaults
   const getPropertyValue = (key: PropertyKey, defaultValue: string): string => {
-    // If an element is selected, use its actual property value
-    if (selectedElement && key in selectedElement) {
-      const value = (selectedElement as Record<string, unknown>)[key];
+    if (selectedElement) {
+      const value = getElementProperty(selectedElement, key);
       if (typeof value === 'string') {
         return value;
       }
     }
-    // Fallback to default properties from elementProperty slice
+
     if (key in currentProps) {
-      return (
-        ((currentProps as Record<string, unknown>)[key] as string) ??
-        defaultValue
-      );
+      const value = (currentProps as any)[key];
+      if (typeof value === 'string') {
+        return value;
+      }
     }
+
     return defaultValue;
   };
 
@@ -130,14 +131,15 @@ const ElementPropertyPanel = () => {
     key: PropertyKey,
     defaultValue: number
   ): number => {
-    if (selectedElement && key in selectedElement) {
-      const value = (selectedElement as Record<string, unknown>)[key];
+    if (selectedElement) {
+      const value = getElementProperty(selectedElement, key);
       if (typeof value === 'number') {
         return value;
       }
     }
+
     if (key in currentProps) {
-      const value = (currentProps as Record<string, unknown>)[key];
+      const value = (currentProps as any)[key];
       if (typeof value === 'number') {
         return value;
       }

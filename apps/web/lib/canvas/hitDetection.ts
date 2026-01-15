@@ -1,4 +1,4 @@
-import { DrawElements, DrawPoint, ViewState } from '@algocanvas/types/canvas';
+import { CanvasElement, Point, ViewState } from '@algocanvas/types/canvas';
 import {
   distanceFromPointToLineSegment,
   isCursorOnArray,
@@ -21,8 +21,8 @@ export type ResizeHandle =
  * Get the resize handle at the given world position for a selected element
  */
 export function getResizeHandle(
-  worldPos: DrawPoint,
-  element: DrawElements,
+  worldPos: Point,
+  element: CanvasElement,
   view: ViewState
 ): ResizeHandle {
   const bounds = getElementBounds(element);
@@ -71,8 +71,8 @@ export function getResizeHandle(
  * Check if a point hits a specific canvas element
  */
 export function isElementHit(
-  worldPos: DrawPoint,
-  element: DrawElements,
+  worldPos: Point,
+  element: CanvasElement,
   hitTolerance: number
 ): boolean {
   switch (element.type) {
@@ -166,8 +166,8 @@ export function isElementHit(
  * Returns the index of the element or null if no element is found
  */
 export function findElementAtPosition(
-  worldPos: DrawPoint,
-  elements: DrawElements[],
+  worldPos: Point,
+  elements: CanvasElement[],
   hitTolerance: number
 ): number | null {
   // Check elements in reverse order (top to bottom)

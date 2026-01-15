@@ -2,8 +2,8 @@ import { ARRAY_CONSTANTS } from '@/lib/data-structures/array';
 import { LINKED_LIST_CONSTANTS } from '@/lib/data-structures/linked-list';
 import { getDepth, TREE_CONSTANTS } from '@/lib/data-structures/tree';
 import {
-  DrawPath,
-  DrawText,
+  PathElement,
+  TextElement,
   StrokePattern,
   TreeNode
 } from '@algocanvas/types/canvas';
@@ -149,7 +149,7 @@ export const drawRectangle = (
 
 export const drawPath = (
   ctx: CanvasRenderingContext2D,
-  element: DrawPath,
+  element: PathElement,
   scale: number
 ) => {
   const {
@@ -406,7 +406,10 @@ export const drawLinkedList = (
   });
 };
 
-export const drawText = (ctx: CanvasRenderingContext2D, element: DrawText) => {
+export const drawText = (
+  ctx: CanvasRenderingContext2D,
+  element: TextElement
+) => {
   ctx.save();
 
   ctx.font = `${element.fontSize}px ${element.fontFamily}`;
