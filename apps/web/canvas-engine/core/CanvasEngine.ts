@@ -9,7 +9,12 @@ import {
   ViewState
 } from '@algocanvas/types/canvas';
 import { ElementDefaultProperty } from '@/features/element/elementPropertySlice';
-import { generateUUID } from '@/lib/canvas/utils';
+import {
+  ElementBounds,
+  generateUUID,
+  getElementBounds,
+  isPointInBounds
+} from '@/lib/canvas/utils';
 import { findElementAtPosition } from '@/lib/canvas/hitDetection';
 import { isElementInSelectionArea } from '@/lib/canvas/geometry';
 
@@ -20,6 +25,14 @@ export class CanvasEngine {
   private isPanning: boolean = false;
   private lastPanPosition: Point | null = null;
   private hitTolerance: number = 6;
+
+  private isDraggingElements: boolean = false;
+  private isDraggingMultipleElements: boolean = false;
+  private isFirstDragMove: boolean = false;
+
+  private draggingElementId: string | null = null;
+  private dragElementOffset: Point = { x: 0, y: 0 };
+  private multiDragOffsets: Map<string, Point> = new Map();
 
   constructor(canvas: HTMLCanvasElement) {
     this.store = new CanvasStore();
@@ -73,7 +86,7 @@ export class CanvasEngine {
       this.startLine(position, elementProperty);
     }
     if (tool === 'selection') {
-      this.selectOrStartArea(position);
+      this.startSelectionInteraction(position);
     }
   }
 
@@ -97,7 +110,9 @@ export class CanvasEngine {
       this.updateLine(position);
     }
     if (tool === 'selection') {
+      this.dragSelection(position);
       this.updateAreaSelection(position);
+      return;
     }
   }
 
@@ -122,6 +137,8 @@ export class CanvasEngine {
     }
     if (tool === 'selection') {
       this.finishAreaSelection();
+      this.endSelectionInteraction();
+      return;
     }
   }
 
@@ -506,7 +523,6 @@ export class CanvasEngine {
   }
 
   updateTextDraft(content: string) {
-    console.log('Updating text draft to', content);
     if (!this.store.textDraft) return;
 
     this.store.textDraft = {
@@ -682,21 +698,183 @@ export class CanvasEngine {
     const minY = Math.min(areaSelectionStart.y, areaSelectionEnd.y);
     const maxY = Math.max(areaSelectionStart.y, areaSelectionEnd.y);
 
-    const selectedId: Set<string> = new Set();
+    const selectedIds: string[] = [];
 
-    for (const element of this.store.elements.values()) {
-      if (isElementInSelectionArea(element, { minX, minY, maxX, maxY })) {
-        selectedId.add(element.id);
+    for (const el of this.store.elements.values()) {
+      if (isElementInSelectionArea(el, { minX, minY, maxX, maxY })) {
+        selectedIds.push(el.id);
       }
     }
 
-    this.store.selectedElementIds = selectedId;
-    this.store.selectedElementId =
-      selectedId.size === 1 ? [...selectedId][0]! : null;
+    // ✅ SINGLE SELECTION
+    if (selectedIds.length === 1) {
+      this.store.selectedElementId = selectedIds[0]!;
+      this.store.selectedElementIds.clear();
+    }
+    // ✅ MULTI SELECTION
+    else if (selectedIds.length > 1) {
+      this.store.selectedElementId = null;
+      this.store.selectedElementIds = new Set(selectedIds);
+    }
+    // ✅ NOTHING SELECTED
+    else {
+      this.store.selectedElementId = null;
+      this.store.selectedElementIds.clear();
+    }
 
     this.store.isAreaSelecting = false;
     this.store.areaSelectionStart = null;
     this.store.areaSelectionEnd = null;
+
     this.store.commit();
+  }
+
+  getCombinedBounds(elementIds: string[], padding: number = 0) {
+    let minX = Infinity;
+    let minY = Infinity;
+    let maxX = -Infinity;
+    let maxY = -Infinity;
+
+    for (const id of elementIds) {
+      const element = this.store.elements.get(id);
+      if (!element) continue;
+
+      const bounds = getElementBounds(element);
+      if (!bounds) continue;
+
+      minX = Math.min(minX, bounds.minX);
+      minY = Math.min(minY, bounds.minY);
+      maxX = Math.max(maxX, bounds.maxX);
+      maxY = Math.max(maxY, bounds.maxY);
+    }
+
+    if (minX === Infinity) return null;
+
+    return {
+      minX: minX - padding,
+      minY: minY - padding,
+      maxX: maxX + padding,
+      maxY: maxY + padding
+    };
+  }
+
+  startSelectionInteraction(screen: Point) {
+    const worldPos = this.screenToWorld(screen.x, screen.y);
+
+    const HIT = this.hitTolerance / this.store.view.scale;
+    const PAD = 10 / this.store.view.scale;
+
+    const elements = Array.from(this.store.elements.values());
+
+    // ===================== MULTI SELECTION DRAG =====================
+    if (this.store.selectedElementIds.size > 0) {
+      const bounds = this.getCombinedBounds(
+        [...this.store.selectedElementIds],
+        PAD
+      );
+
+      if (bounds && isPointInBounds(worldPos, bounds)) {
+        this.multiDragOffsets.clear();
+
+        for (const id of this.store.selectedElementIds) {
+          const el = this.store.elements.get(id);
+          if (el) {
+            this.multiDragOffsets.set(id, {
+              x: worldPos.x - el.x,
+              y: worldPos.y - el.y
+            });
+          }
+        }
+
+        this.isDraggingElements = true;
+        this.isDraggingMultipleElements =
+          this.store.selectedElementIds.size > 1;
+        this.isFirstDragMove = true;
+
+        if (this.store.selectedElementIds.size === 1) {
+          this.draggingElementId = [...this.store.selectedElementIds][0]!;
+        }
+
+        return;
+      }
+    }
+
+    // ===================== SINGLE ELEMENT HIT =====================
+    const index = findElementAtPosition(worldPos, elements, HIT);
+    if (index !== null) {
+      const el = elements[index];
+      if (!el) return;
+
+      this.store.selectedElementId = el.id;
+      this.store.selectedElementIds.clear();
+
+      this.draggingElementId = el.id;
+      this.dragElementOffset = {
+        x: worldPos.x - el.x,
+        y: worldPos.y - el.y
+      };
+
+      this.isDraggingElements = true;
+      this.isDraggingMultipleElements = false;
+      this.isFirstDragMove = true;
+
+      this.store.commit();
+      return;
+    }
+
+    // ===================== EMPTY SPACE =====================
+    this.clearSelection();
+
+    this.store.isAreaSelecting = true;
+    this.store.areaSelectionStart = worldPos;
+    this.store.areaSelectionEnd = worldPos;
+    this.store.commit();
+  }
+
+  dragSelection(screen: Point) {
+    if (!this.isDraggingElements) return;
+
+    const worldPos = this.screenToWorld(screen.x, screen.y);
+
+    // MULTI DRAG
+    if (
+      this.isDraggingMultipleElements &&
+      this.store.selectedElementIds.size > 1
+    ) {
+      for (const id of this.store.selectedElementIds) {
+        const offset = this.multiDragOffsets.get(id);
+        const el = this.store.elements.get(id);
+        if (!offset || !el) continue;
+
+        this.store.elements.set(id, {
+          ...el,
+          x: worldPos.x - offset.x,
+          y: worldPos.y - offset.y
+        });
+      }
+    }
+
+    // SINGLE DRAG
+    else if (this.draggingElementId) {
+      const el = this.store.elements.get(this.draggingElementId);
+      if (!el) return;
+
+      this.store.elements.set(el.id, {
+        ...el,
+        x: worldPos.x - this.dragElementOffset.x,
+        y: worldPos.y - this.dragElementOffset.y
+      });
+    }
+
+    this.isFirstDragMove = false;
+    this.store.commit();
+  }
+
+  endSelectionInteraction() {
+    this.isDraggingElements = false;
+    this.isDraggingMultipleElements = false;
+    this.isFirstDragMove = false;
+    this.draggingElementId = null;
+    this.multiDragOffsets.clear();
   }
 }

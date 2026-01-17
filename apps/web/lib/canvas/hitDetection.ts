@@ -122,7 +122,7 @@ export function isElementHit(
         worldPos,
         element.x,
         element.y,
-        element.value.length,
+        element.values.length,
         hitTolerance
       );
 

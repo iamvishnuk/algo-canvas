@@ -81,11 +81,11 @@ export const getElementBounds = (element: CanvasElement) => {
     return {
       minX: Math.min(
         element.x,
-        element.x + element.value.length * ARRAY_CONSTANTS.cellWidth
+        element.x + element.values.length * ARRAY_CONSTANTS.cellWidth
       ),
       maxX: Math.max(
         element.x,
-        element.x + element.value.length * ARRAY_CONSTANTS.cellWidth
+        element.x + element.values.length * ARRAY_CONSTANTS.cellWidth
       ),
       minY: Math.min(element.y, element.y + ARRAY_CONSTANTS.cellHeight),
       maxY: Math.max(element.y, element.y + ARRAY_CONSTANTS.cellHeight + 20)
