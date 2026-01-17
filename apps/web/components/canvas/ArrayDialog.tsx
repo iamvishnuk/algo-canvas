@@ -1,4 +1,4 @@
-import { addElements, toggleDialog } from '@/features/canvas/canvasSlice';
+import { toggleDialog } from '@/features/canvas/canvasSlice';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { ArraySchema } from '@/validators';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -19,14 +19,15 @@ import {
 import { Input } from '@algocanvas/ui/components/input';
 import { useForm, Controller } from 'react-hook-form';
 import z from 'zod';
-import { generateUUID } from '@/lib/canvas/utils';
 
-const ArrayDialog = () => {
+type ArrayDialogProps = {
+  addArray: (values: string[]) => void;
+};
+
+const ArrayDialog = ({ addArray }: ArrayDialogProps) => {
   const dispatch = useAppDispatch();
 
-  const { showArrayDialog, view, size } = useAppSelector(
-    (state) => state.canvas
-  );
+  const { showArrayDialog } = useAppSelector((state) => state.canvas);
 
   const form = useForm<z.infer<typeof ArraySchema>>({
     resolver: zodResolver(ArraySchema),
@@ -37,25 +38,12 @@ const ArrayDialog = () => {
 
   const onSubmit = (data: z.infer<typeof ArraySchema>) => {
     const { value } = data;
-    const centerX = (size.width / 2 - view.offsetX) / view.scale;
-    const topY = (100 - view.offsetY) / view.scale;
     const values = value
       .split(',')
       .map((v) => v.trim())
       .filter((v) => v !== '');
 
-    dispatch(
-      addElements({
-        element: {
-          id: generateUUID(),
-          type: 'array',
-          x: centerX - (value.length * 50) / 2,
-          y: topY,
-          value: values,
-          rotate: 0
-        }
-      })
-    );
+    addArray(values);
 
     form.reset();
     dispatch(toggleDialog({ value: 'array' }));

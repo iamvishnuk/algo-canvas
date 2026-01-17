@@ -397,7 +397,7 @@ const canvasSlice = createSlice({
       saveToHistory(state);
 
       if (element.type === 'array') {
-        element.value = action.payload.value as string[];
+        element.values = action.payload.value as string[];
         return;
       }
 

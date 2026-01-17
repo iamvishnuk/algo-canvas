@@ -1,10 +1,4 @@
-import {
-  clearCanvas,
-  handleZoom,
-  resetView,
-  undo,
-  redo
-} from '@/features/canvas/canvasSlice';
+import { clearCanvas, undo, redo } from '@/features/canvas/canvasSlice';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { Button } from '@algocanvas/ui/components/button';
 import {
@@ -14,9 +8,23 @@ import {
 } from '@algocanvas/ui/components/tooltip';
 import { Minus, Plus, Redo2, Trash, Undo2 } from 'lucide-react';
 
-const BottomToolBar = () => {
+type BottomToolBarProps = {
+  zoom: number;
+  resetZoom?: () => void;
+  zoomIn?: () => void;
+  zoomOut?: () => void;
+  clearCanvas?: () => void;
+};
+
+const BottomToolBar = ({
+  zoom,
+  resetZoom,
+  zoomIn,
+  zoomOut,
+  clearCanvas
+}: BottomToolBarProps) => {
   const dispatch = useAppDispatch();
-  const { view, history } = useAppSelector((state) => state.canvas);
+  const { history } = useAppSelector((state) => state.canvas);
 
   return (
     <div className='absolute bottom-4 left-4 flex gap-4'>
@@ -26,7 +34,7 @@ const BottomToolBar = () => {
             <Button
               className='dark:bg-brand-bg dark:hover:bg-brand-primary'
               size='icon'
-              onClick={() => dispatch(handleZoom({ delta: -0.1 }))}
+              onClick={zoomIn}
             >
               <Plus className='dark:text-neutral-400' />
             </Button>
@@ -39,9 +47,9 @@ const BottomToolBar = () => {
           <TooltipTrigger asChild>
             <div
               className='flex cursor-pointer items-center justify-center text-xs'
-              onClick={() => dispatch(resetView())}
+              onClick={resetZoom}
             >
-              {Math.round(view.scale * 100)}%
+              {zoom}%
             </div>
           </TooltipTrigger>
           <TooltipContent side='top'>
@@ -53,7 +61,7 @@ const BottomToolBar = () => {
             <Button
               className='dark:bg-brand-bg dark:hover:bg-brand-primary'
               size='icon'
-              onClick={() => dispatch(handleZoom({ delta: 0.1 }))}
+              onClick={zoomOut}
             >
               <Minus className='dark:text-neutral-400' />
             </Button>
@@ -101,7 +109,7 @@ const BottomToolBar = () => {
             <Button
               className='dark:bg-brand-bg dark:hover:bg-red-800'
               size='icon'
-              onClick={() => dispatch(clearCanvas())}
+              onClick={clearCanvas}
             >
               <Trash className='dark:text-neutral-400' />
             </Button>

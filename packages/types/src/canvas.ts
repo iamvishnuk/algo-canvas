@@ -99,7 +99,7 @@ export interface ArrayElement extends Identifiable {
   type: 'array';
   x: number;
   y: number;
-  value: string[];
+  values: string[];
   rotate: number;
 }
 
@@ -180,3 +180,7 @@ export type Tool =
   | 'text';
 
 export type BackgroundType = 'solid' | 'grid' | 'dots';
+
+export type CanvasElementPatch<T extends CanvasElement> = Partial<
+  Omit<T, 'id' | 'type'>
+>;

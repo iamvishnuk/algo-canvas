@@ -27,6 +27,9 @@ export const drawSelectionBox = (
   areaSelectionStart: Point | null,
   areaSelectionEnd: Point | null
 ) => {
+  console.log('selectedElementId:', selectedElementId);
+  console.log('selectedElementIds:', selectedElementIds);
+
   // ================= SINGLE SELECTION =================
   if (selectedElementId !== null) {
     const element = elements.find((ele) => ele.id === selectedElementId);
@@ -128,6 +131,7 @@ export const drawSelectionBox = (
   if (selectedElementIds.length > 0) {
     selectedElementIds.forEach((id) => {
       const element = elements.find((elem) => elem.id === id);
+      console.log('Multi-select element:', element);
       if (!element) return;
 
       const bounds = getElementBounds(element);

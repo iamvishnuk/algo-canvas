@@ -1,4 +1,4 @@
-import { addElements, toggleDialog } from '@/features/canvas/canvasSlice';
+import { toggleDialog } from '@/features/canvas/canvasSlice';
 import { buildTreeFromArray } from '@/lib/data-structures/tree';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { ArraySchema } from '@/validators';
@@ -21,13 +21,15 @@ import {
 import { Input } from '@algocanvas/ui/components/input';
 import { useForm, Controller } from 'react-hook-form';
 import z from 'zod';
-import { generateUUID } from '@/lib/canvas/utils';
+import { TreeNode } from '@algocanvas/types/canvas';
 
-const TreeDialog = () => {
+type TreeDialogProps = {
+  addTree: (root: TreeNode) => void;
+};
+
+const TreeDialog = ({ addTree }: TreeDialogProps) => {
   const dispatch = useAppDispatch();
-  const { showTreeDialog, view, size } = useAppSelector(
-    (state) => state.canvas
-  );
+  const { showTreeDialog } = useAppSelector((state) => state.canvas);
 
   const form = useForm<z.infer<typeof ArraySchema>>({
     resolver: zodResolver(ArraySchema),
@@ -48,21 +50,7 @@ const TreeDialog = () => {
     const root = buildTreeFromArray(values);
     if (!root) return;
 
-    const centerX = (size.width / 2 - view.offsetX) / view.scale;
-    const topY = (100 - view.offsetY) / view.scale;
-
-    dispatch(
-      addElements({
-        element: {
-          id: generateUUID(),
-          rotate: 0,
-          type: 'binary-tree',
-          x: centerX,
-          y: topY,
-          root
-        }
-      })
-    );
+    addTree(root);
 
     form.reset();
     dispatch(toggleDialog({ value: 'binary-tree' }));

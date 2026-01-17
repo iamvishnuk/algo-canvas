@@ -1,9 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import {
   changeTool,
-  handleZoom,
   removeElements,
-  resetView,
   undo,
   redo,
   addToClipBoard,
@@ -24,32 +22,42 @@ interface KeyboardShortcut {
   description: string;
 }
 
-export const useCanvasKeyboardShortcuts = () => {
+type useCanvasKeyboardShortcutsProps = {
+  zoomIn: () => void;
+  zoomOut: () => void;
+  resetZoom: () => void;
+};
+
+export const useCanvasKeyboardShortcuts = ({
+  zoomIn,
+  zoomOut,
+  resetZoom
+}: useCanvasKeyboardShortcutsProps) => {
   const dispatch = useAppDispatch();
 
   const shortcuts: KeyboardShortcut[] = [
     {
       key: '=',
       modifiers: { ctrl: true },
-      action: () => dispatch(handleZoom({ delta: -0.1 })),
+      action: () => zoomIn(),
       description: 'Zoom in'
     },
     {
       key: '+',
       modifiers: { ctrl: true },
-      action: () => dispatch(handleZoom({ delta: -0.1 })),
+      action: () => zoomIn(),
       description: 'Zoom in'
     },
     {
       key: '-',
       modifiers: { ctrl: true },
-      action: () => dispatch(handleZoom({ delta: 0.1 })),
+      action: () => zoomOut(),
       description: 'Zoom out'
     },
     {
       key: '0',
       modifiers: { ctrl: true },
-      action: () => dispatch(resetView()),
+      action: () => resetZoom(),
       description: 'Reset view'
     },
     {
