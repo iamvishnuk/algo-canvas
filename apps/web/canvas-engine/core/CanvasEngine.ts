@@ -15,7 +15,11 @@ import {
   getElementBounds,
   isPointInBounds
 } from '@/lib/canvas/utils';
-import { findElementAtPosition } from '@/lib/canvas/hitDetection';
+import {
+  findElementAtPosition,
+  getResizeHandle,
+  ResizeHandle
+} from '@/lib/canvas/hitDetection';
 import { isElementInSelectionArea } from '@/lib/canvas/geometry';
 
 export class CanvasEngine {
@@ -26,6 +30,7 @@ export class CanvasEngine {
   private lastPanPosition: Point | null = null;
   private hitTolerance: number = 6;
 
+  // Dragging State
   private isDraggingElements: boolean = false;
   private isDraggingMultipleElements: boolean = false;
   private isFirstDragMove: boolean = false;
@@ -33,6 +38,14 @@ export class CanvasEngine {
   private draggingElementId: string | null = null;
   private dragElementOffset: Point = { x: 0, y: 0 };
   private multiDragOffsets: Map<string, Point> = new Map();
+
+  // Resizing State
+  private isResizing: boolean = false;
+  private resizeHandle: ResizeHandle | null = null;
+  private resizeElementId: string | null = null;
+  private resizeInitialBound: ElementBounds | null = null;
+  private resizeAnchor: Point | null = null;
+  private resizingLineEnd: 'start' | 'end' | null = null;
 
   constructor(canvas: HTMLCanvasElement) {
     this.store = new CanvasStore();
@@ -110,6 +123,11 @@ export class CanvasEngine {
       this.updateLine(position);
     }
     if (tool === 'selection') {
+      if (this.isResizing) {
+        this.resizeSelection(position);
+        return;
+      }
+
       this.dragSelection(position);
       this.updateAreaSelection(position);
       return;
@@ -137,6 +155,12 @@ export class CanvasEngine {
     }
     if (tool === 'selection') {
       this.finishAreaSelection();
+      this.isResizing = false;
+      this.resizingLineEnd = null;
+      this.resizeHandle = null;
+      this.resizeElementId = null;
+      this.resizeInitialBound = null;
+      this.resizeAnchor = null;
       this.endSelectionInteraction();
       return;
     }
@@ -160,7 +184,6 @@ export class CanvasEngine {
   }
 
   panTo(position: Point) {
-    console.log('Panning to', position);
     if (!this.isPanning || !this.lastPanPosition) return;
 
     const dx = position.x - this.lastPanPosition.x;
@@ -563,8 +586,6 @@ export class CanvasEngine {
       this.store.view.scale;
     const topY = (100 - this.store.view.offsetY) / this.store.view.scale;
 
-    console.log(this.store.elements);
-
     const elementId = generateUUID();
 
     this.store.elements.set(elementId, {
@@ -766,6 +787,53 @@ export class CanvasEngine {
 
     const elements = Array.from(this.store.elements.values());
 
+    // ===================== Resize ===================================
+    if (this.store.selectedElementId) {
+      const element = this.store.elements.get(this.store.selectedElementId);
+
+      if (element && (element.type === 'line' || element.type === 'arrow')) {
+        const endPoint = this.getLineEndpointHandle(worldPos, element);
+
+        if (endPoint) {
+          this.isResizing = true;
+          this.resizeElementId = element.id;
+          this.resizingLineEnd = endPoint;
+          return;
+        }
+
+        const isOnLine = this.isPointNearLine(
+          worldPos,
+          { x: element.x, y: element.y },
+          { x: element.endX, y: element.endY },
+          HIT
+        );
+        if (isOnLine) {
+          this.isDraggingElements = true;
+          this.isDraggingMultipleElements = false;
+          this.isFirstDragMove = true;
+          this.draggingElementId = element.id;
+
+          this.dragElementOffset = {
+            x: worldPos.x - element.x,
+            y: worldPos.y - element.y
+          };
+
+          return;
+        }
+      }
+
+      if (element && element.type !== 'line' && element.type !== 'arrow') {
+        const bounds = getElementBounds(element);
+        if (bounds) {
+          const handle = getResizeHandle(worldPos, element, this.store.view);
+          if (handle) {
+            this.startResize(element, handle, bounds);
+            return;
+          }
+        }
+      }
+    }
+
     // ===================== MULTI SELECTION DRAG =====================
     if (this.store.selectedElementIds.size > 0) {
       const bounds = this.getCombinedBounds(
@@ -800,6 +868,37 @@ export class CanvasEngine {
     }
 
     // ===================== SINGLE ELEMENT HIT =====================
+    if (this.store.selectedElementId) {
+      const el = this.store.elements.get(this.store.selectedElementId);
+      if (el) {
+        const bounds = getElementBounds(el);
+        if (bounds) {
+          const PAD = 10 / this.store.view.scale;
+          const selectionBounds = {
+            minX: bounds.minX - PAD,
+            minY: bounds.minY - PAD,
+            maxX: bounds.maxX + PAD,
+            maxY: bounds.maxY + PAD
+          };
+
+          if (isPointInBounds(worldPos, selectionBounds)) {
+            this.isDraggingElements = true;
+            this.isDraggingMultipleElements = false;
+            this.isFirstDragMove = true;
+
+            this.draggingElementId = el.id;
+            this.dragElementOffset = {
+              x: worldPos.x - el.x,
+              y: worldPos.y - el.y
+            };
+
+            return;
+          }
+        }
+      }
+    }
+
+    // ===================== HIT TEST (CLICK TO SELECT) =====================
     const index = findElementAtPosition(worldPos, elements, HIT);
     if (index !== null) {
       const el = elements[index];
@@ -807,6 +906,11 @@ export class CanvasEngine {
 
       this.store.selectedElementId = el.id;
       this.store.selectedElementIds.clear();
+      this.store.commit();
+
+      this.isDraggingElements = true;
+      this.isDraggingMultipleElements = false;
+      this.isFirstDragMove = true;
 
       this.draggingElementId = el.id;
       this.dragElementOffset = {
@@ -814,11 +918,6 @@ export class CanvasEngine {
         y: worldPos.y - el.y
       };
 
-      this.isDraggingElements = true;
-      this.isDraggingMultipleElements = false;
-      this.isFirstDragMove = true;
-
-      this.store.commit();
       return;
     }
 
@@ -876,5 +975,237 @@ export class CanvasEngine {
     this.isFirstDragMove = false;
     this.draggingElementId = null;
     this.multiDragOffsets.clear();
+  }
+
+  startResize(
+    element: CanvasElement,
+    handle: ResizeHandle,
+    bound: ElementBounds
+  ) {
+    const padding = 10 / this.store.view.scale;
+    let anchor: Point;
+
+    switch (handle) {
+      case 'top-left':
+        anchor = { x: bound.maxX + padding, y: bound.maxY + padding };
+        break;
+      case 'top-right':
+        anchor = { x: bound.minX - padding, y: bound.maxY + padding };
+        break;
+      case 'bottom-left':
+        anchor = { x: bound.maxX + padding, y: bound.minY - padding };
+        break;
+      case 'bottom-right':
+        anchor = { x: bound.minX - padding, y: bound.minY - padding };
+        break;
+      default:
+        return;
+    }
+
+    this.isResizing = true;
+    this.resizeHandle = handle;
+    this.resizeElementId = element.id;
+    this.resizeInitialBound = bound;
+    this.resizeAnchor = anchor;
+  }
+
+  resizeSelection(screen: Point) {
+    if (this.isResizing && this.resizingLineEnd) {
+      const element = this.store.elements.get(this.resizeElementId!);
+      if (!element || (element.type !== 'line' && element.type !== 'arrow'))
+        return;
+      const worldPos = this.screenToWorld(screen.x, screen.y);
+
+      if (this.resizingLineEnd === 'start') {
+        this.store.elements.set(element.id, {
+          ...element,
+          x: worldPos.x,
+          y: worldPos.y
+        });
+      } else {
+        this.store.elements.set(element.id, {
+          ...element,
+          endX: worldPos.x,
+          endY: worldPos.y
+        });
+      }
+
+      this.store.commit();
+      return;
+    }
+
+    if (!this.isResizing || !this.resizeElementId || !this.resizeInitialBound)
+      return;
+
+    const worldPos = this.screenToWorld(screen.x, screen.y);
+    const MIN = 10 / this.store.view.scale;
+
+    let { minX, minY, maxX, maxY } = this.resizeInitialBound;
+
+    switch (this.resizeHandle) {
+      case 'top-left':
+        minX = Math.min(worldPos.x, maxX - MIN);
+        minY = Math.min(worldPos.y, maxY - MIN);
+        break;
+      case 'top-right':
+        maxX = Math.max(worldPos.x, minX + MIN);
+        minY = Math.min(worldPos.y, maxY - MIN);
+        break;
+      case 'bottom-left':
+        minX = Math.min(worldPos.x, maxX - MIN);
+        maxY = Math.max(worldPos.y, minY + MIN);
+        break;
+      case 'bottom-right':
+        maxX = Math.max(worldPos.x, minX + MIN);
+        maxY = Math.max(worldPos.y, minY + MIN);
+        break;
+    }
+
+    const element = this.store.elements.get(this.resizeElementId);
+    if (!element) return;
+
+    switch (element.type) {
+      case 'rectangle': {
+        this.store.elements.set(element.id, {
+          ...element,
+          x: minX,
+          y: minY,
+          width: maxX - minX,
+          height: maxY - minY
+        });
+        break;
+      }
+      case 'circle': {
+        this.store.elements.set(element.id, {
+          ...element,
+          x: (minX + maxX) / 2,
+          y: (minY + maxY) / 2,
+          radiusX: (maxX - minX) / 2,
+          radiusY: (maxY - minY) / 2
+        });
+        break;
+      }
+      case 'line':
+      case 'arrow': {
+        const originWidth = Math.abs(element.endX - element.x) || 1;
+        const originHeight = Math.abs(element.endY - element.y) || 1;
+        const scaleX = (maxX - minX) / originWidth;
+        const scaleY = (maxY - minY) / originHeight;
+
+        // Determine original min positions
+        const originalMinX = Math.min(element.x, element.endX);
+        const originalMinY = Math.min(element.y, element.endY);
+
+        // Scale relative to original min positions, then translate to new min positions
+        const newX = minX + (element.x - originalMinX) * scaleX;
+        const newY = minY + (element.y - originalMinY) * scaleY;
+        const newEndX = minX + (element.endX - originalMinX) * scaleX;
+        const newEndY = minY + (element.endY - originalMinY) * scaleY;
+        this.store.elements.set(element.id, {
+          ...element,
+          x: newX,
+          y: newY,
+          endX: newEndX,
+          endY: newEndY
+        });
+        break;
+      }
+      case 'draw': {
+        const xs = element.points.map((p) => element.x + p.x);
+        const ys = element.points.map((p) => element.y + p.y);
+        const oldMinX = Math.min(...xs);
+        const oldMaxX = Math.max(...xs);
+        const oldMinY = Math.min(...ys);
+        const oldMaxY = Math.max(...ys);
+        const originWidth = oldMaxX - oldMinX || 1;
+        const originHeight = oldMaxY - oldMinY || 1;
+
+        const newWidth = maxX - minX;
+        const newHeight = maxY - minY;
+
+        const scaleX = newWidth / originWidth;
+        const scaleY = newHeight / originHeight;
+
+        const newPoints: Point[] = element.points.map((p) => {
+          const absX = element.x + p.x;
+          const absY = element.y + p.y;
+
+          const scaledX = (absX - oldMinX) * scaleX + minX;
+          const scaledY = (absY - oldMinY) * scaleY + minY;
+
+          return {
+            x: scaledX - minX,
+            y: scaledY - minY
+          };
+        });
+
+        this.store.elements.set(element.id, {
+          ...element,
+          x: minX,
+          y: minY,
+          points: newPoints
+        });
+        break;
+      }
+      case 'text': {
+        const oldElementBounds = getElementBounds(element);
+        if (oldElementBounds) {
+          const oldHeight = oldElementBounds.maxY - oldElementBounds.minY || 1;
+          const newHeight = maxY - minY;
+          const scaleY = newHeight / oldHeight;
+
+          this.store.elements.set(element.id, {
+            ...element,
+            x: minX,
+            y: minY,
+            fontSize: Math.max(8, element.fontSize * scaleY)
+          });
+        }
+        break;
+      }
+      default: {
+        // Data structures (array, linked-list, binary-tree) = just move don't resize
+        this.store.elements.set(element.id, { ...element, x: minX, y: minY });
+        break;
+      }
+    }
+
+    this.store.commit();
+  }
+
+  private getLineEndpointHandle(
+    worldPos: Point,
+    element: CanvasElement
+  ): 'start' | 'end' | null {
+    if (element.type !== 'line' && element.type !== 'arrow') return null;
+
+    const HIT = 6 / this.store.view.scale;
+
+    const startDist =
+      (worldPos.x - element.x) ** 2 + (worldPos.y - element.y) ** 2;
+
+    const endDist =
+      (worldPos.x - element.endX) ** 2 + (worldPos.y - element.endY) ** 2;
+
+    if (startDist <= HIT * HIT) return 'start';
+    if (endDist <= HIT * HIT) return 'end';
+
+    return null;
+  }
+
+  private isPointNearLine(p: Point, a: Point, b: Point, tolerance: number) {
+    const dx = b.x - a.x;
+    const dy = b.y - a.y;
+    const lenSq = dx * dx + dy * dy;
+    if (lenSq === 0) return false;
+
+    let t = ((p.x - a.x) * dx + (p.y - a.y) * dy) / lenSq;
+    t = Math.max(0, Math.min(1, t));
+
+    const projX = a.x + t * dx;
+    const projY = a.y + t * dy;
+
+    const distSq = (p.x - projX) ** 2 + (p.y - projY) ** 2;
+    return distSq <= tolerance * tolerance;
   }
 }

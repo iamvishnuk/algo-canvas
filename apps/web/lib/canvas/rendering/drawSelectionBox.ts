@@ -35,6 +35,35 @@ export const drawSelectionBox = (
     const bounds = getElementBounds(element);
     if (!bounds) return;
 
+    if (element.type === 'line' || element.type === 'arrow') {
+      const handleRadius = 6 / view.scale;
+
+      ctx.save();
+      // Highlight line
+      ctx.strokeStyle = '#3b82f6';
+      ctx.lineWidth = 3 / view.scale;
+
+      ctx.beginPath();
+      ctx.moveTo(element.x, element.y);
+      ctx.lineTo(element.endX, element.endY);
+      ctx.stroke();
+
+      // Start handle
+      ctx.beginPath();
+      ctx.arc(element.x, element.y, handleRadius, 0, Math.PI * 2);
+      ctx.fillStyle = '#3b82f6';
+      ctx.fill();
+
+      // End handle
+      ctx.beginPath();
+      ctx.arc(element.endX, element.endY, handleRadius, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.restore();
+
+      return;
+    }
+
     const { minX, minY, maxX, maxY } = bounds;
     const padding = 10 / view.scale;
     const handleSize = 8 / view.scale;
