@@ -14,6 +14,8 @@ export class CanvasStore {
   areaSelectionStart: Point | null = null;
   areaSelectionEnd: Point | null = null;
 
+  editingTextId: string | null = null;
+
   textDraft: { id: string; content: string; x: number; y: number } | null =
     null;
 

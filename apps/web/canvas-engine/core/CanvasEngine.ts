@@ -34,6 +34,7 @@ export class CanvasEngine {
   private isDraggingElements: boolean = false;
   private isDraggingMultipleElements: boolean = false;
   private isFirstDragMove: boolean = false;
+  private lastDragWorldPos: Point | null = null;
 
   private draggingElementId: string | null = null;
   private dragElementOffset: Point = { x: 0, y: 0 };
@@ -176,7 +177,9 @@ export class CanvasEngine {
     }
   }
 
-  handleDoubleClick(position: Point) {}
+  handleDoubleClick(position: Point) {
+    this.startEditingText(position);
+  }
 
   startPan(position: Point) {
     this.isPanning = true;
@@ -572,11 +575,13 @@ export class CanvasEngine {
       ...elementProperty.text
     });
     this.store.textDraft = null;
+    this.store.editingTextId = null;
     this.store.commit();
   }
 
   cancelTextDraft() {
     this.store.textDraft = null;
+    this.store.editingTextId = null;
     this.store.commit();
   }
 
@@ -813,10 +818,7 @@ export class CanvasEngine {
           this.isFirstDragMove = true;
           this.draggingElementId = element.id;
 
-          this.dragElementOffset = {
-            x: worldPos.x - element.x,
-            y: worldPos.y - element.y
-          };
+          this.lastDragWorldPos = worldPos;
 
           return;
         }
@@ -935,7 +937,6 @@ export class CanvasEngine {
 
     const worldPos = this.screenToWorld(screen.x, screen.y);
 
-    // MULTI DRAG
     if (
       this.isDraggingMultipleElements &&
       this.store.selectedElementIds.size > 1
@@ -951,18 +952,33 @@ export class CanvasEngine {
           y: worldPos.y - offset.y
         });
       }
-    }
-
-    // SINGLE DRAG
-    else if (this.draggingElementId) {
+    } else if (this.draggingElementId) {
       const el = this.store.elements.get(this.draggingElementId);
       if (!el) return;
 
-      this.store.elements.set(el.id, {
-        ...el,
-        x: worldPos.x - this.dragElementOffset.x,
-        y: worldPos.y - this.dragElementOffset.y
-      });
+      if (
+        (el.type === 'line' || el.type === 'arrow') &&
+        this.lastDragWorldPos
+      ) {
+        const dx = worldPos.x - this.lastDragWorldPos.x;
+        const dy = worldPos.y - this.lastDragWorldPos.y;
+
+        this.store.elements.set(el.id, {
+          ...el,
+          x: el.x + dx,
+          y: el.y + dy,
+          endX: el.endX + dx,
+          endY: el.endY + dy
+        });
+
+        this.lastDragWorldPos = worldPos;
+      } else {
+        this.store.elements.set(el.id, {
+          ...el,
+          x: worldPos.x - this.dragElementOffset.x,
+          y: worldPos.y - this.dragElementOffset.y
+        });
+      }
     }
 
     this.isFirstDragMove = false;
@@ -974,6 +990,7 @@ export class CanvasEngine {
     this.isDraggingMultipleElements = false;
     this.isFirstDragMove = false;
     this.draggingElementId = null;
+    this.lastDragWorldPos = null;
     this.multiDragOffsets.clear();
   }
 
@@ -1207,5 +1224,32 @@ export class CanvasEngine {
 
     const distSq = (p.x - projX) ** 2 + (p.y - projY) ** 2;
     return distSq <= tolerance * tolerance;
+  }
+
+  startEditingText(screen: Point) {
+    const worldPos = this.screenToWorld(screen.x, screen.y);
+
+    const HIT = this.hitTolerance / this.store.view.scale;
+    const elements = Array.from(this.store.elements.values()).reverse();
+
+    const index = findElementAtPosition(worldPos, elements, HIT);
+    if (index === null) return;
+
+    const element = elements[index];
+    if (!element || element.type !== 'text') return;
+
+    this.store.editingTextId = element.id;
+
+    this.store.textDraft = {
+      id: element.id,
+      x: element.x,
+      y: element.y,
+      content: element.text
+    };
+
+    this.store.selectedElementId = null;
+    this.store.selectedElementIds.clear();
+
+    this.store.commit();
   }
 }

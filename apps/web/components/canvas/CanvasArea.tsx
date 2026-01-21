@@ -106,11 +106,11 @@ const CanvasArea = () => {
   };
 
   const handleOnClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    engineRef.current?.handleOnClick(
-      { x: e.clientX, y: e.clientY },
-      tool,
-      elementDefaults
-    );
+    engineRef.current?.handleOnClick({ x: e.clientX, y: e.clientY }, tool);
+  };
+
+  const handleDoubleClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    engineRef.current?.handleDoubleClick({ x: e.clientX, y: e.clientY });
   };
 
   return (
@@ -123,6 +123,7 @@ const CanvasArea = () => {
         onMouseLeave={handleMouseUp}
         onWheel={handleWheel}
         onClick={handleOnClick}
+        onDoubleClick={handleDoubleClick}
         className={cn(
           'bg-brand-bg absolute top-0 left-0 h-full w-full',
           CURSOR_MAP[tool]

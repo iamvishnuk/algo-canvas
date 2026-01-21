@@ -32,7 +32,13 @@ export class CanvasRenderer {
     this.ctx.translate(view.offsetX, view.offsetY);
     this.ctx.scale(view.scale, view.scale);
 
-    drawElements(this.ctx, [...elements.values()], view.scale);
+    drawElements(
+      this.ctx,
+      Array.from(this.store.elements.values()).filter(
+        (el) => el.id !== this.store.editingTextId
+      ),
+      view.scale
+    );
 
     if (this.store.previewElement) {
       drawElements(this.ctx, [this.store.previewElement], view.scale);
