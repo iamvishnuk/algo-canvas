@@ -9,18 +9,18 @@ import {
   ViewState
 } from '@algocanvas/types/canvas';
 import { ElementDefaultProperty } from '@/features/element/elementPropertySlice';
-import {
-  ElementBounds,
-  generateUUID,
-  getElementBounds,
-  isPointInBounds
-} from '@/lib/canvas/utils';
+import { generateUUID } from '@/utils';
 import {
   findElementAtPosition,
   getResizeHandle,
   ResizeHandle
-} from '@/lib/canvas/hitDetection';
-import { isElementInSelectionArea } from '@/lib/canvas/geometry';
+} from '@/canvas-engine/utils/hitDetection';
+import {
+  ElementBounds,
+  getElementBounds,
+  isElementInSelectionArea,
+  isPointInBounds
+} from '@/canvas-engine/utils/geometry';
 
 export class CanvasEngine {
   readonly store: CanvasStore;

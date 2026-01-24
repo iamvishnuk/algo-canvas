@@ -1,21 +1,19 @@
 import { Ellipsis, Minus } from 'lucide-react';
 import ColorPicker from './ColorPicker';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import { TOOL_PROPERTY_MAP } from '@/lib/canvas/constant';
+import { TOOL_PROPERTY_MAP } from '@/lib/canvas/config';
 import {
   CanvasElement,
-  CanvasElementPatch,
   PropertyKey,
   StrokePattern,
   Tool
 } from '@algocanvas/types/canvas';
-import { updateElementProperty } from '@/features/canvas/canvasSlice';
 import {
   updateElementDefaultProperty,
   type IElementPropertyState
 } from '@/features/element/elementPropertySlice';
-import { getElementProperty } from '@/lib/canvas/utils';
 import { CanvasEngine } from '@/canvas-engine';
+import { getElementProperty } from '@/canvas-engine/utils/geometry';
 
 const STROKE_PATTERNS: {
   value: StrokePattern;

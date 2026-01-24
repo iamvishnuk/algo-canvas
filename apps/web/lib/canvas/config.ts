@@ -138,50 +138,6 @@ export const DSA_ELEMENTS: IDSAElements[] = [
   }
 ];
 
-export const BASE_ELEMENT_PROPERTY = {
-  line: {
-    rotate: 0,
-    strokeStyle: '#7A3EFF',
-    lineWidth: 2,
-    strokePattern: 'solid' as const
-  },
-  rectangle: {
-    rotate: 0,
-    strokeStyle: '#7A3EFF',
-    lineWidth: 2,
-    fillStyle: 'transparent',
-    strokePattern: 'solid' as const
-  },
-  circle: {
-    rotate: 0,
-    strokeStyle: '#7A3EFF',
-    lineWidth: 2,
-    fillStyle: 'transparent',
-    strokePattern: 'solid' as const
-  },
-  text: {
-    fontSize: 20,
-    fontFamily: 'var(--font-inter)',
-    rotate: 0,
-    color: '#7A3EFF'
-  },
-  arrow: {
-    rotate: 0,
-    strokeStyle: '#7A3EFF',
-    lineWidth: 2,
-    fillStyle: 'transparent',
-    strokePattern: 'solid' as const
-  },
-  draw: {
-    rotate: 0,
-    lineWidth: 2,
-    strokeStyle: '#7A3EFF',
-    lineCap: 'round' as CanvasLineCap,
-    lineJoin: 'round' as CanvasLineJoin,
-    strokePattern: 'solid' as const
-  }
-};
-
 export const TOOL_PROPERTY_MAP: Record<Tool, PropertyKey[]> = {
   line: ['strokeStyle', 'lineWidth', 'strokePattern'],
   rectangle: ['strokeStyle', 'fillStyle', 'lineWidth', 'strokePattern'],

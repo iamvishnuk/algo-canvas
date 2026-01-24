@@ -4,7 +4,7 @@ import { cn } from '@algocanvas/ui/lib/utils';
 import { CanvasEngine } from '@/canvas-engine';
 import { useAppSelector } from '@/store/hooks';
 import { resizeCanvas } from '@/lib/canvas/resizeCanvas';
-import { CURSOR_MAP } from '@/lib/canvas/constant';
+import { CURSOR_MAP } from '@/lib/canvas/config';
 import { useCanvasKeyboardShortcuts } from '@/hooks/useCanvasKeyboardShortcuts';
 
 import TreeDialog from './TreeDialog';
@@ -35,7 +35,7 @@ const CanvasArea = () => {
     content: string;
   } | null>(null);
 
-  const [selecteElement, setSelectedElement] = useState<CanvasElement | null>(
+  const [selectedElement, setSelectedElement] = useState<CanvasElement | null>(
     null
   );
 
@@ -175,18 +175,18 @@ const CanvasArea = () => {
       />
       <ElementPropertyPanel
         engine={engineRef.current}
-        selectedElement={selecteElement}
+        selectedElement={selectedElement}
       />
       <ArrayEditor
-        selectedElement={selecteElement}
+        selectedElement={selectedElement}
         engine={engineRef.current}
       />
       <LinkedListEditor
-        selectedElement={selecteElement}
+        selectedElement={selectedElement}
         engine={engineRef.current}
       />
       <TreeEditor
-        selectedElement={selecteElement}
+        selectedElement={selectedElement}
         engine={engineRef.current}
       />
     </div>

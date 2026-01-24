@@ -8,7 +8,7 @@ import {
   getAllNodes,
   removeSubtree,
   updateNodeValue
-} from '@/lib/data-structures/tree';
+} from '@/canvas-engine/data-structures/tree';
 import { setTimeout } from 'node:timers';
 import { CanvasEngine } from '@/canvas-engine';
 

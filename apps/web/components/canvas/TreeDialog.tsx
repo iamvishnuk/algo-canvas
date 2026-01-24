@@ -1,5 +1,4 @@
 import { toggleDialog } from '@/features/canvas/canvasSlice';
-import { buildTreeFromArray } from '@/lib/data-structures/tree';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { ArraySchema } from '@/validators';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -22,6 +21,7 @@ import { Input } from '@algocanvas/ui/components/input';
 import { useForm, Controller } from 'react-hook-form';
 import z from 'zod';
 import { TreeNode } from '@algocanvas/types/canvas';
+import { buildTreeFromArray } from '@/canvas-engine/data-structures/tree';
 
 type TreeDialogProps = {
   addTree: (root: TreeNode) => void;

@@ -1,7 +1,7 @@
 import React from 'react';
 import { CanvasEngine } from '@/canvas-engine';
 import { useAppSelector } from '@/store/hooks';
-import { measureTextWidth } from '@/lib/canvas/utils/text';
+import { measureTextWidth } from '@/canvas-engine/utils/text';
 
 type CanvasTextAreaProps = {
   engine: CanvasEngine;

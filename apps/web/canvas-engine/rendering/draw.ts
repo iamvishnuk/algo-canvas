@@ -4,9 +4,9 @@ import {
   StrokePattern,
   TreeNode
 } from '@algocanvas/types/canvas';
-import { ARRAY_CONSTANTS } from '../constants/array';
-import { getDepth, LINKED_LIST_CONSTANTS } from '../constants/linked-list';
-import { TREE_CONSTANTS } from '../constants/tree';
+import { ARRAY_CONSTANTS } from '../data-structures/array';
+import { getDepth, TREE_CONSTANTS } from '../data-structures/tree';
+import { LINKED_LIST_CONSTANTS } from '../data-structures/linked-list';
 
 /**
  * Get line dash array based on stroke pattern

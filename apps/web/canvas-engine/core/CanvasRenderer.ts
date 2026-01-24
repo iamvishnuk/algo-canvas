@@ -1,6 +1,6 @@
-import { drawSelectionBox } from '@/lib/canvas/rendering/drawSelectionBox';
 import { drawElements } from '../rendering/drawElements';
 import { drawGrid } from '../rendering/drawGrid';
+import { drawSelectionBox } from '../rendering/drawSelectionBox';
 import { CanvasStore } from './CanvasStore';
 
 export class CanvasRenderer {
@@ -16,7 +16,7 @@ export class CanvasRenderer {
   }
 
   render() {
-    const { elements, view } = this.store;
+    const { view } = this.store;
 
     // RESET TRANSFORM
     this.ctx.setTransform(1, 0, 0, 1, 0, 0);

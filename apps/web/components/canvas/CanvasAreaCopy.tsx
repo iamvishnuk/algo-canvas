@@ -33,13 +33,13 @@ import MainToolBar from './MainToolBar.js';
 import { cn } from '@algocanvas/ui/lib/utils';
 import CanvasBackground from './CanvasBackground.js';
 import { screenToWorld } from '@/lib/canvas/coordinates';
-import { isElementInSelectionArea } from '@/lib/canvas/geometry';
+import { isElementInSelectionArea } from '@/canvas-engine/utils/geometry.js';
 import {
   findElementAtPosition,
   getResizeHandle,
   ResizeHandle
 } from '@/lib/canvas/hitDetection';
-import { CURSOR_MAP } from '@/lib/canvas/constant';
+import { CURSOR_MAP } from '@/lib/canvas/config.js';
 import { drawGrid } from '@/lib/canvas/rendering/drawGrid';
 import { drawElements } from '@/lib/canvas/rendering/drawElements';
 import { drawElementsPreview } from '@/lib/canvas/rendering/drawElementsPreview';

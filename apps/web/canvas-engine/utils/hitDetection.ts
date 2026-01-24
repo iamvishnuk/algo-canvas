@@ -1,14 +1,14 @@
 import { CanvasElement, Point, ViewState } from '@algocanvas/types/canvas';
 import {
   distanceFromPointToLineSegment,
+  getElementBounds,
   isCursorOnArray,
   isCursorOnLinkedList,
   isCursorOnTree,
   isPointNearPath,
   isPointNearRectangle
-} from './geometry';
-import { getElementBounds } from './utils';
-import { rotatePoint } from './rendering/drawSelectionBox';
+} from '../../canvas-engine/utils/geometry';
+import { rotatePoint } from '../rendering/drawSelectionBox';
 
 export type ResizeHandle =
   | 'top-left'

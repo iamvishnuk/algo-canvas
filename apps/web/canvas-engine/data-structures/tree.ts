@@ -1,5 +1,5 @@
+import { generateUUID } from '@/utils';
 import { TreeNode } from '@algocanvas/types/canvas';
-import { generateUUID } from '../canvas/utils';
 
 export const TREE_CONSTANTS = {
   nodeRadius: 25,

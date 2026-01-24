@@ -1,5 +1,5 @@
 import { CanvasElement, Point, ViewState } from '@algocanvas/types/canvas';
-import { getElementBounds } from '../utils';
+import { getElementBounds } from '../utils/geometry';
 
 export const rotatePoint = (
   x: number,

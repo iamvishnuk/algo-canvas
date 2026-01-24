@@ -1,5 +1,4 @@
-import { DSAElement } from '@/lib/canvas/constant';
-import { resizeElement } from '@/lib/canvas/utils';
+import { DSAElement } from '@/lib/canvas/config';
 import { createSlice, current, type PayloadAction } from '@reduxjs/toolkit';
 import {
   BackgroundType,
@@ -10,6 +9,7 @@ import {
   TreeNode,
   ViewState
 } from '@algocanvas/types/canvas';
+import { resizeElement } from '@/canvas-engine/utils/geometry';
 
 export interface ICanvasState {
   view: ViewState;
