@@ -21,6 +21,7 @@ import {
   isElementInSelectionArea,
   isPointInBounds
 } from '@/canvas-engine/utils/geometry';
+import { rotatePoint } from '../rendering/drawSelectionBox';
 
 export class CanvasEngine {
   readonly store: CanvasStore;
@@ -47,6 +48,13 @@ export class CanvasEngine {
   private resizeInitialBound: ElementBounds | null = null;
   private resizeAnchor: Point | null = null;
   private resizingLineEnd: 'start' | 'end' | null = null;
+
+  private isRotating = false;
+  private rotateElementId: string | null = null;
+  private rotationCenter: Point | null = null;
+  private rotationStartAngle = 0;
+  private rotationInitial = 0;
+  private isFirstRotateMove = false;
 
   constructor(canvas: HTMLCanvasElement) {
     this.store = new CanvasStore();
@@ -148,6 +156,30 @@ export class CanvasEngine {
       this.updateLine(position);
     }
     if (tool === 'selection') {
+      // ROTATION
+      if (this.isRotating && this.rotateElementId && this.rotationCenter) {
+        const worldPos = this.screenToWorld(position.x, position.y);
+
+        const angle = Math.atan2(
+          worldPos.y - this.rotationCenter.y,
+          worldPos.x - this.rotationCenter.x
+        );
+
+        const delta = angle - this.rotationStartAngle;
+
+        const el = this.store.elements.get(this.rotateElementId);
+        if (!el) return;
+
+        this.store.elements.set(el.id, {
+          ...el,
+          rotate: this.rotationInitial + delta
+        });
+
+        this.isFirstRotateMove = false;
+        this.store.commit();
+        return;
+      }
+
       if (this.isResizing) {
         this.resizeSelection(position);
         return;
@@ -186,6 +218,12 @@ export class CanvasEngine {
       this.resizeElementId = null;
       this.resizeInitialBound = null;
       this.resizeAnchor = null;
+      this.isRotating = false;
+      this.rotateElementId = null;
+      this.rotationCenter = null;
+      this.rotationStartAngle = 0;
+      this.rotationInitial = 0;
+      this.isFirstRotateMove = false;
       this.endSelectionInteraction();
       return;
     }
@@ -908,6 +946,25 @@ export class CanvasEngine {
       }
     }
 
+    if (this.store.selectedElementId) {
+      const el = this.store.elements.get(this.store.selectedElementId);
+      if (el && (el.type === 'rectangle' || el.type === 'text')) {
+        const data = this.getRotationHandle(el);
+        if (data && this.isPointOnRotateHandle(worldPos, data.handle)) {
+          this.isRotating = true;
+          this.rotateElementId = el.id;
+          this.rotationCenter = data.center;
+          this.rotationStartAngle = Math.atan2(
+            worldPos.y - data.center.y,
+            worldPos.x - data.center.x
+          );
+          this.rotationInitial = el.rotate ?? 0;
+          this.isFirstRotateMove = true;
+          return;
+        }
+      }
+    }
+
     // 2️⃣ RECT / CIRCLE / TEXT RESIZE
     if (this.store.selectedElementId) {
       const element = this.store.elements.get(this.store.selectedElementId);
@@ -1381,5 +1438,43 @@ export class CanvasEngine {
     }
 
     this.store.commit();
+  }
+
+  getRotationHandle(element: CanvasElement) {
+    const bounds = getElementBounds(element);
+    if (!bounds) return null;
+
+    const padding = 10 / this.store.view.scale;
+    const offset = 20 / this.store.view.scale;
+
+    const center = {
+      x: (bounds.minX + bounds.maxX) / 2,
+      y: (bounds.minY + bounds.maxY) / 2
+    };
+
+    let handle = {
+      x: center.x,
+      y: bounds.minY - padding - offset
+    };
+
+    // rotate handle with element
+    if (element.rotate) {
+      handle = rotatePoint(
+        handle.x,
+        handle.y,
+        center.x,
+        center.y,
+        element.rotate
+      );
+    }
+
+    return { handle, center };
+  }
+
+  isPointOnRotateHandle(p: Point, handle: Point) {
+    const r = 10 / this.store.view.scale;
+    const dx = p.x - handle.x;
+    const dy = p.y - handle.y;
+    return dx * dx + dy * dy <= r * r;
   }
 }
