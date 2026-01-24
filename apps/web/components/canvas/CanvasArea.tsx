@@ -98,7 +98,7 @@ const CanvasArea = () => {
   }, []);
 
   useEffect(() => {
-    engineRef.current?.setTool(tool);
+    engineRef.current?.setTool();
   }, [tool]);
 
   const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {

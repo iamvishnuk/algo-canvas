@@ -108,6 +108,7 @@ export interface ArrayElement extends Identifiable {
 ========================= */
 
 export type TreeNode = {
+  id: string;
   value: string;
   left: TreeNode | null;
   right: TreeNode | null;

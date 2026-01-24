@@ -134,10 +134,11 @@ const TreeEditor = ({ selectedElement, engine }: TreeEditorEditorProps) => {
           <p className='mb-1 text-sm text-neutral-400'>Tree Nodes</p>
           <select
             className='h-9 w-full rounded border px-2 py-1 text-sm'
-            value={selectedNode ? selectedNode.value : ''}
+            value={selectedNode?.id ?? ''}
             onChange={(e) => {
-              const allNodes = getAllNodes(root);
-              const node = allNodes.find((n) => n.value === e.target.value);
+              const node = getAllNodes(root).find(
+                (n) => n.id === e.target.value
+              );
               if (node) {
                 setSelectedNode(node);
                 setEditValue(node.value);
@@ -150,10 +151,10 @@ const TreeEditor = ({ selectedElement, engine }: TreeEditorEditorProps) => {
             >
               Select a node
             </option>
-            {getAllNodes(root).map((node, idx) => (
+            {getAllNodes(root).map((node) => (
               <option
-                key={idx}
-                value={node.value}
+                key={node.id}
+                value={node.id}
               >
                 {node.value}
               </option>

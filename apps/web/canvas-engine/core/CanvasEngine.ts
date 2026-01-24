@@ -76,7 +76,7 @@ export class CanvasEngine {
     };
   }
 
-  setTool(tool: Tool) {
+  setTool() {
     // Clear selection when tool changes
     this.store.selectedElementId = null;
     this.store.selectedElementIds.clear();
@@ -1348,8 +1348,6 @@ export class CanvasEngine {
   getSelectedElement() {
     const id = this.store.selectedElementId;
     if (!id) return null;
-
-    const element = this.store.elements.get(id);
 
     return this.store.elements.get(id) ?? null;
   }
