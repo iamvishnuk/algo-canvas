@@ -7,35 +7,25 @@ import {
   TooltipContent,
   TooltipTrigger
 } from '@algocanvas/ui/components/tooltip';
-import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import {
-  duplicateElements,
-  removeElements,
-  updateDataStructuresValues
-} from '@/features/canvas/canvasSlice';
+import { CanvasElement } from '@algocanvas/types/canvas';
+import { CanvasEngine } from '@/canvas-engine';
 
-const ArrayEditor = () => {
-  const dispatch = useAppDispatch();
+type ArrayEditorProps = {
+  selectedElement: CanvasElement | null;
+  engine: CanvasEngine | null;
+};
 
-  const { elements, selectedElementId } = useAppSelector(
-    (state) => state.canvas
-  );
-
-  const selectedElement =
-    selectedElementId !== null
-      ? elements.find((el) => el.id === selectedElementId)
-      : null;
-
+const ArrayEditor = ({ selectedElement, engine }: ArrayEditorProps) => {
   const elementType = selectedElement?.type;
 
   const [initialValues, setInitialValues] = useState<string[]>(
-    selectedElement?.type === 'array' ? selectedElement.value : []
+    selectedElement?.type === 'array' ? selectedElement.values : []
   );
 
   // Sync local state with selected element's value when it changes
   useEffect(() => {
     if (selectedElement?.type === 'array') {
-      setInitialValues(selectedElement.value);
+      setInitialValues(selectedElement.values);
     } else {
       setInitialValues([]);
     }
@@ -49,20 +39,20 @@ const ArrayEditor = () => {
     if (value.trim() === '') return;
     setInitialValues((prev) => [...prev, value]);
     setNewValue('');
-    dispatch(updateDataStructuresValues({ value: [...initialValues, value] }));
+    engine?.updateDataStructuresValues([...initialValues, value]);
   };
 
   const prepend = (value: string) => {
     if (value.trim() === '') return;
     setInitialValues((prev) => [value, ...prev]);
     setNewValue('');
-    dispatch(updateDataStructuresValues({ value: [value, ...initialValues] }));
+    engine?.updateDataStructuresValues([value, ...initialValues]);
   };
 
   const remove = (index: number) => {
     const updatedValue = initialValues.filter((_, idx) => idx !== index);
     setInitialValues(updatedValue);
-    dispatch(updateDataStructuresValues({ value: updatedValue }));
+    engine?.updateDataStructuresValues(updatedValue);
   };
 
   const startEdit = (index: number, currentValue: string) => {
@@ -80,12 +70,8 @@ const ArrayEditor = () => {
     setInitialValues((prev) =>
       prev.map((val, idx) => (idx === index ? editingValue : val))
     );
-    dispatch(
-      updateDataStructuresValues({
-        value: initialValues.map((val, idx) =>
-          idx === index ? editingValue : val
-        )
-      })
+    engine?.updateDataStructuresValues(
+      initialValues.map((val, idx) => (idx === index ? editingValue : val))
     );
     setEditingIndex(null);
     setEditingValue('');
@@ -106,7 +92,7 @@ const ArrayEditor = () => {
     }
 
     setInitialValues(sortedValues);
-    dispatch(updateDataStructuresValues({ value: sortedValues }));
+    engine?.updateDataStructuresValues(sortedValues);
   };
 
   if (elementType !== 'array') {
@@ -225,7 +211,7 @@ const ArrayEditor = () => {
                   size={'icon'}
                   variant={'outline'}
                   className='hover:cursor-pointer'
-                  onClick={() => dispatch(removeElements())}
+                  onClick={() => engine?.removeElement()}
                 >
                   <Trash />
                 </Button>
@@ -240,7 +226,7 @@ const ArrayEditor = () => {
                   size={'icon'}
                   variant={'outline'}
                   className='hover:cursor-pointer'
-                  onClick={() => dispatch(duplicateElements())}
+                  onClick={() => engine?.duplicateElement()}
                 >
                   <Copy />
                 </Button>

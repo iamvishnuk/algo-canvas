@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
+import { CanvasEngine } from '@/canvas-engine';
 import {
   changeTool,
-  removeElements,
   undo,
   redo,
   addToClipBoard,
@@ -23,15 +23,11 @@ interface KeyboardShortcut {
 }
 
 type useCanvasKeyboardShortcutsProps = {
-  zoomIn: () => void;
-  zoomOut: () => void;
-  resetZoom: () => void;
+  engine: CanvasEngine | null;
 };
 
 export const useCanvasKeyboardShortcuts = ({
-  zoomIn,
-  zoomOut,
-  resetZoom
+  engine
 }: useCanvasKeyboardShortcutsProps) => {
   const dispatch = useAppDispatch();
 
@@ -39,25 +35,25 @@ export const useCanvasKeyboardShortcuts = ({
     {
       key: '=',
       modifiers: { ctrl: true },
-      action: () => zoomIn(),
+      action: () => engine?.zoomBy(-1),
       description: 'Zoom in'
     },
     {
       key: '+',
       modifiers: { ctrl: true },
-      action: () => zoomIn(),
+      action: () => engine?.zoomBy(-1),
       description: 'Zoom in'
     },
     {
       key: '-',
       modifiers: { ctrl: true },
-      action: () => zoomOut(),
+      action: () => engine?.zoomBy(1),
       description: 'Zoom out'
     },
     {
       key: '0',
       modifiers: { ctrl: true },
-      action: () => resetZoom(),
+      action: () => engine?.resetZoom(),
       description: 'Reset view'
     },
     {
@@ -130,7 +126,7 @@ export const useCanvasKeyboardShortcuts = ({
     },
     {
       key: 'Delete',
-      action: () => dispatch(removeElements()),
+      action: () => engine?.removeElement(),
       description: 'Remove element'
     },
     {
@@ -148,7 +144,7 @@ export const useCanvasKeyboardShortcuts = ({
     {
       key: 'd',
       modifiers: { ctrl: true },
-      action: () => dispatch(duplicateElements()),
+      action: () => engine?.duplicateElement(),
       description: 'Duplicate Elements'
     }
   ];

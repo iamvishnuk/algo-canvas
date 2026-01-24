@@ -1,9 +1,5 @@
-import {
-  duplicateElements,
-  removeElements,
-  updateDataStructuresValues
-} from '@/features/canvas/canvasSlice';
-import { useAppSelector } from '@/store/hooks';
+import { CanvasEngine } from '@/canvas-engine';
+import { CanvasElement } from '@algocanvas/types/canvas';
 import { Button } from '@algocanvas/ui/components/button';
 import { Separator } from '@algocanvas/ui/components/separator';
 import {
@@ -13,19 +9,16 @@ import {
 } from '@algocanvas/ui/components/tooltip';
 import { Check, Copy, Trash } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { useDispatch } from 'react-redux';
 
-const LinkedListEditor = () => {
-  const dispatch = useDispatch();
+type LinkedListEditorProps = {
+  selectedElement: CanvasElement | null;
+  engine: CanvasEngine | null;
+};
 
-  const { selectedElementId, elements } = useAppSelector(
-    (state) => state.canvas
-  );
-
-  const selectedElement =
-    selectedElementId !== null
-      ? elements.find((el) => el.id === selectedElementId)
-      : null;
+const LinkedListEditor = ({
+  selectedElement,
+  engine
+}: LinkedListEditorProps) => {
   const elementType = selectedElement?.type;
 
   const [initialValues, setInitialValues] = useState<string[]>(
@@ -51,20 +44,20 @@ const LinkedListEditor = () => {
     if (value.trim() === '') return;
     setInitialValues((prev) => [...prev, value]);
     setNewValue('');
-    dispatch(updateDataStructuresValues({ value: [...initialValues, value] }));
+    engine?.updateDataStructuresValues([...initialValues, value]);
   };
 
   const prepend = (value: string) => {
     if (value.trim() === '') return;
     setInitialValues((prev) => [value, ...prev]);
     setNewValue('');
-    dispatch(updateDataStructuresValues({ value: [value, ...initialValues] }));
+    engine?.updateDataStructuresValues([value, ...initialValues]);
   };
 
   const remove = (index: number) => {
     const updatedValue = initialValues.filter((_, idx) => idx !== index);
     setInitialValues(updatedValue);
-    dispatch(updateDataStructuresValues({ value: updatedValue }));
+    engine?.updateDataStructuresValues(updatedValue);
   };
 
   const startEdit = (index: number, currentValue: string) => {
@@ -82,12 +75,8 @@ const LinkedListEditor = () => {
     setInitialValues((prev) =>
       prev.map((val, idx) => (idx === index ? editingValue : val))
     );
-    dispatch(
-      updateDataStructuresValues({
-        value: initialValues.map((val, idx) =>
-          idx === index ? editingValue : val
-        )
-      })
+    engine?.updateDataStructuresValues(
+      initialValues.map((val, idx) => (idx === index ? editingValue : val))
     );
     setEditingIndex(null);
     setEditingValue('');
@@ -105,7 +94,7 @@ const LinkedListEditor = () => {
     newValue.splice(index - 1, 0, insertValue.value);
 
     setInitialValues(newValue);
-    dispatch(updateDataStructuresValues({ value: newValue }));
+    engine?.updateDataStructuresValues(newValue);
     setInsertVlue({ index: '', value: '' });
   };
 
@@ -235,7 +224,7 @@ const LinkedListEditor = () => {
                   size={'icon'}
                   variant={'outline'}
                   className='hover:cursor-pointer'
-                  onClick={() => dispatch(removeElements())}
+                  onClick={() => engine?.removeElement()}
                 >
                   <Trash />
                 </Button>
@@ -250,7 +239,7 @@ const LinkedListEditor = () => {
                   size={'icon'}
                   variant={'outline'}
                   className='hover:cursor-pointer'
-                  onClick={() => dispatch(duplicateElements())}
+                  onClick={() => engine?.duplicateElement()}
                 >
                   <Copy />
                 </Button>

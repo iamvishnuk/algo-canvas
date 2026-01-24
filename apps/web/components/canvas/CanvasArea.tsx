@@ -14,6 +14,11 @@ import ArrayDialog from './ArrayDialog';
 import BottomToolBar from './BottomToolBar';
 import CanvasTextArea from './CanvasTextArea';
 import LinkedListDialog from './LinkedListDialog';
+import ElementPropertyPanel from './ElementPropertyPanel';
+import { CanvasElement } from '@algocanvas/types/canvas';
+import ArrayEditor from './ArrayEditor';
+import LinkedListEditor from './LinkedListEditor';
+import TreeEditor from './TreeEditor';
 
 const CanvasArea = () => {
   const { tool } = useAppSelector((state) => state.canvas);
@@ -30,11 +35,11 @@ const CanvasArea = () => {
     content: string;
   } | null>(null);
 
-  useCanvasKeyboardShortcuts({
-    zoomIn: () => engineRef.current?.zoomBy(-1),
-    zoomOut: () => engineRef.current?.zoomBy(1),
-    resetZoom: () => engineRef.current?.resetZoom()
-  });
+  const [selecteElement, setSelectedElement] = useState<CanvasElement | null>(
+    null
+  );
+
+  useCanvasKeyboardShortcuts({ engine: engineRef.current });
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -80,6 +85,21 @@ const CanvasArea = () => {
       setTextDraft(engine.store.textDraft);
     });
   }, []);
+
+  useEffect(() => {
+    const engine = engineRef.current;
+    if (!engine) return;
+
+    const unsubscribe = engine.store.subscribe(() => {
+      setSelectedElement(engine.getSelectedElement());
+    });
+
+    return unsubscribe;
+  }, []);
+
+  useEffect(() => {
+    engineRef.current?.setTool(tool);
+  }, [tool]);
 
   const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
     engineRef.current?.handleMouseDown(
@@ -152,6 +172,22 @@ const CanvasArea = () => {
       <TreeDialog addTree={(root) => engineRef.current?.addBinaryTree(root)} />
       <LinkedListDialog
         addLinkedList={(values) => engineRef.current?.addLinkedList(values)}
+      />
+      <ElementPropertyPanel
+        engine={engineRef.current}
+        selectedElement={selecteElement}
+      />
+      <ArrayEditor
+        selectedElement={selecteElement}
+        engine={engineRef.current}
+      />
+      <LinkedListEditor
+        selectedElement={selecteElement}
+        engine={engineRef.current}
+      />
+      <TreeEditor
+        selectedElement={selecteElement}
+        engine={engineRef.current}
       />
     </div>
   );

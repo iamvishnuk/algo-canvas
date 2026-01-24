@@ -76,6 +76,30 @@ export class CanvasEngine {
     };
   }
 
+  setTool(tool: Tool) {
+    // Clear selection when tool changes
+    this.store.selectedElementId = null;
+    this.store.selectedElementIds.clear();
+
+    // Cancel interactions
+    this.isDraggingElements = false;
+    this.isDraggingMultipleElements = false;
+    this.isResizing = false;
+    this.resizingLineEnd = null;
+    this.resizeHandle = null;
+    this.resizeElementId = null;
+    this.resizeInitialBound = null;
+    this.resizeAnchor = null;
+    this.lastDragWorldPos = null;
+    this.multiDragOffsets.clear();
+
+    // Cancel text editing if active
+    this.store.textDraft = null;
+    this.store.editingTextId = null;
+
+    this.store.commit();
+  }
+
   handleMouseDown(
     position: Point,
     tool: Tool,
@@ -277,8 +301,63 @@ export class CanvasEngine {
     this.store.commit();
   }
 
-  removeElement(id: string) {
-    this.store.elements.delete(id);
+  removeElement() {
+    if (this.store.selectedElementId !== null) {
+      this.store.elements.delete(this.store.selectedElementId);
+      this.store.selectedElementId = null;
+      this.store.commit();
+    }
+
+    if (this.store.selectedElementIds.size > 0) {
+      this.store.selectedElementIds.forEach((value) =>
+        this.store.elements.delete(value)
+      );
+      this.store.commit();
+    }
+  }
+
+  duplicateElement() {
+    const elementsToDuplicate: CanvasElement[] = [];
+
+    if (this.store.selectedElementIds.size > 0) {
+      for (const id of this.store.selectedElementIds) {
+        const el = this.store.elements.get(id);
+        if (el) elementsToDuplicate.push(el);
+      }
+    } else if (this.store.selectedElementId) {
+      const el = this.store.elements.get(this.store.selectedElementId);
+      if (el) elementsToDuplicate.push(el);
+    }
+
+    if (elementsToDuplicate.length === 0) return;
+
+    const offset = 20;
+    const newIds: string[] = [];
+
+    for (const element of elementsToDuplicate) {
+      const id = generateUUID();
+
+      this.store.elements.set(id, {
+        ...element,
+        id,
+        x: element.x + offset,
+        y: element.y + offset
+      });
+
+      newIds.push(id);
+    }
+
+    this.store.selectedElementId = null;
+    this.store.selectedElementIds.clear();
+
+    if (newIds.length === 1) {
+      this.store.selectedElementId = newIds[0]!;
+    } else {
+      for (const id of newIds) {
+        this.store.selectedElementIds.add(id);
+      }
+    }
+
     this.store.commit();
   }
 
@@ -1249,6 +1328,57 @@ export class CanvasEngine {
 
     this.store.selectedElementId = null;
     this.store.selectedElementIds.clear();
+
+    this.store.commit();
+  }
+
+  updateElementProperty(propertyKey: string, value: string | number) {
+    const selectedId = this.store.selectedElementId;
+    if (!selectedId) return;
+
+    const element = this.store.elements.get(selectedId);
+    if (!element) return;
+
+    this.store.elements.set(element.id, { ...element, [propertyKey]: value });
+    this.store.commit();
+  }
+
+  getSelectedElement() {
+    const id = this.store.selectedElementId;
+    if (!id) return null;
+
+    const element = this.store.elements.get(id);
+
+    return this.store.elements.get(id) ?? null;
+  }
+
+  updateDataStructuresValues(values: string[] | TreeNode) {
+    const elementId = this.store.selectedElementId;
+    if (!elementId) return;
+
+    const element = this.store.elements.get(elementId);
+    if (!element) return;
+
+    if (element.type === 'array') {
+      this.store.elements.set(element.id, {
+        ...element,
+        values: values as string[]
+      });
+    }
+
+    if (element.type === 'linked-list') {
+      this.store.elements.set(element.id, {
+        ...element,
+        values: values as string[]
+      });
+    }
+
+    if (element.type === 'binary-tree') {
+      this.store.elements.set(element.id, {
+        ...element,
+        root: values as TreeNode
+      });
+    }
 
     this.store.commit();
   }

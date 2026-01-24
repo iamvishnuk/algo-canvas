@@ -1,7 +1,9 @@
-import { CanvasElement, Point, ViewState } from '@algocanvas/types';
+import { CanvasElement, Point, Tool, ViewState } from '@algocanvas/types';
 
 export class CanvasStore {
   elements = new Map<string, CanvasElement>();
+
+  activeTool: Tool = 'selection';
 
   previewElement: CanvasElement | null = null;
   previewStart: Point | null = null;
