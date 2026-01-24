@@ -35,19 +35,19 @@ export const useCanvasKeyboardShortcuts = ({
     {
       key: '=',
       modifiers: { ctrl: true },
-      action: () => engine?.zoomBy(-1),
+      action: () => engine?.zoomBy(0.1),
       description: 'Zoom in'
     },
     {
       key: '+',
       modifiers: { ctrl: true },
-      action: () => engine?.zoomBy(-1),
+      action: () => engine?.zoomBy(0.1),
       description: 'Zoom in'
     },
     {
       key: '-',
       modifiers: { ctrl: true },
-      action: () => engine?.zoomBy(1),
+      action: () => engine?.zoomBy(-0.1),
       description: 'Zoom out'
     },
     {

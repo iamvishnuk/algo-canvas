@@ -161,8 +161,8 @@ const CanvasArea = () => {
       <BottomToolBar
         zoom={zoom}
         resetZoom={() => engineRef.current?.resetZoom()}
-        zoomIn={() => engineRef.current?.zoomBy(-1)}
-        zoomOut={() => engineRef.current?.zoomBy(1)}
+        zoomIn={() => engineRef.current?.zoomBy(0.1)}
+        zoomOut={() => engineRef.current?.zoomBy(-0.1)}
         clearCanvas={() => engineRef.current?.clear()}
       />
       <Activity mode={tool === 'insert' ? 'visible' : 'hidden'}>

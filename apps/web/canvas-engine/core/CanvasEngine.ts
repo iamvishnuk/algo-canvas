@@ -192,7 +192,8 @@ export class CanvasEngine {
   }
 
   handleOnWheel(position: Point, delta: number) {
-    this.zoomAt(position.x, position.y, delta);
+    const step = delta > 0 ? -0.1 : 0.1;
+    this.zoomAt(position.x, position.y, step);
   }
 
   handleOnClick(position: Point, tool: Tool) {
@@ -227,11 +228,10 @@ export class CanvasEngine {
     this.lastPanPosition = null;
   }
 
-  zoomAt(x: number, y: number, direction: number) {
+  zoomAt(x: number, y: number, step: number) {
     const { scale, offsetX, offsetY } = this.store.view;
 
-    const zoomFactor = 1 - direction * 0.1;
-    const newScale = Math.min(5, Math.max(0.2, scale * zoomFactor));
+    const newScale = Math.min(5, Math.max(0.2, scale * (1 + step)));
 
     const worldX = (x - offsetX) / scale;
     const worldY = (y - offsetY) / scale;
@@ -243,13 +243,12 @@ export class CanvasEngine {
     this.store.commit();
   }
 
-  zoomBy(delta: number) {
+  zoomBy(step: number) {
     const canvas = this.renderer['canvas'];
-
     const centerX = canvas.width / 2;
     const centerY = canvas.height / 2;
 
-    this.zoomAt(centerX, centerY, delta);
+    this.zoomAt(centerX, centerY, step);
   }
 
   getView() {
@@ -865,44 +864,53 @@ export class CanvasEngine {
 
   startSelectionInteraction(screen: Point) {
     const worldPos = this.screenToWorld(screen.x, screen.y);
-
     const HIT = this.hitTolerance / this.store.view.scale;
     const PAD = 10 / this.store.view.scale;
 
-    const elements = Array.from(this.store.elements.values());
+    const elements = Array.from(this.store.elements.values()).reverse();
 
-    // ===================== Resize ===================================
-    if (this.store.selectedElementId) {
-      const element = this.store.elements.get(this.store.selectedElementId);
+    // 1️⃣ LINE / ARROW — DIRECT DRAG OR RESIZE (NO PRESELECT)
+    for (const el of elements) {
+      if (el.type !== 'line' && el.type !== 'arrow') continue;
 
-      if (element && (element.type === 'line' || element.type === 'arrow')) {
-        const endPoint = this.getLineEndpointHandle(worldPos, element);
+      const end = this.getLineEndpointHandle(worldPos, el);
+      if (end) {
+        this.store.selectedElementId = el.id;
+        this.store.selectedElementIds.clear();
 
-        if (endPoint) {
-          this.isResizing = true;
-          this.resizeElementId = element.id;
-          this.resizingLineEnd = endPoint;
-          return;
-        }
+        this.isResizing = true;
+        this.resizeElementId = el.id;
+        this.resizingLineEnd = end;
 
-        const isOnLine = this.isPointNearLine(
-          worldPos,
-          { x: element.x, y: element.y },
-          { x: element.endX, y: element.endY },
-          HIT
-        );
-        if (isOnLine) {
-          this.isDraggingElements = true;
-          this.isDraggingMultipleElements = false;
-          this.isFirstDragMove = true;
-          this.draggingElementId = element.id;
-
-          this.lastDragWorldPos = worldPos;
-
-          return;
-        }
+        this.store.commit();
+        return;
       }
 
+      if (
+        this.isPointNearLine(
+          worldPos,
+          { x: el.x, y: el.y },
+          { x: el.endX, y: el.endY },
+          HIT
+        )
+      ) {
+        this.store.selectedElementId = el.id;
+        this.store.selectedElementIds.clear();
+
+        this.isDraggingElements = true;
+        this.isDraggingMultipleElements = false;
+        this.isFirstDragMove = true;
+        this.draggingElementId = el.id;
+        this.lastDragWorldPos = worldPos;
+
+        this.store.commit();
+        return;
+      }
+    }
+
+    // 2️⃣ RECT / CIRCLE / TEXT RESIZE
+    if (this.store.selectedElementId) {
+      const element = this.store.elements.get(this.store.selectedElementId);
       if (element && element.type !== 'line' && element.type !== 'arrow') {
         const bounds = getElementBounds(element);
         if (bounds) {
@@ -915,7 +923,7 @@ export class CanvasEngine {
       }
     }
 
-    // ===================== MULTI SELECTION DRAG =====================
+    // 3️⃣ MULTI SELECTION DRAG
     if (this.store.selectedElementIds.size > 0) {
       const bounds = this.getCombinedBounds(
         [...this.store.selectedElementIds],
@@ -948,38 +956,35 @@ export class CanvasEngine {
       }
     }
 
-    // ===================== SINGLE ELEMENT HIT =====================
+    // 4️⃣ SINGLE ELEMENT DRAG
     if (this.store.selectedElementId) {
       const el = this.store.elements.get(this.store.selectedElementId);
       if (el) {
         const bounds = getElementBounds(el);
         if (bounds) {
-          const PAD = 10 / this.store.view.scale;
+          const pad = 10 / this.store.view.scale;
           const selectionBounds = {
-            minX: bounds.minX - PAD,
-            minY: bounds.minY - PAD,
-            maxX: bounds.maxX + PAD,
-            maxY: bounds.maxY + PAD
+            minX: bounds.minX - pad,
+            minY: bounds.minY - pad,
+            maxX: bounds.maxX + pad,
+            maxY: bounds.maxY + pad
           };
 
           if (isPointInBounds(worldPos, selectionBounds)) {
             this.isDraggingElements = true;
-            this.isDraggingMultipleElements = false;
             this.isFirstDragMove = true;
-
             this.draggingElementId = el.id;
             this.dragElementOffset = {
               x: worldPos.x - el.x,
               y: worldPos.y - el.y
             };
-
             return;
           }
         }
       }
     }
 
-    // ===================== HIT TEST (CLICK TO SELECT) =====================
+    // 5️⃣ CLICK TO SELECT
     const index = findElementAtPosition(worldPos, elements, HIT);
     if (index !== null) {
       const el = elements[index];
@@ -990,9 +995,7 @@ export class CanvasEngine {
       this.store.commit();
 
       this.isDraggingElements = true;
-      this.isDraggingMultipleElements = false;
       this.isFirstDragMove = true;
-
       this.draggingElementId = el.id;
       this.dragElementOffset = {
         x: worldPos.x - el.x,
@@ -1002,9 +1005,8 @@ export class CanvasEngine {
       return;
     }
 
-    // ===================== EMPTY SPACE =====================
+    // 6️⃣ EMPTY SPACE → AREA SELECT
     this.clearSelection();
-
     this.store.isAreaSelecting = true;
     this.store.areaSelectionStart = worldPos;
     this.store.areaSelectionEnd = worldPos;
