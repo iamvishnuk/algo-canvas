@@ -2,11 +2,8 @@
 import { CanvasEngine } from '@/canvas-engine';
 import {
   changeTool,
-  undo,
-  redo,
   addToClipBoard,
-  pastElements,
-  duplicateElements
+  pastElements
 } from '@/features/canvas/canvasSlice';
 import { useAppDispatch } from '@/store/hooks';
 import { useEffect } from 'react';
@@ -115,13 +112,13 @@ export const useCanvasKeyboardShortcuts = ({
     {
       key: 'z',
       modifiers: { ctrl: true },
-      action: () => dispatch(undo()),
+      action: () => engine?.store.undo(),
       description: 'Undo'
     },
     {
       key: 'z',
       modifiers: { ctrl: true, shift: true },
-      action: () => dispatch(redo()),
+      action: () => engine?.store.redo(),
       description: 'Redo'
     },
     {

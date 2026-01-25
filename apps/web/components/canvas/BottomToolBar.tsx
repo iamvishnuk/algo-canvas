@@ -1,5 +1,3 @@
-import { clearCanvas, undo, redo } from '@/features/canvas/canvasSlice';
-import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { Button } from '@algocanvas/ui/components/button';
 import {
   Tooltip,
@@ -10,10 +8,14 @@ import { Minus, Plus, Redo2, Trash, Undo2 } from 'lucide-react';
 
 type BottomToolBarProps = {
   zoom: number;
-  resetZoom?: () => void;
-  zoomIn?: () => void;
-  zoomOut?: () => void;
-  clearCanvas?: () => void;
+  canUndo: boolean;
+  canRedo: boolean;
+  redo: () => void;
+  undo: () => void;
+  zoomIn: () => void;
+  zoomOut: () => void;
+  resetZoom: () => void;
+  clearCanvas: () => void;
 };
 
 const BottomToolBar = ({
@@ -21,11 +23,12 @@ const BottomToolBar = ({
   resetZoom,
   zoomIn,
   zoomOut,
-  clearCanvas
+  clearCanvas,
+  canUndo,
+  canRedo,
+  redo,
+  undo
 }: BottomToolBarProps) => {
-  const dispatch = useAppDispatch();
-  const { history } = useAppSelector((state) => state.canvas);
-
   return (
     <div className='absolute bottom-4 left-4 flex gap-4'>
       <div className='dark:bg-brand-bg flex gap-1 rounded-md border text-neutral-400'>
@@ -77,8 +80,8 @@ const BottomToolBar = ({
             <Button
               className='dark:bg-brand-bg dark:hover:bg-brand-primary'
               size='icon'
-              onClick={() => dispatch(undo())}
-              disabled={history.past.length === 0}
+              onClick={undo}
+              disabled={!canUndo}
             >
               <Undo2 className='dark:text-neutral-400' />
             </Button>
@@ -92,8 +95,8 @@ const BottomToolBar = ({
             <Button
               className='dark:bg-brand-bg dark:hover:bg-brand-primary'
               size='icon'
-              onClick={() => dispatch(redo())}
-              disabled={history.future.length === 0}
+              onClick={redo}
+              disabled={!canRedo}
             >
               <Redo2 className='dark:text-neutral-400' />
             </Button>

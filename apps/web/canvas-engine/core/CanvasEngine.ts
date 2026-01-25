@@ -43,6 +43,7 @@ export class CanvasEngine {
 
   // Resizing State
   private isResizing: boolean = false;
+  private isFirstResizeMove: boolean = false;
   private resizeHandle: ResizeHandle | null = null;
   private resizeElementId: string | null = null;
   private resizeInitialBound: ElementBounds | null = null;
@@ -160,6 +161,11 @@ export class CanvasEngine {
       if (this.isRotating && this.rotateElementId && this.rotationCenter) {
         const worldPos = this.screenToWorld(position.x, position.y);
 
+        if (this.isFirstRotateMove) {
+          this.store.saveToHistory();
+          this.isFirstRotateMove = false;
+        }
+
         const angle = Math.atan2(
           worldPos.y - this.rotationCenter.y,
           worldPos.x - this.rotationCenter.x
@@ -213,6 +219,7 @@ export class CanvasEngine {
     if (tool === 'selection') {
       this.finishAreaSelection();
       this.isResizing = false;
+      this.isFirstResizeMove = false;
       this.resizingLineEnd = null;
       this.resizeHandle = null;
       this.resizeElementId = null;
@@ -340,12 +347,14 @@ export class CanvasEngine {
 
   removeElement() {
     if (this.store.selectedElementId !== null) {
+      this.store.saveToHistory();
       this.store.elements.delete(this.store.selectedElementId);
       this.store.selectedElementId = null;
       this.store.commit();
     }
 
     if (this.store.selectedElementIds.size > 0) {
+      this.store.saveToHistory();
       this.store.selectedElementIds.forEach((value) =>
         this.store.elements.delete(value)
       );
@@ -355,6 +364,8 @@ export class CanvasEngine {
 
   duplicateElement() {
     const elementsToDuplicate: CanvasElement[] = [];
+
+    this.store.saveToHistory();
 
     if (this.store.selectedElementIds.size > 0) {
       for (const id of this.store.selectedElementIds) {
@@ -446,6 +457,7 @@ export class CanvasEngine {
       return;
     }
 
+    this.store.saveToHistory();
     this.store.elements.set(element.id, element);
     this.store.previewElement = null;
     this.store.previewStart = null;
@@ -498,6 +510,8 @@ export class CanvasEngine {
       return;
     }
 
+    this.store.saveToHistory();
+
     this.store.elements.set(element.id, element);
     this.store.previewElement = null;
     this.store.previewStart = null;
@@ -548,6 +562,8 @@ export class CanvasEngine {
       return;
     }
 
+    this.store.saveToHistory();
+
     this.store.elements.set(element.id, element);
     this.store.previewElement = null;
     this.store.previewStart = null;
@@ -594,6 +610,8 @@ export class CanvasEngine {
       this.store.commit();
       return;
     }
+
+    this.store.saveToHistory();
 
     this.store.elements.set(element.id, element);
     this.store.previewElement = null;
@@ -645,6 +663,8 @@ export class CanvasEngine {
       return;
     }
 
+    this.store.saveToHistory();
+
     this.store.elements.set(element.id, element);
     this.store.previewElement = null;
     this.store.previewStart = null;
@@ -682,6 +702,8 @@ export class CanvasEngine {
       return;
     }
 
+    this.store.saveToHistory();
+
     this.store.elements.set(draft.id, {
       id: draft.id,
       type: 'text',
@@ -709,6 +731,8 @@ export class CanvasEngine {
 
     const elementId = generateUUID();
 
+    this.store.saveToHistory();
+
     this.store.elements.set(elementId, {
       id: elementId,
       type: 'array',
@@ -728,6 +752,8 @@ export class CanvasEngine {
 
     const elementId = generateUUID();
 
+    this.store.saveToHistory();
+
     this.store.elements.set(elementId, {
       id: elementId,
       type: 'linked-list',
@@ -746,6 +772,8 @@ export class CanvasEngine {
     const topY = (100 - this.store.view.offsetY) / this.store.view.scale;
 
     const elementId = generateUUID();
+
+    this.store.saveToHistory();
 
     this.store.elements.set(elementId, {
       id: elementId,
@@ -1073,6 +1101,11 @@ export class CanvasEngine {
   dragSelection(screen: Point) {
     if (!this.isDraggingElements) return;
 
+    if (this.isFirstDragMove) {
+      this.store.saveToHistory();
+      this.isFirstDragMove = false;
+    }
+
     const worldPos = this.screenToWorld(screen.x, screen.y);
 
     if (
@@ -1158,6 +1191,7 @@ export class CanvasEngine {
     }
 
     this.isResizing = true;
+    this.isFirstResizeMove = true;
     this.resizeHandle = handle;
     this.resizeElementId = element.id;
     this.resizeInitialBound = bound;
@@ -1166,6 +1200,11 @@ export class CanvasEngine {
 
   resizeSelection(screen: Point) {
     if (this.isResizing && this.resizingLineEnd) {
+      if (this.isFirstResizeMove) {
+        this.store.saveToHistory();
+        this.isFirstResizeMove = false;
+      }
+
       const element = this.store.elements.get(this.resizeElementId!);
       if (!element || (element.type !== 'line' && element.type !== 'arrow'))
         return;
@@ -1191,6 +1230,11 @@ export class CanvasEngine {
 
     if (!this.isResizing || !this.resizeElementId || !this.resizeInitialBound)
       return;
+
+    if (this.isFirstResizeMove) {
+      this.store.saveToHistory();
+      this.isFirstResizeMove = false;
+    }
 
     const worldPos = this.screenToWorld(screen.x, screen.y);
     const MIN = 10 / this.store.view.scale;
@@ -1398,6 +1442,8 @@ export class CanvasEngine {
     const element = this.store.elements.get(selectedId);
     if (!element) return;
 
+    this.store.saveToHistory();
+
     this.store.elements.set(element.id, { ...element, [propertyKey]: value });
     this.store.commit();
   }
@@ -1415,6 +1461,17 @@ export class CanvasEngine {
 
     const element = this.store.elements.get(elementId);
     if (!element) return;
+
+    // Prevent unnecessary history entries
+    if (element.type === 'array' || element.type === 'linked-list') {
+      if (JSON.stringify(element.values) === JSON.stringify(values)) return;
+    }
+
+    if (element.type === 'binary-tree') {
+      if (JSON.stringify(element.root) === JSON.stringify(values)) return;
+    }
+
+    this.store.saveToHistory();
 
     if (element.type === 'array') {
       this.store.elements.set(element.id, {

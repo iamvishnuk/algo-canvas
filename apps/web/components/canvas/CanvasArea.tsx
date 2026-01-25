@@ -39,6 +39,14 @@ const CanvasArea = () => {
     null
   );
 
+  const [historyState, setHistoryState] = useState<{
+    canUndo: boolean;
+    canRedo: boolean;
+  }>({
+    canUndo: false,
+    canRedo: false
+  });
+
   useCanvasKeyboardShortcuts({ engine: engineRef.current });
 
   useEffect(() => {
@@ -80,7 +88,6 @@ const CanvasArea = () => {
     const engine = engineRef.current;
     if (!engine) return;
 
-    // Subscribe to engine store updates
     return engine.store.subscribe(() => {
       setTextDraft(engine.store.textDraft);
     });
@@ -100,6 +107,18 @@ const CanvasArea = () => {
   useEffect(() => {
     engineRef.current?.setTool();
   }, [tool]);
+
+  useEffect(() => {
+    const engine = engineRef.current;
+    if (!engine) return;
+
+    return engine.store.subscribe(() => {
+      setHistoryState({
+        canUndo: engine.store.history.past.length > 0,
+        canRedo: engine.store.history.future.length > 0
+      });
+    });
+  }, []);
 
   const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
     engineRef.current?.handleMouseDown(
@@ -160,10 +179,14 @@ const CanvasArea = () => {
       <MainToolBar />
       <BottomToolBar
         zoom={zoom}
-        resetZoom={() => engineRef.current?.resetZoom()}
+        canUndo={historyState.canUndo}
+        canRedo={historyState.canRedo}
+        redo={() => engineRef.current?.store.redo()}
+        undo={() => engineRef.current?.store.undo()}
         zoomIn={() => engineRef.current?.zoomBy(0.1)}
-        zoomOut={() => engineRef.current?.zoomBy(-0.1)}
         clearCanvas={() => engineRef.current?.clear()}
+        zoomOut={() => engineRef.current?.zoomBy(-0.1)}
+        resetZoom={() => engineRef.current?.resetZoom()}
       />
       <Activity mode={tool === 'insert' ? 'visible' : 'hidden'}>
         <InsertPanel />
