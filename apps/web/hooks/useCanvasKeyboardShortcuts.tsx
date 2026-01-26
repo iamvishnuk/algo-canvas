@@ -1,10 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { CanvasEngine } from '@/canvas-engine';
-import {
-  changeTool,
-  addToClipBoard,
-  pastElements
-} from '@/features/canvas/canvasSlice';
+import { changeTool } from '@/features/canvas/canvasSlice';
 import { useAppDispatch } from '@/store/hooks';
 import { useEffect } from 'react';
 
@@ -129,13 +125,13 @@ export const useCanvasKeyboardShortcuts = ({
     {
       key: 'c',
       modifiers: { ctrl: true },
-      action: () => dispatch(addToClipBoard()),
+      action: () => {},
       description: 'Copy element'
     },
     {
       key: 'v',
       modifiers: { ctrl: true },
-      action: () => dispatch(pastElements({})),
+      action: () => {},
       description: 'Past Elements'
     },
     {
