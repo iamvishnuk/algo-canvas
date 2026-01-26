@@ -1,15 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import {
-  changeTool,
-  handleZoom,
-  removeElements,
-  resetView,
-  undo,
-  redo,
-  addToClipBoard,
-  pastElements,
-  duplicateElements
-} from '@/features/canvas/canvasSlice';
+import { CanvasEngine } from '@/canvas-engine';
+import { changeTool } from '@/features/canvas/canvasSlice';
 import { useAppDispatch } from '@/store/hooks';
 import { useEffect } from 'react';
 
@@ -24,32 +15,38 @@ interface KeyboardShortcut {
   description: string;
 }
 
-export const useCanvasKeyboardShortcuts = () => {
+type useCanvasKeyboardShortcutsProps = {
+  engine: CanvasEngine | null;
+};
+
+export const useCanvasKeyboardShortcuts = ({
+  engine
+}: useCanvasKeyboardShortcutsProps) => {
   const dispatch = useAppDispatch();
 
   const shortcuts: KeyboardShortcut[] = [
     {
       key: '=',
       modifiers: { ctrl: true },
-      action: () => dispatch(handleZoom({ delta: -0.1 })),
+      action: () => engine?.zoomBy(0.1),
       description: 'Zoom in'
     },
     {
       key: '+',
       modifiers: { ctrl: true },
-      action: () => dispatch(handleZoom({ delta: -0.1 })),
+      action: () => engine?.zoomBy(0.1),
       description: 'Zoom in'
     },
     {
       key: '-',
       modifiers: { ctrl: true },
-      action: () => dispatch(handleZoom({ delta: 0.1 })),
+      action: () => engine?.zoomBy(-0.1),
       description: 'Zoom out'
     },
     {
       key: '0',
       modifiers: { ctrl: true },
-      action: () => dispatch(resetView()),
+      action: () => engine?.resetZoom(),
       description: 'Reset view'
     },
     {
@@ -111,36 +108,36 @@ export const useCanvasKeyboardShortcuts = () => {
     {
       key: 'z',
       modifiers: { ctrl: true },
-      action: () => dispatch(undo()),
+      action: () => engine?.store.undo(),
       description: 'Undo'
     },
     {
       key: 'z',
       modifiers: { ctrl: true, shift: true },
-      action: () => dispatch(redo()),
+      action: () => engine?.store.redo(),
       description: 'Redo'
     },
     {
       key: 'Delete',
-      action: () => dispatch(removeElements()),
+      action: () => engine?.removeElement(),
       description: 'Remove element'
     },
     {
       key: 'c',
       modifiers: { ctrl: true },
-      action: () => dispatch(addToClipBoard()),
+      action: () => {},
       description: 'Copy element'
     },
     {
       key: 'v',
       modifiers: { ctrl: true },
-      action: () => dispatch(pastElements({})),
+      action: () => {},
       description: 'Past Elements'
     },
     {
       key: 'd',
       modifiers: { ctrl: true },
-      action: () => dispatch(duplicateElements()),
+      action: () => engine?.duplicateElement(),
       description: 'Duplicate Elements'
     }
   ];

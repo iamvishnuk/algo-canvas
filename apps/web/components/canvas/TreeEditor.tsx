@@ -1,21 +1,16 @@
-import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import { TreeNode } from '@algocanvas/types/canvas';
+import { CanvasElement, TreeNode } from '@algocanvas/types/canvas';
 import { Separator } from '@algocanvas/ui/components/separator';
 import { Button } from '@algocanvas/ui/components/button';
 import { Copy, Trash } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import {
-  duplicateElements,
-  removeElements,
-  updateDataStructuresValues
-} from '@/features/canvas/canvasSlice';
-import {
   addChild,
   getAllNodes,
   removeSubtree,
   updateNodeValue
-} from '@/lib/data-structures/tree';
+} from '@/canvas-engine/data-structures/tree';
 import { setTimeout } from 'node:timers';
+import { CanvasEngine } from '@/canvas-engine';
 
 function traverse(node: TreeNode | null, type: string, result: string[] = []) {
   if (!node) return;
@@ -26,16 +21,12 @@ function traverse(node: TreeNode | null, type: string, result: string[] = []) {
   if (type === 'postorder') result.push(node.value);
 }
 
-const TreeEditor = () => {
-  const dispatch = useAppDispatch();
+type TreeEditorEditorProps = {
+  selectedElement: CanvasElement | null;
+  engine: CanvasEngine | null;
+};
 
-  const { selectedElementId, elements } = useAppSelector(
-    (state) => state.canvas
-  );
-  const selectedElement =
-    selectedElementId !== null
-      ? elements.find((el) => el.id === selectedElementId)
-      : null;
+const TreeEditor = ({ selectedElement, engine }: TreeEditorEditorProps) => {
   const elementType = selectedElement?.type;
 
   const [root, setRoot] = useState<TreeNode | null>(
@@ -73,7 +64,7 @@ const TreeEditor = () => {
   const updateTree = (newRoot: TreeNode | null) => {
     setRoot(newRoot);
     if (newRoot) {
-      dispatch(updateDataStructuresValues({ value: newRoot }));
+      engine?.updateDataStructuresValues(newRoot);
     }
   };
 
@@ -143,10 +134,11 @@ const TreeEditor = () => {
           <p className='mb-1 text-sm text-neutral-400'>Tree Nodes</p>
           <select
             className='h-9 w-full rounded border px-2 py-1 text-sm'
-            value={selectedNode ? selectedNode.value : ''}
+            value={selectedNode?.id ?? ''}
             onChange={(e) => {
-              const allNodes = getAllNodes(root);
-              const node = allNodes.find((n) => n.value === e.target.value);
+              const node = getAllNodes(root).find(
+                (n) => n.id === e.target.value
+              );
               if (node) {
                 setSelectedNode(node);
                 setEditValue(node.value);
@@ -159,10 +151,10 @@ const TreeEditor = () => {
             >
               Select a node
             </option>
-            {getAllNodes(root).map((node, idx) => (
+            {getAllNodes(root).map((node) => (
               <option
-                key={idx}
-                value={node.value}
+                key={node.id}
+                value={node.id}
               >
                 {node.value}
               </option>
@@ -271,7 +263,7 @@ const TreeEditor = () => {
               size='icon'
               variant='outline'
               className='hover:cursor-pointer'
-              onClick={() => dispatch(removeElements())}
+              onClick={() => engine?.removeElement()}
             >
               <Trash />
             </Button>
@@ -279,7 +271,7 @@ const TreeEditor = () => {
               size='icon'
               variant='outline'
               className='hover:cursor-pointer'
-              onClick={() => dispatch(duplicateElements())}
+              onClick={() => engine?.duplicateElement()}
             >
               <Copy />
             </Button>

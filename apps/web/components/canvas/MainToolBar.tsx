@@ -1,5 +1,5 @@
 import { changeTool } from '@/features/canvas/canvasSlice';
-import { MAIN_TOOLS } from '@/lib/canvas/constant';
+import { MAIN_TOOLS } from '@/lib/canvas/config';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { Button } from '@algocanvas/ui/components/button';
 import {

@@ -1,3 +1,4 @@
+import { generateUUID } from '@/utils';
 import { TreeNode } from '@algocanvas/types/canvas';
 
 export const TREE_CONSTANTS = {
@@ -12,6 +13,7 @@ export const buildTreeFromArray = (values: string[]): TreeNode | null => {
   }
 
   const root: TreeNode = {
+    id: generateUUID(),
     value: values[0]!,
     left: null,
     right: null
@@ -27,6 +29,7 @@ export const buildTreeFromArray = (values: string[]): TreeNode | null => {
     const leftVal = values[i];
     if (leftVal !== undefined && leftVal !== 'null' && leftVal !== '') {
       const leftNode: TreeNode = {
+        id: generateUUID(),
         value: leftVal,
         left: null,
         right: null
@@ -40,6 +43,7 @@ export const buildTreeFromArray = (values: string[]): TreeNode | null => {
     const rightVal = values[i];
     if (rightVal !== undefined && rightVal !== 'null' && rightVal !== '') {
       const rightNode: TreeNode = {
+        id: generateUUID(),
         value: rightVal,
         left: null,
         right: null
@@ -96,6 +100,7 @@ export const addChild = (
     return {
       ...node,
       [side]: {
+        id: generateUUID(),
         value: value,
         left: null,
         right: null

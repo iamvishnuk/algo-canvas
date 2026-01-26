@@ -7,7 +7,7 @@ import {
   PropertyKey
 } from '@algocanvas/types/canvas';
 
-export interface IElementPropertyState {
+export interface ElementDefaultProperty {
   line: StrokeableProps;
   rectangle: StrokeableProps & FillableProps;
   circle: StrokeableProps & FillableProps;
@@ -15,6 +15,8 @@ export interface IElementPropertyState {
   draw: PathProps;
   text: TextProps;
 }
+
+export interface IElementPropertyState extends ElementDefaultProperty {}
 
 const initialState: IElementPropertyState = {
   line: {

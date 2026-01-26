@@ -1,12 +1,12 @@
-import { ARRAY_CONSTANTS } from '@/lib/data-structures/array';
-import { LINKED_LIST_CONSTANTS } from '@/lib/data-structures/linked-list';
-import { getDepth, TREE_CONSTANTS } from '@/lib/data-structures/tree';
 import {
   PathElement,
   TextElement,
   StrokePattern,
   TreeNode
 } from '@algocanvas/types/canvas';
+import { ARRAY_CONSTANTS } from '../data-structures/array';
+import { getDepth, TREE_CONSTANTS } from '../data-structures/tree';
+import { LINKED_LIST_CONSTANTS } from '../data-structures/linked-list';
 
 /**
  * Get line dash array based on stroke pattern

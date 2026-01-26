@@ -1,11 +1,3 @@
-import {
-  clearCanvas,
-  handleZoom,
-  resetView,
-  undo,
-  redo
-} from '@/features/canvas/canvasSlice';
-import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { Button } from '@algocanvas/ui/components/button';
 import {
   Tooltip,
@@ -14,10 +6,29 @@ import {
 } from '@algocanvas/ui/components/tooltip';
 import { Minus, Plus, Redo2, Trash, Undo2 } from 'lucide-react';
 
-const BottomToolBar = () => {
-  const dispatch = useAppDispatch();
-  const { view, history } = useAppSelector((state) => state.canvas);
+type BottomToolBarProps = {
+  zoom: number;
+  canUndo: boolean;
+  canRedo: boolean;
+  redo: () => void;
+  undo: () => void;
+  zoomIn: () => void;
+  zoomOut: () => void;
+  resetZoom: () => void;
+  clearCanvas: () => void;
+};
 
+const BottomToolBar = ({
+  zoom,
+  resetZoom,
+  zoomIn,
+  zoomOut,
+  clearCanvas,
+  canUndo,
+  canRedo,
+  redo,
+  undo
+}: BottomToolBarProps) => {
   return (
     <div className='absolute bottom-4 left-4 flex gap-4'>
       <div className='dark:bg-brand-bg flex gap-1 rounded-md border text-neutral-400'>
@@ -26,7 +37,7 @@ const BottomToolBar = () => {
             <Button
               className='dark:bg-brand-bg dark:hover:bg-brand-primary'
               size='icon'
-              onClick={() => dispatch(handleZoom({ delta: -0.1 }))}
+              onClick={zoomIn}
             >
               <Plus className='dark:text-neutral-400' />
             </Button>
@@ -39,9 +50,9 @@ const BottomToolBar = () => {
           <TooltipTrigger asChild>
             <div
               className='flex cursor-pointer items-center justify-center text-xs'
-              onClick={() => dispatch(resetView())}
+              onClick={resetZoom}
             >
-              {Math.round(view.scale * 100)}%
+              {zoom}%
             </div>
           </TooltipTrigger>
           <TooltipContent side='top'>
@@ -53,7 +64,7 @@ const BottomToolBar = () => {
             <Button
               className='dark:bg-brand-bg dark:hover:bg-brand-primary'
               size='icon'
-              onClick={() => dispatch(handleZoom({ delta: 0.1 }))}
+              onClick={zoomOut}
             >
               <Minus className='dark:text-neutral-400' />
             </Button>
@@ -69,8 +80,8 @@ const BottomToolBar = () => {
             <Button
               className='dark:bg-brand-bg dark:hover:bg-brand-primary'
               size='icon'
-              onClick={() => dispatch(undo())}
-              disabled={history.past.length === 0}
+              onClick={undo}
+              disabled={!canUndo}
             >
               <Undo2 className='dark:text-neutral-400' />
             </Button>
@@ -84,8 +95,8 @@ const BottomToolBar = () => {
             <Button
               className='dark:bg-brand-bg dark:hover:bg-brand-primary'
               size='icon'
-              onClick={() => dispatch(redo())}
-              disabled={history.future.length === 0}
+              onClick={redo}
+              disabled={!canRedo}
             >
               <Redo2 className='dark:text-neutral-400' />
             </Button>
@@ -101,7 +112,7 @@ const BottomToolBar = () => {
             <Button
               className='dark:bg-brand-bg dark:hover:bg-red-800'
               size='icon'
-              onClick={() => dispatch(clearCanvas())}
+              onClick={clearCanvas}
             >
               <Trash className='dark:text-neutral-400' />
             </Button>

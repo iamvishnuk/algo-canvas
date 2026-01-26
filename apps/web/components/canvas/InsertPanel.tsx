@@ -1,5 +1,5 @@
 import { changeTool, toggleDialog } from '@/features/canvas/canvasSlice';
-import { DSA_ELEMENTS } from '@/lib/canvas/constant';
+import { DSA_ELEMENTS } from '@/lib/canvas/config';
 import { useAppDispatch } from '@/store/hooks';
 import {
   Command,

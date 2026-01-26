@@ -9,7 +9,7 @@ import {
   drawPath,
   drawRectangle,
   drawText
-} from './draw';
+} from '../rendering/draw';
 
 export const drawElements = (
   ctx: CanvasRenderingContext2D,
@@ -80,7 +80,7 @@ export const drawElements = (
         element.strokePattern
       );
     } else if (element.type === 'array') {
-      drawArray(ctx, element.x, element.y, element.value, scale);
+      drawArray(ctx, element.x, element.y, element.values, scale);
     } else if (element.type === 'binary-tree') {
       drawBinaryTree(ctx, element.root, element.x, element.y, scale);
     } else if (element.type === 'linked-list') {

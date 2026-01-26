@@ -1,14 +1,19 @@
 import { Ellipsis, Minus } from 'lucide-react';
 import ColorPicker from './ColorPicker';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import { TOOL_PROPERTY_MAP } from '@/lib/canvas/constant';
-import { PropertyKey, StrokePattern, Tool } from '@algocanvas/types/canvas';
-import { updateElementProperty } from '@/features/canvas/canvasSlice';
+import { TOOL_PROPERTY_MAP } from '@/lib/canvas/config';
+import {
+  CanvasElement,
+  PropertyKey,
+  StrokePattern,
+  Tool
+} from '@algocanvas/types/canvas';
 import {
   updateElementDefaultProperty,
   type IElementPropertyState
 } from '@/features/element/elementPropertySlice';
-import { getElementProperty } from '@/lib/canvas/utils';
+import { CanvasEngine } from '@/canvas-engine';
+import { getElementProperty } from '@/canvas-engine/utils/geometry';
 
 const STROKE_PATTERNS: {
   value: StrokePattern;
@@ -58,17 +63,18 @@ const FONT_SIZES = [
   { value: 48, label: '2XL' }
 ];
 
-const ElementPropertyPanel = () => {
+type ElementPropertyPanelProps = {
+  engine: CanvasEngine | null;
+  selectedElement: CanvasElement | null;
+};
+
+const ElementPropertyPanel = ({
+  engine,
+  selectedElement
+}: ElementPropertyPanelProps) => {
   const dispatch = useAppDispatch();
   const elementProperty = useAppSelector((state) => state.elementProperty);
-  const { tool, elements, selectedElementId } = useAppSelector(
-    (state) => state.canvas
-  );
-
-  const selectedElement =
-    selectedElementId !== null
-      ? elements.find((el) => el.id === selectedElementId)
-      : null;
+  const { tool } = useAppSelector((state) => state.canvas);
 
   const activeType = selectedElement?.type ?? tool;
 
@@ -153,13 +159,8 @@ const ElementPropertyPanel = () => {
     propertyKey: PropertyKey,
     value: string | number
   ) => {
-    if (selectedElementId !== null) {
-      dispatch(
-        updateElementProperty({
-          propertyKey,
-          value
-        })
-      );
+    if (selectedElement) {
+      engine?.updateElementProperty(propertyKey, value);
     } else {
       const elementKey = getElementKey();
       if (elementKey) {

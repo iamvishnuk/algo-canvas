@@ -1,4 +1,4 @@
-import { addElements, toggleDialog } from '@/features/canvas/canvasSlice';
+import { toggleDialog } from '@/features/canvas/canvasSlice';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { ArraySchema } from '@/validators';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -19,14 +19,15 @@ import {
 import { Input } from '@algocanvas/ui/components/input';
 import { useForm, Controller } from 'react-hook-form';
 import z from 'zod';
-import { generateUUID } from '@/lib/canvas/utils';
 
-const LinkedListDialog = () => {
+type LinkedListDialogProps = {
+  addLinkedList: (values: string[]) => void;
+};
+
+const LinkedListDialog = ({ addLinkedList }: LinkedListDialogProps) => {
   const dispatch = useAppDispatch();
 
-  const { showLinkedListDialog, view, size } = useAppSelector(
-    (state) => state.canvas
-  );
+  const { showLinkedListDialog } = useAppSelector((state) => state.canvas);
 
   const form = useForm<z.infer<typeof ArraySchema>>({
     resolver: zodResolver(ArraySchema),
@@ -42,21 +43,7 @@ const LinkedListDialog = () => {
       .map((v) => v.trim())
       .filter((v) => v !== '');
 
-    const centerX = (size.width / 2 - view.offsetX) / view.scale;
-    const topY = (100 - view.offsetY) / view.scale;
-
-    dispatch(
-      addElements({
-        element: {
-          id: generateUUID(),
-          rotate: 0,
-          type: 'linked-list',
-          x: centerX,
-          y: topY,
-          values
-        }
-      })
-    );
+    addLinkedList(values);
 
     form.reset();
     dispatch(toggleDialog({ value: 'linked-list' }));
